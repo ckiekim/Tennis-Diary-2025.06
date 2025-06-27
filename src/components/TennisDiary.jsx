@@ -1,19 +1,7 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Grid,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  Chip,
-  Divider,
-  Box,
-  Stack
-} from '@mui/material';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import AddIcon from '@mui/icons-material/Add';
+import { Container, Typography, Box, Card, CardContent, Chip, Stack } from '@mui/material';
 import dayjs from 'dayjs';
+import KoreanDatePicker from './KoreanDatePicker';
 
 const events = [
   {
@@ -31,62 +19,72 @@ const events = [
 ];
 
 const TennisDiary = () => {
-  const [selectedDate, setSelectedDate] = useState('2025-06-20');
-
-  const filteredEvents = events.filter(e => e.date === selectedDate);
+  const [selectedDate, setSelectedDate] = useState(dayjs('2025-06-20'));
+  const filteredEvents = events.filter(
+    (e) => e.date === selectedDate.format('YYYY-MM-DD')
+  );
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        🎾 테니스 다이어리 - {dayjs(selectedDate).format('YYYY.MM.DD (ddd)')}
+    <Container maxWidth="sm" sx={{ pt: 2 }}>
+      <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
+        🎾 테니스 다이어리
       </Typography>
 
-      {/* 달력 대체용 타이틀 */}
-      <Box mb={2}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <CalendarMonthIcon />
-          <Typography variant="subtitle1">2025년 6월 달력</Typography>
-          <Button size="small" startIcon={<AddIcon />} variant="outlined">
-            일정 추가
-          </Button>
-        </Stack>
+      {/* 📅 한글 달력 */}
+      <Box>
+        <KoreanDatePicker value={selectedDate} onChange={setSelectedDate} />
       </Box>
+
+      {/* 일정 제목 */}
+      <Typography variant="h6" sx={{ mb: 1, fontSize: { xs: '16px', sm: '18px' } }}>
+        📆 {selectedDate.format('YYYY.MM.DD (ddd)')} 일정
+      </Typography>
 
       {/* 일정 리스트 */}
-      <Grid container spacing={2}>
-        {filteredEvents.map((event, index) => (
-          <Grid item xs={12} key={index}>
-            <Card variant="outlined">
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h6">{event.type}</Typography>
-                  <Chip
-                    label={event.type === '레슨' ? '○ 레슨' : '◎ 게임'}
-                    color={event.type === '레슨' ? 'info' : 'success'}
-                    size="small"
-                  />
-                </Stack>
-                <Typography variant="body2" color="text.secondary">
-                  ⏰ {event.time}
+      {filteredEvents.length === 0 ? (
+        <Typography color="text.secondary">일정이 없습니다.</Typography>
+      ) : (
+        filteredEvents.map((event, idx) => (
+          <Card
+            key={idx}
+            variant="outlined"
+            sx={{
+              mb: 1.5,
+              px: 1,
+              py: 1,
+              borderRadius: 2,
+              backgroundColor: '#f9f9f9',
+            }}
+          >
+            <CardContent sx={{ p: 1 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ mb: 1 }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: { xs: '15px', sm: '16px' }, fontWeight: 'bold' }}
+                >
+                  {event.type}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  📍 {event.location}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* 일정 상세 */}
-      <Box mt={4}>
-        <Typography variant="h6">상세 정보</Typography>
-        <Divider sx={{ my: 1 }} />
-        <Typography variant="body2">장소: 리버사이드 테니스장</Typography>
-        <Typography variant="body2">참가자: 남 0 / 여 0 / 총 0명</Typography>
-        <Typography variant="body2">비용: 0원</Typography>
-        <Typography variant="body2">메모: 스매시</Typography>
-      </Box>
+                <Chip
+                  label={event.type === '레슨' ? '○ 레슨' : '◎ 게임'}
+                  color={event.type === '레슨' ? 'info' : 'success'}
+                  size="small"
+                />
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                ⏰ {event.time}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                📍 {event.location}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </Container>
   );
 };
