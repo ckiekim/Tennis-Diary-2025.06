@@ -7,46 +7,41 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { Box, Typography, IconButton } from '@mui/material';
+import {
+  Box,
+  Typography,
+  IconButton,
+} from '@mui/material';
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import SportsBaseballIcon from '@mui/icons-material/SportsBaseball';
 
-const KoreanCalendarHeader = ({ currentMonth, onMonthChange, previousMonth, nextMonth }) => {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2, py: 1 }}>
-      <IconButton onClick={() => onMonthChange(previousMonth)}>
-        <ChevronLeft />
-      </IconButton>
-      <Typography variant="subtitle1" fontWeight="bold">
-        {dayjs(currentMonth).locale('ko').format('YYYY.MM')}
-      </Typography>
-      <IconButton onClick={() => onMonthChange(nextMonth)}>
-        <ChevronRight />
-      </IconButton>
-    </Box>
-  );
-};
+// 🗓 커스텀 헤더
+const KoreanCalendarHeader = ({ currentMonth, onMonthChange, previousMonth, nextMonth }) => (
+  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 2, py: 1 }}>
+    <IconButton onClick={() => onMonthChange(previousMonth)}><ChevronLeft /></IconButton>
+    <Typography variant="subtitle1" fontWeight="bold">
+      {dayjs(currentMonth).locale('ko').format('YYYY.MM')}
+    </Typography>
+    <IconButton onClick={() => onMonthChange(nextMonth)}><ChevronRight /></IconButton>
+  </Box>
+);
 
-// ✅ 일정 있는 날짜 리스트
-const eventDates = ['2025-06-20', '2025-06-22', '2025-06-15'];
-
-// ✅ 커스텀 PickersDay
+// 🎾 커스텀 PickersDay 컴포넌트
 const CustomPickersDay = (props) => {
-  const { day, outsideCurrentMonth, ...other } = props;
+  const { day, outsideCurrentMonth, selected, eventDates, ...other } = props;
   const formatted = dayjs(day).format('YYYY-MM-DD');
   const hasEvent = eventDates.includes(formatted);
   const isSunday = day.day() === 0;
-  const isSaturday = day.day() === 6;
 
   return (
     <PickersDay
       {...other}
       day={day}
+      selected={selected}
       outsideCurrentMonth={outsideCurrentMonth}
       sx={{
         position: 'relative',
-        color: isSunday ? 'red' : isSaturday ? 'blue' : undefined,
+        color: isSunday ? 'red' : undefined,
         '&::after': hasEvent
           ? {
               content: '""',
@@ -65,7 +60,13 @@ const CustomPickersDay = (props) => {
   );
 };
 
-const KoreanDatePicker = ({ value, onChange }) => {
+// 🧩 KoreanDatePicker 본체
+const KoreanDatePicker = ({ value, onChange, eventDates }) => {
+  // 📌 day 슬롯으로 전달할 컴포넌트
+  const DayWithEvent = (props) => (
+    <CustomPickersDay {...props} eventDates={eventDates} />
+  );
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
       <StaticDatePicker
@@ -74,7 +75,7 @@ const KoreanDatePicker = ({ value, onChange }) => {
         onChange={onChange}
         slots={{
           calendarHeader: KoreanCalendarHeader,
-          day: CustomPickersDay, // 💡 핵심!
+          day: DayWithEvent, // 핵심: slots.day 사용
         }}
         slotProps={{
           actionBar: { actions: [] },

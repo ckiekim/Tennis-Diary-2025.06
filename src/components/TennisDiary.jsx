@@ -17,6 +17,8 @@ const events = [
     location: '리버사이드 테니스장',
   },
 ];
+// ✅ 일정 있는 날짜 리스트
+const eventDates = ['2025-06-20', '2025-06-22', '2025-06-15'];
 
 const TennisDiary = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs('2025-06-20'));
@@ -31,9 +33,11 @@ const TennisDiary = () => {
       </Typography>
 
       {/* 📅 한글 달력 */}
-      <Box>
-        <KoreanDatePicker value={selectedDate} onChange={setSelectedDate} />
-      </Box>
+      <KoreanDatePicker
+        value={selectedDate}
+        onChange={setSelectedDate}
+        eventDates={eventDates}
+      />
 
       {/* 일정 제목 */}
       <Typography variant="h6" sx={{ mb: 1, fontSize: { xs: '16px', sm: '18px' } }}>
