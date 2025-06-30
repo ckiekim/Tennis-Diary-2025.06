@@ -36,8 +36,10 @@ const TennisDiary = () => {
       ...form,
     });
 
-    // 🔁 화면 강제 리렌더
-    setRefreshKey(prev => prev + 1);
+    // 🔁 0.3초후 화면 강제 리렌더
+    setTimeout(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 300);
 
     setOpen(false);
     setForm({ type: '', start_time: '', end_time: '', place: '', source: '' });
