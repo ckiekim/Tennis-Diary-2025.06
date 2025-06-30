@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
 import dayjs from 'dayjs';
 
-const useScheduleByDate = (selectedDate) => {
+const useScheduleByDate = (selectedDate, refreshKey = 0) => {
   const [schedules, setSchedules] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const useScheduleByDate = (selectedDate) => {
     };
 
     fetchSchedules();
-  }, [selectedDate]);
+  }, [selectedDate, refreshKey]);
 
   return schedules;
 };

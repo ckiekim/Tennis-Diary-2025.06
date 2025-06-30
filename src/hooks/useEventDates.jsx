@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { db } from '../api/firebaseConfig';
 import { collection, getDocs } from 'firebase/firestore';
 
-const useEventDates = () => {
+const useEventDates = (refreshKey = 0) => {
   const [eventDates, setEventDates] = useState([]);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const useEventDates = () => {
     };
 
     fetchEventDates();
-  }, []);
+  }, [refreshKey]);
 
   return eventDates;
 };
