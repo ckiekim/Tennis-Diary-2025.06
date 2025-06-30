@@ -2,29 +2,14 @@ import React, { useState } from 'react';
 import { Container, Typography, Box, Card, CardContent, Chip, Stack } from '@mui/material';
 import dayjs from 'dayjs';
 import KoreanDatePicker from './KoreanDatePicker';
-
-const events = [
-  {
-    date: '2025-06-20',
-    type: '레슨',
-    time: '09:00 - 09:20',
-    location: '레드브릭 테니스장',
-  },
-  {
-    date: '2025-06-20',
-    type: '게임',
-    time: '20:00 - 22:00',
-    location: '리버사이드 테니스장',
-  },
-];
-// ✅ 일정 있는 날짜 리스트
-const eventDates = ['2025-06-20', '2025-06-22', '2025-06-15'];
+import useEventDates from "../hooks/useEventDates";
+import useScheduleByDate from "../hooks/useScheduleByDate";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const TennisDiary = () => {
-  const [selectedDate, setSelectedDate] = useState(dayjs('2025-06-20'));
-  const filteredEvents = events.filter(
-    (e) => e.date === selectedDate.format('YYYY-MM-DD')
-  );
+  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const eventDates = useEventDates();
+  const schedules = useScheduleByDate(selectedDate);
 
   return (
     <Container maxWidth="sm" sx={{ pt: 2 }}>
@@ -39,56 +24,45 @@ const TennisDiary = () => {
         eventDates={eventDates}
       />
 
-      {/* 일정 제목 */}
-      <Typography variant="h6" sx={{ mb: 1, fontSize: { xs: '16px', sm: '18px' } }}>
-        📆 {selectedDate.format('YYYY.MM.DD (ddd)')} 일정
-      </Typography>
+      {/* 선택된 날짜 정보 */}
+      <Box mt={3}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <CalendarMonthIcon />
+          <Typography variant="subtitle1" fontWeight="bold">
+            {selectedDate.format('YYYY.MM.DD (ddd)')} 일정
+          </Typography>
+        </Stack>
 
-      {/* 일정 리스트 */}
-      {filteredEvents.length === 0 ? (
-        <Typography color="text.secondary">일정이 없습니다.</Typography>
-      ) : (
-        filteredEvents.map((event, idx) => (
-          <Card
-            key={idx}
-            variant="outlined"
-            sx={{
-              mb: 1.5,
-              px: 1,
-              py: 1,
-              borderRadius: 2,
-              backgroundColor: '#f9f9f9',
-            }}
-          >
-            <CardContent sx={{ p: 1 }}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ mb: 1 }}
+        {schedules.length === 0 ? (
+          <Typography color="text.secondary" mt={1}>
+            일정이 없습니다.
+          </Typography>
+        ) : (
+          <Box mt={1}>
+            {schedules.map((schedule) => (
+              <Box
+                key={schedule.id}
+                sx={{
+                  border: '1px solid #ccc',
+                  borderRadius: 2,
+                  p: 2,
+                  mb: 1,
+                  backgroundColor: '#f9f9f9',
+                }}
               >
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontSize: { xs: '15px', sm: '16px' }, fontWeight: 'bold' }}
-                >
-                  {event.type}
+                <Typography variant="subtitle2" fontWeight="bold">
+                  {schedule.type}
                 </Typography>
-                <Chip
-                  label={event.type === '레슨' ? '○ 레슨' : '◎ 게임'}
-                  color={event.type === '레슨' ? 'info' : 'success'}
-                  size="small"
-                />
-              </Stack>
-              <Typography variant="body2" color="text.secondary">
-                ⏰ {event.time}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                📍 {event.location}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))
-      )}
+                <Typography variant="body2">⏰ {schedule.start_time} - {schedule.end_time}</Typography>
+                <Typography variant="body2">📍 {schedule.place} 테니스장</Typography>
+                {schedule.source && (
+                  <Typography variant="body2">📝 {schedule.source}</Typography>
+                )}
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Box>
     </Container>
   );
 };
