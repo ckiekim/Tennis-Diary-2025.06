@@ -3,25 +3,26 @@ import { db } from '../api/firebaseConfig';
 import { collection, getDocs } from 'firebase/firestore';
 
 const useEventDates = (refreshKey = 0) => {
-  const [eventDates, setEventDates] = useState([]);
+  const [eventDateMap, setEventDateMap] = useState({});
 
   useEffect(() => {
     const fetchEventDates = async () => {
       const querySnapshot = await getDocs(collection(db, 'events'));
-      const dates = [];
+      const countMap = {};
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.date) {
-          dates.push(data.date);
+          countMap[data.date] = (countMap[data.date] || 0) + 1;
         }
       });
-      setEventDates(dates);
+      setEventDateMap(countMap);
     };
 
     fetchEventDates();
   }, [refreshKey]);
 
-  return eventDates;
+  return eventDateMap;
 };
 
 export default useEventDates;

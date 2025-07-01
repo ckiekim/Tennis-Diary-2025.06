@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StaticDatePicker, PickersDay } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -28,46 +28,62 @@ const KoreanCalendarHeader = ({ currentMonth, onMonthChange }) => {
 
 // 🎾 커스텀 PickersDay 컴포넌트
 const CustomPickersDay = (props) => {
-  const { day, outsideCurrentMonth, selected, eventDates, ...other } = props;
+  const { day, outsideCurrentMonth, selected, eventDateMap, ...other } = props;
   const formatted = dayjs(day).format('YYYY-MM-DD');
-  const hasEvent = eventDates.includes(formatted);
+  const count = eventDateMap[formatted] || 0;
   const isSunday = day.day() === 0;
 
   return (
-    <PickersDay
-      {...other}
-      day={day}
-      selected={selected}
-      outsideCurrentMonth={outsideCurrentMonth}
-      sx={{
-        position: 'relative',
-        color: isSunday ? 'red' : undefined,
-        '&::after': hasEvent
-          ? {
-              content: '""',
-              position: 'absolute',
-              bottom: 4,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: 'green',
-            }
-          : {},
-      }}
-    />
+    <Box sx={{ position: 'relative' }}>
+      <PickersDay
+        {...other}
+        day={day}
+        selected={selected}
+        outsideCurrentMonth={outsideCurrentMonth}
+        sx={{
+          position: 'relative',
+          color: isSunday ? 'red' : undefined,
+        }}
+      />
+      {count > 0 && !outsideCurrentMonth && (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            position: 'absolute',
+            bottom: 4,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            gap: '2px',
+            zIndex: 2,
+          }}
+        >
+          {[...Array(Math.min(count, 3))].map((_, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                width: 4,
+                height: 4,
+                borderRadius: '50%',
+                backgroundColor: 'green',
+              }}
+            />
+          ))}
+        </Box>
+      )}
+    </Box>
   );
 };
 
 // 🧩 KoreanDatePicker 본체
-const KoreanDatePicker = ({ value, onChange, eventDates }) => {
+const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   const [displayMonth, setDisplayMonth] = useState(value);
 
   // ✅ 월 변경 시 날짜도 새 달의 첫날로 바꿔줌
   const handleMonthChange = (newMonth) => {
-    const newDate = newMonth.startOf('month');
-    setDisplayMonth(newDate);
+    const firstDayOfMonth = newMonth.startOf('month');
+    setDisplayMonth(firstDayOfMonth);
+    onChange(firstDayOfMonth);
   };
 
   // ✅ 날짜 선택 시 부모에 전달
@@ -78,7 +94,7 @@ const KoreanDatePicker = ({ value, onChange, eventDates }) => {
 
   // 📌 day 슬롯으로 전달할 컴포넌트
   const DayWithEvent = (props) => (
-    <CustomPickersDay {...props} eventDates={eventDates} />
+    <CustomPickersDay {...props} eventDateMap={eventDateMap} />
   );
 
   return (
