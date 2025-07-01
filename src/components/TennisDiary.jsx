@@ -26,6 +26,8 @@ const TennisDiary = () => {
   const [form, setForm] = useState({ type: '', start_time: '', end_time: '', place: '', source: '', });
   const [editOpen, setEditOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
+  const [memoOpen, setMemoOpen] = useState(false);
+  const [memoTarget, setMemoTarget] = useState(null);
 
   const handleAddSchedule = async () => {
     if (!form.type || !form.start_time || !form.place) return;
@@ -57,8 +59,8 @@ const TennisDiary = () => {
   };
   
   const handleMemo = (schedule) => {
-    console.log('📄 결과 입력 클릭:', schedule);
-    // setOpenMemoDialog(true); 등
+    setMemoTarget(schedule);
+    setMemoOpen(true);
   };
 
   return (
@@ -93,12 +95,7 @@ const TennisDiary = () => {
               <Box
                 key={schedule.id}
                 sx={{
-                  border: '1px solid #ccc',
-                  borderRadius: 2,
-                  p: 2,
-                  mb: 1,
-                  backgroundColor: '#f9f9f9',
-                  position: 'relative',
+                  border: '1px solid #ccc', borderRadius: 2, p: 2, mb: 1, backgroundColor: '#f9f9f9', position: 'relative',
                 }}
               >
                 {/* 아이콘 버튼 영역 */}
@@ -122,6 +119,12 @@ const TennisDiary = () => {
                 {schedule.source && (
                   <Typography variant="body2">📝 {schedule.source}</Typography>
                 )}
+                {schedule.result && (
+                  <Typography variant="body2">🎾 {schedule.result}</Typography>
+                )}
+                {schedule.price && (
+                  <Typography variant="body2">💰 {schedule.price.toLocaleString()}원</Typography>
+                )}
               </Box>
             ))}
           </Box>
@@ -132,14 +135,8 @@ const TennisDiary = () => {
       <Fab
         color="default"
         sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          backgroundColor: 'black',
-          color: 'white',
-          '&:hover': {
-            backgroundColor: '#333',
-          },
+          position: 'fixed', bottom: 24, right: 24, backgroundColor: 'black', color: 'white',
+          '&:hover': { backgroundColor: '#333', },
         }}
         onClick={() => setOpen(true)}
       >
@@ -240,6 +237,40 @@ const TennisDiary = () => {
             }}
           >
             수정
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 결과 입력 다이얼로그 */}
+      <Dialog open={memoOpen} onClose={() => setMemoOpen(false)} fullWidth>
+        <DialogTitle>결과 입력</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="결과 (예: 남복 4-0-0)" fullWidth value={memoTarget?.result || ''}
+              onChange={(e) =>
+                setMemoTarget({ ...memoTarget, result: e.target.value })
+              }
+            />
+            <TextField
+              label="비용 (숫자)" fullWidth type="number" value={memoTarget?.price || ''}
+              onChange={(e) => setMemoTarget({ ...memoTarget, price: Number(e.target.value) })}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMemoOpen(false)}>취소</Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              const docRef = doc(db, 'events', memoTarget.id);
+              const { id, ...updateData } = memoTarget;
+              await updateDoc(docRef, updateData);
+              setMemoOpen(false);
+              setRefreshKey((prev) => prev + 1);
+            }}
+          >
+            저장
           </Button>
         </DialogActions>
       </Dialog>
