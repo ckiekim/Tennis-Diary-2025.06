@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Fab, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../api/firebaseConfig';
@@ -11,8 +12,8 @@ import useCourtList from '../hooks/useCourtList';
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 
 const TennisDiary = () => {
@@ -21,6 +22,7 @@ const TennisDiary = () => {
   const eventDateMap = useEventDates(refreshKey);
   const schedules = useScheduleByDate(selectedDate, refreshKey);
   const courts = useCourtList();
+  const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ type: '', start_time: '', end_time: '', place: '', source: '', });
@@ -135,13 +137,35 @@ const TennisDiary = () => {
       <Fab
         color="default"
         sx={{
-          position: 'fixed', bottom: 24, right: 24, backgroundColor: 'black', color: 'white',
+          position: 'fixed', bottom: 80, right: 24, backgroundColor: 'black', color: 'white', zIndex: 20,
           '&:hover': { backgroundColor: '#333', },
         }}
         onClick={() => setOpen(true)}
       >
         <AddIcon />
       </Fab>
+
+      {/* <Box
+        sx={{
+          position: 'fixed',     // ✅ 고정 위치
+          bottom: 0, left: 0, width: '100%', borderTop: '1px solid #ddd', backgroundColor: '#fff',
+          display: 'flex', justifyContent: 'space-around', alignItems: 'center', py: 1,
+          zIndex: 10, // ➕ 버튼보다 낮게
+        }}
+      >
+        <IconButton onClick={() => navigate('/calendar')}>
+          <CalendarMonthIcon />
+          <Typography variant="caption">일정</Typography>
+        </IconButton>
+        <IconButton onClick={() => navigate('/result')}>
+          <AssignmentIcon />
+          <Typography variant="caption">결과</Typography>
+        </IconButton>
+        <IconButton onClick={() => navigate('/stat')}>
+          <BarChartIcon />
+          <Typography variant="caption">통계</Typography>
+        </IconButton>
+      </Box> */}
 
       {/* ➕ 일정 추가 다이얼로그 */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
@@ -268,6 +292,7 @@ const TennisDiary = () => {
               await updateDoc(docRef, updateData);
               setMemoOpen(false);
               setRefreshKey((prev) => prev + 1);
+              navigate('/result');
             }}
           >
             저장

@@ -1,9 +1,9 @@
 /* 일요일(1번째 요일) 빨간색 */
 .MuiDayCalendar-weekDayLabel:nth-of-type(1) {
 	color: red;
-  }
+}
   
-  /* 토요일(7번째 요일) 파란색 */
-  .MuiDayCalendar-weekDayLabel:nth-of-type(7) {
+/* 토요일(7번째 요일) 파란색 */
+.MuiDayCalendar-weekDayLabel:nth-of-type(7) {
 	color: blue;
-  }
+}
