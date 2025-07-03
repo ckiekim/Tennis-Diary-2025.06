@@ -5,10 +5,10 @@ import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 
-import KoreanDatePicker from './KoreanDatePicker';
 import useEventDates from '../../hooks/useEventDates';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
+import KoreanDatePicker from './KoreanDatePicker';
 import ScheduleCard from './ScheduleCard';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -87,7 +87,7 @@ const TennisDiary = () => {
           </Typography>
         ) : (
           <Box mt={1}>
-            {schedules.map(schedule => <ScheduleCard schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onMemo={handleMemo} />)}
+            {schedules.map(schedule => <ScheduleCard key={schedule.id} schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onMemo={handleMemo} />)}
           </Box>
         )}
       </Box>

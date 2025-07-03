@@ -1,4 +1,4 @@
-import { Card, Box, Typography, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';

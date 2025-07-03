@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { StaticDatePicker, PickersDay } from '@mui/x-date-pickers';
+import { StaticDatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { Box, IconButton, Typography } from '@mui/material';
+import CustomPickersDay from './CustomPickersDay';
 
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -26,55 +27,6 @@ const KoreanCalendarHeader = ({ currentMonth, onMonthChange }) => {
   );
 };
 
-// 🎾 커스텀 PickersDay 컴포넌트
-const CustomPickersDay = (props) => {
-  const { day, outsideCurrentMonth, selected, eventDateMap, ...other } = props;
-  const formatted = dayjs(day).format('YYYY-MM-DD');
-  const count = eventDateMap[formatted] || 0;
-  const isSunday = day.day() === 0;
-
-  return (
-    <Box sx={{ position: 'relative' }}>
-      <PickersDay
-        {...other}
-        day={day}
-        selected={selected}
-        outsideCurrentMonth={outsideCurrentMonth}
-        sx={{
-          position: 'relative',
-          color: isSunday ? 'red' : undefined,
-        }}
-      />
-      {count > 0 && !outsideCurrentMonth && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            position: 'absolute',
-            bottom: 4,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            gap: '2px',
-            zIndex: 2,
-          }}
-        >
-          {[...Array(Math.min(count, 3))].map((_, idx) => (
-            <Box
-              key={idx}
-              sx={{
-                width: 4,
-                height: 4,
-                borderRadius: '50%',
-                backgroundColor: 'green',
-              }}
-            />
-          ))}
-        </Box>
-      )}
-    </Box>
-  );
-};
-
 // 🧩 KoreanDatePicker 본체
 const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   const [displayMonth, setDisplayMonth] = useState(value);
@@ -92,11 +44,6 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
     setDisplayMonth(newValue);
   };
 
-  // 📌 day 슬롯으로 전달할 컴포넌트
-  const DayWithEvent = (props) => (
-    <CustomPickersDay {...props} eventDateMap={eventDateMap} />
-  );
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
       <StaticDatePicker
@@ -111,7 +58,7 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
               onMonthChange={handleMonthChange}
             />
           ),
-          day: DayWithEvent,
+          day: (props) => <CustomPickersDay {...props} eventDateMap={eventDateMap} />,
         }}
         slotProps={{
           actionBar: { actions: [] },
