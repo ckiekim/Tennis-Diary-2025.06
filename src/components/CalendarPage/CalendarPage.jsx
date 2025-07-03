@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, } from '@mui/material';
-import BottomNav from '../components/BottomNav';
-import TennisDiary from '../components/TennisDiary';
+import BottomNav from '../BottomNav';
+import TennisDiary from './TennisDiary';
 
 const CalendarPage = () => {
   return (

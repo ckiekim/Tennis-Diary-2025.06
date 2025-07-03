@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import CalendarPage from './pages/CalendarPage';
-import ResultPage from './pages/ResultPage';
-import StatPage from './pages/StatPage';
-import './CalendarOverride.css';
+import CalendarPage from './components/CalendarPage/CalendarPage';
+import ResultPage from './components/ResultPage/ResultPage';
+import StatPage from './components/StatPage/StatPage';
+// import './CalendarOverride.css';
 
 const App = () => {
   return (

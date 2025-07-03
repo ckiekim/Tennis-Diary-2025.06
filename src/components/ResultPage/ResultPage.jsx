@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardContent, CardMedia, Stack, Typography, } from '@mui/material';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '../api/firebaseConfig';
-import BottomNav from '../components/BottomNav';
+import { Box, Card, Stack, Typography, } from '@mui/material';
+import { collection, getDocs, } from 'firebase/firestore';
+import { db } from '../../api/firebaseConfig';
+import BottomNav from '../BottomNav';
 
 const ResultPage = () => {
   const [results, setResults] = useState([]);

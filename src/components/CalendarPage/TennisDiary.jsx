@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Fab, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
-import { db } from '../api/firebaseConfig';
+import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 
 import KoreanDatePicker from './KoreanDatePicker';
-import useEventDates from '../hooks/useEventDates';
-import useScheduleByDate from '../hooks/useScheduleByDate';
-import useCourtList from '../hooks/useCourtList';
+import useEventDates from '../../hooks/useEventDates';
+import useScheduleByDate from '../../hooks/useScheduleByDate';
+import useCourtList from '../../hooks/useCourtList';
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';

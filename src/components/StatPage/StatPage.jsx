@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import BottomNav from '../components/BottomNav';
+import BottomNav from '../BottomNav';
 
 const StatPage = () => {
   return (
