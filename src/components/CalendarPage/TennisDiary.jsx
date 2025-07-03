@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Fab, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Fab, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
@@ -9,12 +9,10 @@ import KoreanDatePicker from './KoreanDatePicker';
 import useEventDates from '../../hooks/useEventDates';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
+import ScheduleCard from './ScheduleCard';
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import NotesIcon from '@mui/icons-material/Notes';
 
 const TennisDiary = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -72,11 +70,7 @@ const TennisDiary = () => {
       </Typography>
 
       {/* 📅 한글 달력 */}
-      <KoreanDatePicker
-        value={selectedDate}
-        onChange={setSelectedDate}
-        eventDateMap={eventDateMap}
-      />
+      <KoreanDatePicker value={selectedDate} onChange={setSelectedDate} eventDateMap={eventDateMap}/>
 
       {/* 선택된 날짜 정보 */}
       <Box mt={3}>
@@ -93,42 +87,7 @@ const TennisDiary = () => {
           </Typography>
         ) : (
           <Box mt={1}>
-            {schedules.map((schedule) => (
-              <Box
-                key={schedule.id}
-                sx={{
-                  border: '1px solid #ccc', borderRadius: 2, p: 2, mb: 1, backgroundColor: '#f9f9f9', position: 'relative',
-                }}
-              >
-                {/* 아이콘 버튼 영역 */}
-                <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 0.25 }}>
-                  <IconButton size="small" onClick={() => handleEdit(schedule)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(schedule.id)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleMemo(schedule)}>
-                    <NotesIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-
-                <Typography variant="subtitle2" fontWeight="bold">
-                  {schedule.type}
-                </Typography>
-                <Typography variant="body2">⏰ {schedule.start_time} - {schedule.end_time}</Typography>
-                <Typography variant="body2">📍 {schedule.place} 테니스장</Typography>
-                {schedule.source && (
-                  <Typography variant="body2">📝 {schedule.source}</Typography>
-                )}
-                {schedule.result && (
-                  <Typography variant="body2">🎾 {schedule.result}</Typography>
-                )}
-                {schedule.price && (
-                  <Typography variant="body2">💰 {schedule.price.toLocaleString()}원</Typography>
-                )}
-              </Box>
-            ))}
+            {schedules.map(schedule => <ScheduleCard schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onMemo={handleMemo} />)}
           </Box>
         )}
       </Box>
@@ -144,28 +103,6 @@ const TennisDiary = () => {
       >
         <AddIcon />
       </Fab>
-
-      {/* <Box
-        sx={{
-          position: 'fixed',     // ✅ 고정 위치
-          bottom: 0, left: 0, width: '100%', borderTop: '1px solid #ddd', backgroundColor: '#fff',
-          display: 'flex', justifyContent: 'space-around', alignItems: 'center', py: 1,
-          zIndex: 10, // ➕ 버튼보다 낮게
-        }}
-      >
-        <IconButton onClick={() => navigate('/calendar')}>
-          <CalendarMonthIcon />
-          <Typography variant="caption">일정</Typography>
-        </IconButton>
-        <IconButton onClick={() => navigate('/result')}>
-          <AssignmentIcon />
-          <Typography variant="caption">결과</Typography>
-        </IconButton>
-        <IconButton onClick={() => navigate('/stat')}>
-          <BarChartIcon />
-          <Typography variant="caption">통계</Typography>
-        </IconButton>
-      </Box> */}
 
       {/* ➕ 일정 추가 다이얼로그 */}
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
