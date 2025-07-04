@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, Fab, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
@@ -10,6 +10,9 @@ import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
 import KoreanDatePicker from './KoreanDatePicker';
 import ScheduleCard from './ScheduleCard';
+import AddScheduleDialog from './dialogs/AddScheduleDialog';
+import UpdateScheduleDialog from './dialogs/UpdateScheduleDialog';
+import ResultDialog from './dialogs/ResultDialog';
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -46,6 +49,17 @@ const TennisDiary = () => {
     setForm({ type: '', start_time: '', end_time: '', place: '', source: '' });
   };
 
+  const handleUpdate = async () => {
+    if (!editingSchedule?.id) return; // 예외 처리
+    const docRef = doc(db, 'events', editingSchedule.id);
+    const { id, ...updateData } = editingSchedule;
+    await updateDoc(docRef, updateData);
+    setEditOpen(false);
+    setTimeout(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 300);
+  }
+
   const handleEdit = (schedule) => {
     setEditingSchedule(schedule); // 선택된 일정 전달
     setEditOpen(true);
@@ -62,6 +76,16 @@ const TennisDiary = () => {
     setMemoTarget(schedule);
     setMemoOpen(true);
   };
+
+  const handleResult = async () => {
+    if (!memoTarget?.id) return; // 예외 처리
+    const docRef = doc(db, 'events', memoTarget.id);
+    const { id, ...updateData } = memoTarget;
+    await updateDoc(docRef, updateData);
+    setMemoOpen(false);
+    setRefreshKey((prev) => prev + 1);
+    navigate('/result');
+  }
 
   return (
     <Container maxWidth="sm" sx={{ pt: 2 }}>
@@ -104,138 +128,21 @@ const TennisDiary = () => {
         <AddIcon />
       </Fab>
 
-      {/* ➕ 일정 추가 다이얼로그 */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
-        <DialogTitle>일정 추가</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <TextField
-              label="종류" select fullWidth value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value })}>
-              <MenuItem value="게임">게임</MenuItem>
-              <MenuItem value="레슨">레슨</MenuItem>
-              <MenuItem value="대회">대회</MenuItem>
-              <MenuItem value="기타">기타</MenuItem>
-            </TextField>
-            <TextField
-              label="시작 시간 (예: 10:00)" fullWidth value={form.start_time}
-              onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-            />
-            <TextField
-              label="종료 시간 (예: 13:00)" fullWidth value={form.end_time}
-              onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-            />
-            <TextField
-              label="장소" select fullWidth value={form.place}
-              onChange={(e) => setForm({ ...form, place: e.target.value })}>
-              {courts.map((court) => (
-                <MenuItem key={court.id} value={court.name}>
-                  {court.name} ({court.surface})
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="소스" fullWidth value={form.source}
-              onChange={(e) => setForm({ ...form, source: e.target.value })}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>취소</Button>
-          <Button onClick={handleAddSchedule} variant="contained" color="primary">
-            저장
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* 일정 추가 다이얼로그 */}
+      <AddScheduleDialog 
+        courts={courts} open={open} form={form} setOpen={setOpen} setForm={setForm} onAddSchedule={handleAddSchedule}
+      />
 
       {/* 일정 수정 다이얼로그 */}
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
-        <DialogTitle>일정 수정</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <TextField
-              label="종류" select fullWidth value={editingSchedule?.type || ''}
-              onChange={(e) => setEditingSchedule({ ...editingSchedule, type: e.target.value })}
-            >
-              <MenuItem value="레슨">레슨</MenuItem>
-              <MenuItem value="게임">게임</MenuItem>
-              <MenuItem value="대회">대회</MenuItem>
-              <MenuItem value="기타">기타</MenuItem>
-            </TextField>
-            <TextField
-              label="시작 시간" fullWidth value={editingSchedule?.start_time || ''}
-              onChange={(e) => setEditingSchedule({ ...editingSchedule, start_time: e.target.value })}
-            />
-            <TextField
-              label="종료 시간" fullWidth value={editingSchedule?.end_time || ''}
-              onChange={(e) => setEditingSchedule({ ...editingSchedule, end_time: e.target.value })}
-            />
-            <TextField
-              label="장소" select fullWidth value={editingSchedule?.place || ''}
-              onChange={(e) => setEditingSchedule({ ...editingSchedule, place: e.target.value })}>
-              {courts.map((court) => (
-                <MenuItem key={court.id} value={court.name}>
-                  {court.name} ({court.surface})
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              label="소스" fullWidth value={editingSchedule?.source || ''}
-              onChange={(e) => setEditingSchedule({ ...editingSchedule, source: e.target.value })}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditOpen(false)}>취소</Button>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              const docRef = doc(db, 'events', editingSchedule.id);
-              const { id, ...updateData } = editingSchedule;
-              await updateDoc(docRef, updateData);
-              setEditOpen(false);
-              setRefreshKey((prev) => prev + 1); // ✅ 변경사항 반영
-            }}
-          >
-            수정
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UpdateScheduleDialog 
+        courts={courts} editOpen={editOpen} editingSchedule={editingSchedule} 
+        setEditOpen={setEditOpen} setEditingSchedule={setEditingSchedule} onUpdate={handleUpdate}
+      />
 
       {/* 결과 입력 다이얼로그 */}
-      <Dialog open={memoOpen} onClose={() => setMemoOpen(false)} fullWidth>
-        <DialogTitle>결과 입력</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} mt={1}>
-            <TextField
-              label="결과 (예: 남복 4-0-0)" fullWidth value={memoTarget?.result || ''}
-              onChange={(e) =>
-                setMemoTarget({ ...memoTarget, result: e.target.value })
-              }
-            />
-            <TextField
-              label="비용 (숫자)" fullWidth type="number" value={memoTarget?.price || ''}
-              onChange={(e) => setMemoTarget({ ...memoTarget, price: Number(e.target.value) })}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setMemoOpen(false)}>취소</Button>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              const docRef = doc(db, 'events', memoTarget.id);
-              const { id, ...updateData } = memoTarget;
-              await updateDoc(docRef, updateData);
-              setMemoOpen(false);
-              setRefreshKey((prev) => prev + 1);
-              navigate('/result');
-            }}
-          >
-            저장
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ResultDialog 
+        memoOpen={memoOpen} memoTarget={memoTarget} setMemoOpen={setMemoOpen} setMemoTarget={setMemoTarget} onResult={handleResult}
+      />
 
     </Container>
   );
