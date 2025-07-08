@@ -45,26 +45,28 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
-      <StaticDatePicker
-        value={displayMonth}
-        onChange={handleDateChange}
-        slots={{
-          toolbar: () => null,
-          calendarHeader: (props) => (
-            <KoreanCalendarHeader
-              {...props}
-              currentMonth={displayMonth}
-              onMonthChange={handleMonthChange}
-            />
-          ),
-          day: (props) => <CustomPickersDay {...props} eventDateMap={eventDateMap} />,
-        }}
-        slotProps={{
-          actionBar: { actions: [] },
-        }}
-      />
-    </LocalizationProvider>
+    <Box display="flex" justifyContent="center">
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
+        <StaticDatePicker
+          value={displayMonth}
+          onChange={handleDateChange}
+          slots={{
+            toolbar: () => null,
+            calendarHeader: (props) => (
+              <KoreanCalendarHeader
+                {...props}
+                currentMonth={displayMonth}
+                onMonthChange={handleMonthChange}
+              />
+            ),
+            day: (props) => <CustomPickersDay {...props} eventDateMap={eventDateMap} />,
+          }}
+          slotProps={{
+            actionBar: { actions: [] },
+          }}
+        />
+      </LocalizationProvider>
+    </Box>
   );
 };
 
