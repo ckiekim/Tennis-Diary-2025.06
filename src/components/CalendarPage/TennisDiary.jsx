@@ -111,7 +111,7 @@ const TennisDiary = () => {
       <KoreanDatePicker value={selectedDate} onChange={setSelectedDate} eventDateMap={eventDateMap}/>
 
       {/* 선택된 날짜 정보 */}
-      <Box mt={3}>
+      <Box mt={1}>
         <Stack direction="row" spacing={1} alignItems="center">
           <CalendarMonthIcon />
           <Typography variant="subtitle1" fontWeight="bold">
