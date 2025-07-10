@@ -5,6 +5,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 
 export default function ScheduleCard({ schedule, onEdit, onDelete, onMemo }) {
+  const isStringReplace = schedule.type === "스트링 교체";
+  const isLesson = schedule.type === "레슨";
+
   return (
     <Box
       key={schedule.id}
@@ -18,24 +21,64 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onMemo }) {
         <IconButton size="small" onClick={() => onDelete(schedule.id)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
-        <IconButton size="small" onClick={() => onMemo(schedule)}>
-          <NotesIcon fontSize="small" />
-        </IconButton>
+        { isStringReplace || isLesson ? (
+          <IconButton size="small">
+            <NotesIcon fontSize="small" />
+          </IconButton>
+        ) : (
+          <IconButton size="small" onClick={() => onMemo(schedule)}>
+            <NotesIcon fontSize="small" />
+          </IconButton>
+        ) }
       </Box>
 
       <Typography variant="subtitle2" fontWeight="bold">
         {schedule.type}
       </Typography>
-      <Typography variant="body2">⏰ {schedule.start_time} - {schedule.end_time}</Typography>
-      <Typography variant="body2">📍 {schedule.place} 테니스코트</Typography>
+      { isStringReplace ? (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🧵</Box>
+            <Typography variant="body2">{schedule.string}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📏</Box>
+            <Typography variant="body2">{schedule.tension} lbs</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
+            <Typography variant="body2">{schedule.place}</Typography>
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>⏰</Box>
+            <Typography variant="body2">{schedule.start_time} - {schedule.end_time}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
+            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
+          </Box>
+        </>
+      ) }
       {schedule.source && (
-        <Typography variant="body2">📝 {schedule.source}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📝</Box>
+          <Typography variant="body2">{schedule.source}</Typography>
+        </Box>
       )}
       {schedule.result && (
-        <Typography variant="body2">🎾 {schedule.result}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🎾</Box>
+          <Typography variant="body2">{schedule.result}</Typography>
+        </Box>
       )}
       {schedule.price && (
-        <Typography variant="body2">💰 {schedule.price.toLocaleString()}원</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>💰</Box>
+          <Typography variant="body2">{schedule.price.toLocaleString()}원</Typography>
+        </Box>
       )}
     </Box>
   );

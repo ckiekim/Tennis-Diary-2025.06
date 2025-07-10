@@ -33,7 +33,21 @@ const TennisDiary = () => {
   const [memoTarget, setMemoTarget] = useState(null);
 
   const handleAddSchedule = async () => {
-    if (!form.type || !form.start_time || !form.place) return;
+    if (!form.type) return;
+
+    // 🔹 스트링 교체 타입일 경우
+    if (form.type === '스트링 교체') {
+      if (!form.string || !form.tension || !form.place) {
+        alert('스트링 교체 항목을 모두 입력해주세요.');
+        return;
+      }
+    } else {
+      // 🔸 일반 일정일 경우
+      if (!form.start_time || !form.place) {
+        alert('시작 시간과 장소를 입력해주세요.');
+        return;
+      }
+    }
 
     await addDoc(collection(db, 'events'), {
       date: selectedDate.format('YYYY-MM-DD'),
