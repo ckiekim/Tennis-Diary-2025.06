@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { Box, IconButton, Typography } from '@mui/material';
 import CustomPickersDay from './CustomPickersDay';
+import Legend from './Legend';
 
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
@@ -47,24 +48,33 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   return (
     <Box display="flex" justifyContent="center">
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
-        <StaticDatePicker
-          value={displayMonth}
-          onChange={handleDateChange}
-          slots={{
-            toolbar: () => null,
-            calendarHeader: (props) => (
-              <KoreanCalendarHeader
-                {...props}
-                currentMonth={displayMonth}
-                onMonthChange={handleMonthChange}
-              />
-            ),
-            day: (props) => <CustomPickersDay {...props} eventDateMap={eventDateMap} />,
-          }}
-          slotProps={{
-            actionBar: { actions: [] },
-          }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <StaticDatePicker
+            value={displayMonth}
+            onChange={handleDateChange}
+            slots={{
+              toolbar: () => null,
+              calendarHeader: (props) => (
+                <KoreanCalendarHeader
+                  {...props}
+                  currentMonth={displayMonth}
+                  onMonthChange={handleMonthChange}
+                />
+              ),
+              day: (props) => (
+                <CustomPickersDay 
+                  {...props} 
+                  eventTypes={eventDateMap[dayjs(props.day).format('YYYY-MM-DD')]}
+                  // eventDateMap={eventDateMap} 
+                />
+              ),
+            }}
+            slotProps={{
+              actionBar: { actions: [] },
+            }}
+          />
+          <Legend />
+        </Box>
       </LocalizationProvider>
     </Box>
   );

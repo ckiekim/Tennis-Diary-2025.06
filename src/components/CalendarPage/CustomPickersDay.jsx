@@ -1,11 +1,9 @@
 import { PickersDay } from '@mui/x-date-pickers';
 import { Box } from '@mui/material';
-import dayjs from 'dayjs';
+import typeColors from '../../utils/typeColors';
 
 export default function CustomPickersDay(props) {
-  const { day, outsideCurrentMonth, selected, eventDateMap, ...other } = props;
-  const formatted = dayjs(day).format('YYYY-MM-DD');
-  const count = eventDateMap[formatted] || 0;
+  const { day, outsideCurrentMonth, selected, eventDateMap, eventTypes, ...other } = props;
   const isSunday = day.day() === 0;
 
   return (
@@ -17,17 +15,17 @@ export default function CustomPickersDay(props) {
         outsideCurrentMonth={outsideCurrentMonth}
         sx={{ position: 'relative', color: isSunday ? 'red' : undefined, }}
       />
-      {count > 0 && !outsideCurrentMonth && (
+      {eventTypes && eventTypes.length > 0 && !outsideCurrentMonth && (
         <Box
           sx={{
-            display: 'flex', justifyContent: 'center',  position: 'absolute', bottom: 4, left: '50%',
+            display: 'flex', position: 'absolute', bottom: 4, left: '50%',
             transform: 'translateX(-50%)', gap: '2px', zIndex: 2,
           }}
         >
-          {[...Array(Math.min(count, 3))].map((_, idx) => (
+          {eventTypes.slice(0, 3).map((type, idx) => (
             <Box
               key={idx}
-              sx={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: 'green', }}
+              sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: typeColors[type] || 'gray' }}
             />
           ))}
         </Box>

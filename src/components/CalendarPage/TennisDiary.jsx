@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 
-import useEventDates from '../../hooks/useEventDates';
+import useEventDateMap from '../../hooks/useEventDateMap';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
 import KoreanDatePicker from './KoreanDatePicker';
@@ -20,7 +20,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 const TennisDiary = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
-  const eventDateMap = useEventDates(refreshKey);
+  const eventDateMap = useEventDateMap(refreshKey);
   const schedules = useScheduleByDate(selectedDate, refreshKey);
   const courts = useCourtList();
   const navigate = useNavigate();
@@ -35,14 +35,12 @@ const TennisDiary = () => {
   const handleAddSchedule = async () => {
     if (!form.type) return;
 
-    // 🔹 스트링 교체 타입일 경우
     if (form.type === '스트링 교체') {
       if (!form.string || !form.tension || !form.place) {
         alert('스트링 교체 항목을 모두 입력해주세요.');
         return;
       }
     } else {
-      // 🔸 일반 일정일 경우
       if (!form.start_time || !form.place) {
         alert('시작 시간과 장소를 입력해주세요.');
         return;
