@@ -113,7 +113,7 @@ const TennisDiary = () => {
         <Stack direction="row" spacing={1} alignItems="center">
           <CalendarMonthIcon />
           <Typography variant="subtitle1" fontWeight="bold">
-            {selectedDate.format('YYYY.MM.DD (ddd)')} 일정
+            {selectedDate.format('YYYY.MM.DD (ddd)')}
           </Typography>
         </Stack>
 

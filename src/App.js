@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import CalendarPage from './components/CalendarPage/CalendarPage';
 import ResultPage from './components/ResultPage/ResultPage';
 import StatPage from './components/StatPage/StatPage';
-// import './CalendarOverride.css';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 
 const App = () => {
+  dayjs.locale('ko');
   return (
     <Router>
       <Routes>
