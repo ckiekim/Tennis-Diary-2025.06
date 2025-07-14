@@ -1,20 +1,63 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, CardMedia, Fab, Grid, IconButton, TextField, Typography, } from '@mui/material';
+import { db } from '../../api/firebaseConfig';
+import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import AddCourtDialog from './dialogs/AddCourtDialog';
+import EditCourtDialog from './dialogs/EditCourtDialog';
+import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
+
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import useCourtList from '../../hooks/useCourtList';
 
 const CourtList = () => {
-  const courts = useCourtList();
-  const [open, setOpen] = useState(false);
+  const [courts, setCourts] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedCourt, setSelectedCourt] = useState(null);
   const [region, setRegion] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRegionChange = (e) => setRegion(e.target.value);
 
-  const filteredCourts = courts
-    .filter(c => region === '' || c.location.includes(region))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const fetchCourts = async () => {
+    const snapshot = await getDocs(collection(db, 'court'));
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    data.sort((a, b) => a.name.localeCompare(b.name)); // 이름순 정렬
+    setCourts(data);
+  };
+
+  useEffect(() => {
+    fetchCourts();
+  }, [refreshKey]);
+
+  const handleSaveCourt = async (form) => {
+    await addDoc(collection(db, 'court'), form);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleEdit = (court) => {
+    setSelectedCourt(court);
+    setEditOpen(true);
+  };
+
+  const handleDelete = (court) => {
+    setSelectedCourt(court);
+    setDeleteOpen(true);
+  };
+
+  const handleUpdateCourt = async (form) => {
+    const ref = doc(db, 'court', form.id);
+    await updateDoc(ref, form);
+    setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleDeleteConfirm = async () => {
+    await deleteDoc(doc(db, 'court', selectedCourt.id));
+    setDeleteOpen(false);
+    setRefreshKey((prev) => prev + 1);
+  };
 
   return (
     <>
@@ -29,7 +72,7 @@ const CourtList = () => {
       </Grid>
 
       <Box display="flex" flexDirection="column" gap={1}>
-        {filteredCourts.map((court) => (
+        {courts.map((court) => (
           <Card
             key={court.id}
             sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', px: 1, py: 1, }}
@@ -58,10 +101,10 @@ const CourtList = () => {
 
             {/* 아이콘 영역 */}
             <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
-              <IconButton size="small">
+              <IconButton size="small" onClick={() => handleEdit(court)}>
                 <EditIcon fontSize="small" />
               </IconButton>
-              <IconButton size="small">
+              <IconButton size="small" onClick={() => handleDelete(court)}>
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </Box>
@@ -75,10 +118,30 @@ const CourtList = () => {
           position: 'fixed', bottom: 80, right: 24, backgroundColor: 'black', color: 'white', zIndex: 20,
           '&:hover': { backgroundColor: '#333', },
         }}
-        onClick={() => setOpen(true)}
+        onClick={() => setOpenDialog(true)}
       >
         <AddIcon /> 
       </Fab>
+
+      <AddCourtDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onSave={handleSaveCourt}
+      />
+
+      <EditCourtDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        court={selectedCourt}
+        onUpdate={handleUpdateCourt}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        court={selectedCourt}
+      />
     </>
   );
 }
