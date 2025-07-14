@@ -20,6 +20,7 @@ const CourtList = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleRegionChange = (e) => setRegion(e.target.value);
+  const filteredCourts = courts.filter(c => region === '' || c.location.includes(region));
 
   const fetchCourts = async () => {
     const snapshot = await getDocs(collection(db, 'court'));
@@ -72,7 +73,7 @@ const CourtList = () => {
       </Grid>
 
       <Box display="flex" flexDirection="column" gap={1}>
-        {courts.map((court) => (
+        {filteredCourts.map((court) => (
           <Card
             key={court.id}
             sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', px: 1, py: 1, }}
@@ -88,7 +89,7 @@ const CourtList = () => {
 
             <Box sx={{ ml: 2, flexGrow: 1 }}>
               <Typography fontSize="13px" fontWeight="bold" noWrap>
-                {court.name}
+                {court.name} 테니스코트
               </Typography>
               <Typography fontSize="12px" color="text.secondary">
                 {court.location}
