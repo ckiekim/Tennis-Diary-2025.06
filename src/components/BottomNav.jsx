@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const BottomNav = () => {
     if (location.pathname.startsWith('/calendar')) return 'calendar';
     if (location.pathname.startsWith('/result')) return 'result';
     if (location.pathname.startsWith('/stat')) return 'stat';
+    if (location.pathname.startsWith('/admin/courts')) return 'admin/courts';
     return '';
   };
 
@@ -32,6 +34,7 @@ const BottomNav = () => {
         <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} />
         <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} />
         <BottomNavigationAction label="통계" value="stat" icon={<BarChartIcon />} />
+        <BottomNavigationAction label="관리" value="admin/courts" icon={<SettingsIcon />} />
       </BottomNavigation>
     </Paper>
   );
