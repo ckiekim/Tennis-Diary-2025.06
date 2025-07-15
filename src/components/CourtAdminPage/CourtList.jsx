@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const CourtList = () => {
   const [courts, setCourts] = useState([]);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
@@ -119,14 +119,14 @@ const CourtList = () => {
           position: 'fixed', bottom: 80, right: 24, backgroundColor: 'black', color: 'white', zIndex: 20,
           '&:hover': { backgroundColor: '#333', },
         }}
-        onClick={() => setOpenDialog(true)}
+        onClick={() => setAddOpen(true)}
       >
         <AddIcon /> 
       </Fab>
 
       <AddCourtDialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
         onSave={handleSaveCourt}
       />
 

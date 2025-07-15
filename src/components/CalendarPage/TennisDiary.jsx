@@ -11,7 +11,8 @@ import useCourtList from '../../hooks/useCourtList';
 import KoreanDatePicker from './KoreanDatePicker';
 import ScheduleCard from './ScheduleCard';
 import AddScheduleDialog from './dialogs/AddScheduleDialog';
-import UpdateScheduleDialog from './dialogs/UpdateScheduleDialog';
+import EditScheduleDialog from './dialogs/EditScheduleDialog';
+import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import ResultDialog from './dialogs/ResultDialog';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -25,10 +26,11 @@ const TennisDiary = () => {
   const courts = useCourtList();
   const navigate = useNavigate();
 
-  const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ type: '', start_time: '', end_time: '', place: '', source: '', });
+  const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [memoOpen, setMemoOpen] = useState(false);
   const [memoTarget, setMemoTarget] = useState(null);
 
@@ -57,14 +59,14 @@ const TennisDiary = () => {
       setRefreshKey(prev => prev + 1);
     }, 300);
 
-    setOpen(false);
+    setAddOpen(false);
     setForm({ type: '', start_time: '', end_time: '', place: '', source: '' });
   };
 
   const handleUpdate = async () => {
-    if (!editingSchedule?.id) return; // 예외 처리
-    const docRef = doc(db, 'events', editingSchedule.id);
-    const { id, ...updateData } = editingSchedule;
+    if (!selectedSchedule?.id) return; // 예외 처리
+    const docRef = doc(db, 'events', selectedSchedule.id);
+    const { id, ...updateData } = selectedSchedule;
     await updateDoc(docRef, updateData);
     setEditOpen(false);
     setTimeout(() => {
@@ -73,16 +75,20 @@ const TennisDiary = () => {
   }
 
   const handleEdit = (schedule) => {
-    setEditingSchedule(schedule); // 선택된 일정 전달
+    setSelectedSchedule(schedule); // 선택된 일정 전달
     setEditOpen(true);
   };
   
-  const handleDelete = async (id) => {
-    if (window.confirm('일정을 삭제할까요?')) {
-      await deleteDoc(doc(db, 'events', id));
-      setRefreshKey((prev) => prev + 1);
-    }
-  };
+  const handleDelete = async (schedule) => {
+    setSelectedSchedule(schedule);
+    setDeleteOpen(true);
+  }
+
+  const handleDeleteConfirm = async () => {
+    await deleteDoc(doc(db, 'events', selectedSchedule.id));
+    setDeleteOpen(false);
+    setRefreshKey((prev) => prev + 1);
+  }
   
   const handleMemo = (schedule) => {
     setMemoTarget(schedule);
@@ -135,20 +141,25 @@ const TennisDiary = () => {
           position: 'fixed', bottom: 80, right: 24, backgroundColor: 'black', color: 'white', zIndex: 20,
           '&:hover': { backgroundColor: '#333', },
         }}
-        onClick={() => setOpen(true)}
+        onClick={() => setAddOpen(true)}
       >
         <AddIcon />
       </Fab>
 
       {/* 일정 추가 다이얼로그 */}
       <AddScheduleDialog 
-        courts={courts} open={open} form={form} setOpen={setOpen} setForm={setForm} onAddSchedule={handleAddSchedule}
+        courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} onAddSchedule={handleAddSchedule}
       />
 
       {/* 일정 수정 다이얼로그 */}
-      <UpdateScheduleDialog 
-        courts={courts} editOpen={editOpen} editingSchedule={editingSchedule} 
-        setEditOpen={setEditOpen} setEditingSchedule={setEditingSchedule} onUpdate={handleUpdate}
+      <EditScheduleDialog 
+        courts={courts} open={editOpen} selectedSchedule={selectedSchedule} 
+        setOpen={setEditOpen} setSelectedSchedule={setSelectedSchedule} onUpdate={handleUpdate}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteOpen} onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm} schedule={selectedSchedule}
       />
 
       {/* 결과 입력 다이얼로그 */}

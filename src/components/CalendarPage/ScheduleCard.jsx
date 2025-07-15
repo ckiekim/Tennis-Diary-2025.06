@@ -18,7 +18,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onMemo }) {
         <IconButton size="small" onClick={() => onEdit(schedule)}>
           <EditIcon fontSize="small" />
         </IconButton>
-        <IconButton size="small" onClick={() => onDelete(schedule.id)}>
+        <IconButton size="small" onClick={() => onDelete(schedule)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
         { isStringReplace || isLesson ? (
