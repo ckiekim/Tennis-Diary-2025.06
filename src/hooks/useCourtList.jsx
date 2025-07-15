@@ -2,29 +2,18 @@ import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
 
-const useCourtList = () => {
+const useCourtList = (refreshKey = 0) => {
   const [courts, setCourts] = useState([]);
 
   useEffect(() => {
-    const fetchCourts = async () => {
-      const querySnapshot = await getDocs(collection(db, 'court'));
-      const result = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        result.push({
-          id: doc.id,
-          name: data.name,
-          surface: data.surface,
-          is_indoor: data.is_indoor,
-          photo: data.photo,
-          location: data.location,
-        });
-      });
-      setCourts(result);
+    const fetch = async () => {
+      const snapshot = await getDocs(collection(db, 'court'));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      setCourts(data);
     };
-
-    fetchCourts();
-  }, []);
+    fetch();
+  }, [refreshKey]);
 
   return courts;
 };

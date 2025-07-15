@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Card, CardMedia, Fab, Grid, IconButton, TextField, Typography, } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
-import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import useCourtList from '../../hooks/useCourtList';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import EditCourtDialog from './dialogs/EditCourtDialog';
 import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
@@ -11,29 +12,18 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const CourtList = () => {
-  const [courts, setCourts] = useState([]);
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [region, setRegion] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const courts = useCourtList(refreshKey);
 
   const handleRegionChange = (e) => setRegion(e.target.value);
   const filteredCourts = courts.filter(c => region === '' || c.location.includes(region));
 
-  const fetchCourts = async () => {
-    const snapshot = await getDocs(collection(db, 'court'));
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    data.sort((a, b) => a.name.localeCompare(b.name)); // 이름순 정렬
-    setCourts(data);
-  };
-
-  useEffect(() => {
-    fetchCourts();
-  }, [refreshKey]);
-
-  const handleSaveCourt = async (form) => {
+  const handleAddCourt = async (form) => {
     await addDoc(collection(db, 'court'), form);
     setRefreshKey(prev => prev + 1);
   };
@@ -78,13 +68,17 @@ const CourtList = () => {
             key={court.id}
             sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', px: 1, py: 1, }}
           >
-            {court.photo && (
+            {court.photo ? (
               <CardMedia
                 component="img"
                 sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1, }}
                 image={court.photo}
                 alt={court.name}
               />
+            ) : (
+              <Box sx={{ width: 60, height: 60, bgcolor: 'grey.300', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="caption">No Image</Typography>
+              </Box>
             )}
 
             <Box sx={{ ml: 2, flexGrow: 1 }}>
@@ -127,7 +121,7 @@ const CourtList = () => {
       <AddCourtDialog
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onSave={handleSaveCourt}
+        onSave={handleAddCourt}
       />
 
       <EditCourtDialog
