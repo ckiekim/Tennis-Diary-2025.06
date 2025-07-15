@@ -15,7 +15,7 @@ export default function ResultCard({ item }) {
 
         <Box sx={{ flex:1, px:1.2, py:1, display:'flex', flexDirection:'column', justifyContent:'center' }}>
           <Typography fontSize="13px" fontWeight="bold" noWrap>
-            {`${item.date} (${day}) ${item.start_time}~${item.end_time}`}
+            {`${item.date} (${day}) ${item.time}`}
           </Typography>
           <Typography fontSize="12px">{item.place} 테니스코트</Typography>
           <Typography fontSize="12px">결과: {item.result}</Typography>

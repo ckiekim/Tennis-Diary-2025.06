@@ -26,7 +26,7 @@ const TennisDiary = () => {
   const courts = useCourtList();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ type: '', start_time: '', end_time: '', place: '', source: '', });
+  const [form, setForm] = useState({ type: '', time: '', place: '', source: '', });
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -43,8 +43,8 @@ const TennisDiary = () => {
         return;
       }
     } else {
-      if (!form.start_time || !form.place) {
-        alert('시작 시간과 장소를 입력해주세요.');
+      if (!form.time || !form.place) {
+        alert('시간과 장소를 입력해주세요.');
         return;
       }
     }
@@ -60,7 +60,7 @@ const TennisDiary = () => {
     }, 300);
 
     setAddOpen(false);
-    setForm({ type: '', start_time: '', end_time: '', place: '', source: '' });
+    setForm({ type: '', time: '', place: '', source: '' });
   };
 
   const handleUpdate = async () => {

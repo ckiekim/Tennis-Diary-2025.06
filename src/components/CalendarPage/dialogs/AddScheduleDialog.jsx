@@ -39,12 +39,8 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
           ) : (
             <>
               <TextField
-                label="시작 시간 (예: 10:00)" fullWidth value={form.start_time}
-                onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-              />
-              <TextField
-                label="종료 시간 (예: 13:00)" fullWidth value={form.end_time}
-                onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+                label="시간 (예: 10:00~13:00)" fullWidth value={form.time}
+                onChange={(e) => setForm({ ...form, time: e.target.value })}
               />
               <TextField
                 label="장소" select fullWidth value={form.place}

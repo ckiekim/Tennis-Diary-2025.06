@@ -65,7 +65,6 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
                 <CustomPickersDay 
                   {...props} 
                   eventTypes={eventDateMap[dayjs(props.day).format('YYYY-MM-DD')]}
-                  // eventDateMap={eventDateMap} 
                 />
               ),
             }}

@@ -41,12 +41,8 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
           ) : (
             <>
               <TextField
-                label="시작 시간" fullWidth value={selectedSchedule?.start_time || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, start_time: e.target.value })}
-              />
-              <TextField
-                label="종료 시간" fullWidth value={selectedSchedule?.end_time || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, end_time: e.target.value })}
+                label="시간" fullWidth value={selectedSchedule?.time || ''}
+                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, time: e.target.value })}
               />
               <TextField
                 label="장소" select fullWidth value={selectedSchedule?.place || ''}
