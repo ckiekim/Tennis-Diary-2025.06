@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Card, CardMedia, Fab, Grid, IconButton, TextField, Typography, } from '@mui/material';
+import { Box, Card, CardMedia, Fab, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography, } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import useCourtList from '../../hooks/useCourtList';
@@ -17,11 +17,15 @@ const CourtList = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [region, setRegion] = useState('');
+  const [isIndoor, setIsIndoor] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
   const courts = useCourtList(refreshKey);
 
   const handleRegionChange = (e) => setRegion(e.target.value);
-  const filteredCourts = courts.filter(c => region === '' || c.location.includes(region));
+  const handleIndoorChange = (e) => setIsIndoor(e.target.value);
+  const filteredCourts = courts
+    .filter(c => region === '' || c.location.includes(region))
+    .filter(c => isIndoor === '' || String(c.is_indoor) === isIndoor);
 
   const handleAddCourt = async (form) => {
     await addDoc(collection(db, 'court'), form);
@@ -56,10 +60,22 @@ const CourtList = () => {
         🎾 테니스 코트 관리
       </Typography>
 
-      <Grid container spacing={1} alignItems="center" sx={{ mb: 2, ml: 5, mr: 5 }}>
-        <TextField
-          label="지역" value={region} onChange={handleRegionChange} size="small" fullWidth
-        />
+      <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+        <Grid item xs={8} sx={{maxWidth: 200}}>
+          <TextField
+            label="지역" value={region} onChange={handleRegionChange} size="small" fullWidth
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <FormControl fullWidth size="small" sx={{ minWidth: 80 }}>
+            <InputLabel>실내여부</InputLabel>
+            <Select value={isIndoor} onChange={handleIndoorChange} label="실내여부">
+              <MenuItem value="">전체</MenuItem>
+              <MenuItem value="true">실내</MenuItem>
+              <MenuItem value="false">실외</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid>
 
       <Box display="flex" flexDirection="column" gap={1}>

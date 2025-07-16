@@ -1,8 +1,10 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import useSourceList from '../../../hooks/useSourceList';
 
 export default function AddScheduleDialog({courts, open, form, setOpen, setForm, onAddSchedule}) {
   const isStringReplace = form.type === "스트링 교체";
   const isLesson = form.type === "레슨";
+  const sourceList = useSourceList();
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
@@ -42,24 +44,29 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 label="시간 (예: 10:00~13:00)" fullWidth value={form.time}
                 onChange={(e) => setForm({ ...form, time: e.target.value })}
               />
-              <TextField
-                label="장소" select fullWidth value={form.place}
-                onChange={(e) => setForm({ ...form, place: e.target.value })}>
-                {courts.map((court) => (
-                  <MenuItem key={court.id} value={court.name}>
-                    {court.name} ({court.surface})
-                  </MenuItem>
-                ))}
-              </TextField>
+              <Autocomplete
+                options={courts.map(c => c.name)}
+                value={form.place || ''}
+                onChange={(e, newValue) => setForm({ ...form, place: newValue })}
+                renderInput={(params) => (
+                  <TextField {...params} label="장소" fullWidth />
+                )}
+                freeSolo // 입력값이 courts 목록에 없을 경우도 허용 (선택사항)
+              />
               {isLesson ? (
                 <TextField
                   label="비용" fullWidth type="number" value={form.price || ''}
                   onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
                 />
               ) : (
-                <TextField
-                  label="소스" fullWidth value={form.source}
-                  onChange={(e) => setForm({ ...form, source: e.target.value })}
+                <Autocomplete
+                  freeSolo
+                  options={sourceList}
+                  value={form.source || ''}
+                  onChange={(e, newValue) => setForm({ ...form, source: newValue })}
+                  renderInput={(params) => (
+                    <TextField {...params} label="소스" fullWidth />
+                  )}
                 />
               )}
             </>
