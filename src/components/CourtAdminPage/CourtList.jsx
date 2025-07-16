@@ -67,7 +67,7 @@ const CourtList = () => {
           />
         </Grid>
         <Grid item xs={4}>
-          <FormControl fullWidth size="small" sx={{ minWidth: 80 }}>
+          <FormControl fullWidth size="small" sx={{ minWidth: 100 }}>
             <InputLabel>실내여부</InputLabel>
             <Select value={isIndoor} onChange={handleIndoorChange} label="실내여부">
               <MenuItem value="">전체</MenuItem>
