@@ -64,6 +64,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                   options={sourceList}
                   value={form.source || ''}
                   onChange={(e, newValue) => setForm({ ...form, source: newValue })}
+                  onInputChange={(e, newInputValue) => setForm({ ...form, source: newInputValue })}
                   renderInput={(params) => (
                     <TextField {...params} label="소스" fullWidth />
                   )}
