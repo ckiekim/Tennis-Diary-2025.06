@@ -106,7 +106,7 @@ const TennisDiary = () => {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ pt: 2 }}>
+    <Container maxWidth="sm">
       <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
         🎾 테니스 다이어리
       </Typography>
