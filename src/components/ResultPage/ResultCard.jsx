@@ -3,17 +3,15 @@ import { Card, Box, Typography } from '@mui/material';
 export default function ResultCard({ item }) {
   const day = formatDay(item.date);
   return (
-    <Card sx={{ mb:2 }}>
+    <Card sx={{ mb: 0, p: 0 }}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
-        {/* <Box sx={{ width: 80, aspectRatio: '1 / 1', flexShrink: 0, display: 'flex', alignItems: 'center', }}> */}
-          <Box
-            component="img" src={item.photo} alt="court"
-            sx={{ width: 82, height: 82, objectFit: 'cover', borderRadius: 0, }}
-            onError={(e) => (e.target.style.display = 'none')}
-          />
-        {/* </Box> */}
+        <Box
+          component="img" src={item.photo} alt="court"
+          sx={{ width: 82, height: 82, objectFit: 'cover', borderRadius: 0, display: 'block', }}
+          onError={(e) => (e.target.style.display = 'none')}
+        />
 
-        <Box sx={{ flex:1, px:1.2, py:1, display:'flex', flexDirection:'column', justifyContent:'center' }}>
+        <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Typography fontSize="13px" fontWeight="bold" noWrap>
             {`${item.date} (${day}) ${item.time}`}
           </Typography>

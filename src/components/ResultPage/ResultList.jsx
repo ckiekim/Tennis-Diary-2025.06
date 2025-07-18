@@ -11,7 +11,7 @@ export default function ResultList() {
         🎾 테니스 다이어리
       </Typography>
 
-      <Stack spacing={2}>
+      <Stack spacing={1}>
         {results.map(item => <ResultCard key={item.id} item={item} />)}
       </Stack>
     </>
