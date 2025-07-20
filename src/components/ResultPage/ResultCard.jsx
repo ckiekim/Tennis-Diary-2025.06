@@ -1,4 +1,5 @@
 import { Card, Box, Typography } from '@mui/material';
+import formatDay from '../../utils/formatDay';
 
 export default function ResultCard({ item }) {
   const day = formatDay(item.date);
@@ -15,10 +16,16 @@ export default function ResultCard({ item }) {
           <Typography fontSize="13px" fontWeight="bold" noWrap>
             {`${item.date} (${day}) ${item.time}`}
           </Typography>
-          <Typography fontSize="12px">{item.place} 테니스코트</Typography>
-          <Typography fontSize="12px">결과: {item.result}</Typography>
+          <Typography fontSize="12px">
+            {item.place} 테니스코트
+          </Typography>
+          <Typography fontSize="12px">
+            결과: {item.result}
+          </Typography>
           {item.source && 
-            <Typography fontSize="12px">소스: {item.source}</Typography>
+            <Typography fontSize="12px">
+              소스: {item.source}
+            </Typography>
           }
         </Box>
       </Box>
@@ -26,8 +33,3 @@ export default function ResultCard({ item }) {
   );
 }
 
-const formatDay = (dateStr) => {
-  const date = new Date(dateStr);
-  const day = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
-  return day;
-};

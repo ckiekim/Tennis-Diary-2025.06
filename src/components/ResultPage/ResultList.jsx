@@ -8,11 +8,13 @@ export default function ResultList() {
   return (
     <>
       <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
-        🎾 테니스 다이어리
+        🎾 테니스 게임 결과
       </Typography>
 
       <Stack spacing={1}>
-        {results.map(item => <ResultCard key={item.id} item={item} />)}
+        {results.map(item => 
+          <ResultCard key={item.id} item={item} />
+        )}
       </Stack>
     </>
   );
