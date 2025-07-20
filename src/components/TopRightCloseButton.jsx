@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import HomeIcon from '@mui/icons-material/HomeOutlined';
 
 const TopRightCloseButton = ({ to = '/' }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMobileExitDialog, setShowMobileExitDialog] = useState(false);
+  const isHome = location.pathname === '/' || location.pathname === '/calendar';
 
   const handleClick = () => {
-    if (location.pathname === '/' || location.pathname === '/calendar') {
+    if (isHome) {
       handleClose(true);
     } else {
       // 그 외에는 홈으로 이동
@@ -39,7 +41,7 @@ const TopRightCloseButton = ({ to = '/' }) => {
           zIndex: 1000,
         }}
       >
-        <CloseIcon />
+        {isHome ? <CloseIcon /> : <HomeIcon />}
       </IconButton>
 
       <Dialog open={showMobileExitDialog} onClose={() => setShowMobileExitDialog(false)}>

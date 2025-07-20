@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import CalendarPage from './components/CalendarPage/CalendarPage';
 import ResultPage from './components/ResultPage/ResultPage';
 import StatPage from './components/StatPage/StatPage';
+import GoodsPage from './components/GoodsPage/GoodsPage';
 import CourtAdminPage from './components/CourtAdminPage/CourtAdminPage';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/result" element={<ResultPage />} />
         <Route path="/stat" element={<StatPage />} />
+        <Route path="/goods" element={<GoodsPage />} />
         <Route path="/admin/courts" element={<CourtAdminPage />} />
       </Routes>
     </Router>
