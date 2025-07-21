@@ -5,19 +5,35 @@ import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import GoodsCard from './GoodsCard';
 import AddGoodsDialog from './dialogs/AddGoodsDialog';
+import EditGoodsDialog from './dialogs/EditGoodsDialog';
+import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import AddIcon from '@mui/icons-material/Add';
 
 const GoodsList = () => {
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const { goods, loading } = useGoodsList(refreshKey);
 
   const handleAddGoods = async (form) => {
-    // Firestore 저장 예시
     await addDoc(collection(db, 'goods'), form);
-    setRefreshKey(prev => prev + 1); // 데이터 다시 불러오도록
+    setRefreshKey(prev => prev + 1);    // 데이터 다시 불러오도록
   };
 
+  const handleUpdateGoods = async (form) => {
+    const { id, ...rest } = form;
+    await updateDoc(doc(db, 'goods', id), rest);
+    setEditOpen(false);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleDeleteGoods = async () => {
+    await deleteDoc(doc(db, 'goods', selectedItem.id));
+    setDeleteOpen(false);
+    setRefreshKey(prev => prev + 1);
+  };
 
   if (loading) {
     return <CircularProgress />;
@@ -25,16 +41,13 @@ const GoodsList = () => {
 
   return (
     <>
-      {/* <Box
-        sx={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', paddingY: 1, textAlign: 'center',
-              borderBottom: '1px solid #eee', }}
-      >
-        <Typography variant="h5">🎾 테니스 용품 구매</Typography>
-      </Box> */}
-
       <Stack spacing={1}>
         {goods.map(item => 
-          <GoodsCard key={item.id} item={item} />
+          <GoodsCard 
+            key={item.id} item={item}
+            onEdit={(item) => { setSelectedItem(item); setEditOpen(true); }}
+            onDelete={(item) => { setSelectedItem(item); setDeleteOpen(true); }} 
+          />
         )}
       </Stack>
 
@@ -49,11 +62,9 @@ const GoodsList = () => {
         <AddIcon /> 
       </Fab>
 
-      <AddGoodsDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onAdd={handleAddGoods}
-      />
+      <AddGoodsDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddGoods} />
+      <EditGoodsDialog open={editOpen} onClose={() => setEditOpen(false)} item={selectedItem} onSave={handleUpdateGoods} />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteGoods} />
     </>
   );
 };

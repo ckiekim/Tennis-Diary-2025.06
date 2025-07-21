@@ -32,11 +32,11 @@ const BottomNav = () => {
           navigate(`/${newValue}`);
         }}
       >
-        <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} />
+        <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} sx={{ ml: 2 }}/>
         <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} />
         <BottomNavigationAction label="통계" value="stat" icon={<BarChartIcon />} />
         <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} />
-        <BottomNavigationAction label="관리" value="admin/courts" icon={<SettingsIcon />} />
+        <BottomNavigationAction label="관리" value="admin/courts" icon={<SettingsIcon />} sx={{ mr: 2 }}/>
       </BottomNavigation>
     </Paper>
   );
