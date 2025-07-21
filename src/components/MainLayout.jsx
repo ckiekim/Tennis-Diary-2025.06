@@ -1,26 +1,26 @@
 import BottomNav from './BottomNav';
 import TopRightCloseButton from './TopRightCloseButton';
-import { Box } from '@mui/material';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 
-export default function MainLayout({ children }) {
+export default function MainLayout({ children, title = '' }) {
   return (
-    // <>
-    //   <Box sx={{ position: 'relative', p: 2, pb: '80px' }}>
-    //     <TopRightCloseButton to="/" />
-    //     {children}
-    //   </Box>
-    //   <BottomNav />
-    // </>
     <>
-      <Box sx={{ position: 'relative', minHeight: '100vh', p: 2, pb: 7 }}>
-        {/* 고정된 닫기 버튼 */}
-        <TopRightCloseButton />
+      {/* 상단 AppBar */}
+      <AppBar position="fixed" color="inherit" elevation={0}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Typography variant="h5" noWrap sx={{ ml: 1, mt: 1 }}>
+            {title}
+          </Typography>
+          <TopRightCloseButton />
+        </Toolbar>
+      </AppBar>
 
-        {/* 본문 내용 */}
-        <Box sx={{ pt: 6 }}>
-          {children}
-        </Box>
+      {/* 본문 내용 */}
+      <Box sx={{ pt: 8, pb: 8, px: 2 }}>
+        {children}
       </Box>
+
+      {/* 하단 네비게이션 */}
       <BottomNav />
     </>
   );

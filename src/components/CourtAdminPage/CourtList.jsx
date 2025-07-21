@@ -56,9 +56,9 @@ const CourtList = () => {
 
   return (
     <>
-      <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
+      {/* <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
         🎾 테니스 코트 관리
-      </Typography>
+      </Typography> */}
 
       <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
         <Grid item xs={8} sx={{maxWidth: 200}}>

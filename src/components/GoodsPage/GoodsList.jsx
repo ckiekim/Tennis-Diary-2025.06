@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useGoodsList from '../../hooks/useGoodsList';
-import { Box, CircularProgress, Fab, Stack, Typography, } from '@mui/material';
+import { CircularProgress, Fab, Stack } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import GoodsCard from './GoodsCard';
@@ -25,12 +25,12 @@ const GoodsList = () => {
 
   return (
     <>
-      <Box
+      {/* <Box
         sx={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'white', paddingY: 1, textAlign: 'center',
               borderBottom: '1px solid #eee', }}
       >
-        <Typography variant="h6">🎾 테니스 용품 구매</Typography>
-      </Box>
+        <Typography variant="h5">🎾 테니스 용품 구매</Typography>
+      </Box> */}
 
       <Stack spacing={1}>
         {goods.map(item => 

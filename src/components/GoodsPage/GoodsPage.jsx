@@ -3,7 +3,7 @@ import GoodsList from './GoodsList';
 
 const GoodsPage = () => {
   return (
-	<MainLayout>
+	<MainLayout title='🎾 테니스 용품 구매'>
 	  <GoodsList />
 	</MainLayout>
   );

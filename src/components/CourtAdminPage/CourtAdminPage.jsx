@@ -3,7 +3,7 @@ import CourtList from './CourtList';
 
 export default function CourtAdminPage() {
   return (
-	  <MainLayout>
+	  <MainLayout title='🎾 테니스 코트 관리'>
 		  <CourtList />
 	  </MainLayout>
 	);

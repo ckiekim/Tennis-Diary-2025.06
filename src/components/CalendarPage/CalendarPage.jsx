@@ -4,7 +4,7 @@ import TennisDiary from './TennisDiary';
 
 const CalendarPage = () => {
   return (
-    <MainLayout>
+    <MainLayout title='🎾 테니스 다이어리'>
       <TennisDiary />
     </MainLayout>
   );
