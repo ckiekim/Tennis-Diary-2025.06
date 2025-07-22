@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Card, CardMedia, Fab, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography, } from '@mui/material';
+import { Box, Fab, FormControl, Grid, InputLabel, MenuItem, Select, TextField, } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import useCourtList from '../../hooks/useCourtList';
+import CourtCard from './CourtCard';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import EditCourtDialog from './dialogs/EditCourtDialog';
 import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 const CourtList = () => {
   const [addOpen, setAddOpen] = useState(false);
@@ -80,46 +79,11 @@ const CourtList = () => {
 
       <Box display="flex" flexDirection="column" gap={1}>
         {filteredCourts.map((court) => (
-          <Card
-            key={court.id}
-            sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', px: 1, py: 1, }}
-          >
-            {court.photo ? (
-              <CardMedia
-                component="img"
-                sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1, }}
-                image={court.photo}
-                alt={court.name}
-              />
-            ) : (
-              <Box sx={{ width: 60, height: 60, bgcolor: 'grey.300', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Typography variant="caption">No Image</Typography>
-              </Box>
-            )}
-
-            <Box sx={{ ml: 2, flexGrow: 1 }}>
-              <Typography fontSize="13px" fontWeight="bold" noWrap>
-                {court.name} 테니스코트
-              </Typography>
-              <Typography fontSize="12px" color="text.secondary">
-                {court.location}
-              </Typography>
-              <Typography fontSize="12px" color="text.secondary">
-                {court.surface}
-                {court.is_indoor && ' / 실내'}
-              </Typography>
-            </Box>
-
-            {/* 아이콘 영역 */}
-            <Box sx={{ position: 'absolute', top: 4, right: 4 }}>
-              <IconButton size="small" onClick={() => handleEdit(court)}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => handleDelete(court)}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          </Card>
+          <CourtCard 
+            key={court.id} court={court} 
+            onEdit={() => handleEdit(court)} 
+            onDelete={() => handleDelete(court)}
+          />
         ))}
       </Box>
 
