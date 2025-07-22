@@ -9,7 +9,7 @@ export default function useResultsWithPhoto() {
     const fetch = async () => {
       const [evSnap, courtSnap] = await Promise.all([
         getDocs(collection(db, 'events')),
-        getDocs(collection(db, 'court')),
+        getDocs(collection(db, 'courts')),
       ]);
       const courtMap = {};
       courtSnap.forEach(d => {

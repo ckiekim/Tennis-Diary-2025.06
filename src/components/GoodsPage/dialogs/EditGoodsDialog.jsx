@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { uploadImageToFirebase } from '../../../api/fileUpload';
 
@@ -8,7 +8,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
   const [shopper, setShopper] = useState('');
   const [date, setDate] = useState('');
   const [photo, setPhoto] = useState('');
-  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (item) {
@@ -20,18 +20,24 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
     }
   }, [item]);
 
-  const handleFileChange = (e) => {
-    if (e.target.files?.[0]) {
-      setFile(e.target.files[0]);
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const photoUrl = await uploadImageToFirebase(file, 'goods');
+      setPhoto(photoUrl);
+    } catch (error) {
+      console.error('파일 업로드 실패:', error);
+    } finally {
+      setUploading(false);
     }
   };
   
   const handleSave = async () => {
-    let uploadedPhotoUrl = photo;
-    if (file) {
-      uploadedPhotoUrl = await uploadImageToFirebase(file, 'goods');
-    }
-    onSave({ ...item, name, price: Number(price), shopper, date, photo: uploadedPhotoUrl });
+    onSave({ ...item, name, price: Number(price), shopper, date, photo });
+    onClose();
   };
 
   return (
@@ -45,14 +51,32 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
           <TextField label="구매처" value={shopper} onChange={(e) => setShopper(e.target.value)} fullWidth />
           <TextField label="구매일" type="date" value={date}
             onChange={(e) => setDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          {/* <TextField label="사진 URL" value={photo} onChange={(e) => setPhoto(e.target.value)} fullWidth /> */}
-          <div>
-            <Typography variant="body2" mb={1}>사진 업로드</Typography>
-            <input type="file" accept="image/*" onChange={handleFileChange} />
-            {photo && !file && (
-              <img src={photo} alt="기존 사진" style={{ width: 80, marginTop: 8 }} />
+
+          {/* 이미지 업로드 */}
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+            {uploading ? (
+              <>
+                <CircularProgress size={24} />
+                <Typography variant="body2" sx={{ ml: 1 }}>업로드 중...</Typography>
+              </>
+            ) : (
+              <Button component="label" variant="outlined" disabled={uploading}>
+                사진 선택
+                <input type="file" hidden onChange={handleFileChange} />
+              </Button>
             )}
-          </div>
+          </Box>
+
+          {/* 이미지 미리보기 */}
+          {photo && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img
+                src={photo}
+                alt="미리보기"
+                style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 8 }}
+              />
+            </Box>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>
