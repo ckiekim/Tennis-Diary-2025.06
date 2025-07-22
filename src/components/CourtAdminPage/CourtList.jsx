@@ -28,7 +28,7 @@ const CourtList = () => {
     .filter(c => isIndoor === '' || String(c.is_indoor) === isIndoor);
 
   const handleAddCourt = async (form) => {
-    await addDoc(collection(db, 'court'), form);
+    await addDoc(collection(db, 'courts'), form);
     setRefreshKey(prev => prev + 1);
   };
 
@@ -43,13 +43,13 @@ const CourtList = () => {
   };
 
   const handleUpdateCourt = async (form) => {
-    const ref = doc(db, 'court', form.id);
+    const ref = doc(db, 'courts', form.id);
     await updateDoc(ref, form);
     setRefreshKey((prev) => prev + 1);
   };
 
   const handleDeleteConfirm = async () => {
-    await deleteDoc(doc(db, 'court', selectedCourt.id));
+    await deleteDoc(doc(db, 'courts', selectedCourt.id));
     setDeleteOpen(false);
     setRefreshKey((prev) => prev + 1);
   };

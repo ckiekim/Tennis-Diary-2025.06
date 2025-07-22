@@ -7,7 +7,7 @@ const useCourtList = (refreshKey = 0) => {
 
   useEffect(() => {
     const fetch = async () => {
-      const snapshot = await getDocs(collection(db, 'court'));
+      const snapshot = await getDocs(collection(db, 'courts'));
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       data.sort((a, b) => a.name.localeCompare(b.name));
       setCourts(data);
