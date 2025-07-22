@@ -1,24 +1,35 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
+import { uploadImageToFirebase } from '../../../api/fileUpload';
 
 export default function AddGoodsDialog({ open, onClose, onAdd }) {
   const [form, setForm] = useState({ name: '', shopper: '', price: 0, date: '', photo: '' });
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
-  const { name, value, type } = e.target;
+    const { name, value, type } = e.target;
+    let newValue = value;
+    if (type === 'number') {
+      newValue = value === '' ? '' : Number(value);      // 빈 문자열일 경우 NaN 방지
+    }
+    setForm((prev) => ({ ...prev, [name]: newValue }));
+  };
 
-  let newValue = value;
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  if (type === 'number') {
-    // 빈 문자열일 경우 NaN 방지
-    newValue = value === '' ? '' : Number(value);
-  }
-
-  setForm((prev) => ({
-    ...prev,
-    [name]: newValue,
-  }));
-};
+    setUploading(true);
+    try {
+      const url = await uploadImageToFirebase(file, 'goods');
+      setForm((prev) => ({ ...prev, photo: url }));
+    } catch (error) {
+      console.error('업로드 실패:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = () => {
     if (!form.name || !form.date) return;
@@ -36,7 +47,19 @@ export default function AddGoodsDialog({ open, onClose, onAdd }) {
           <TextField name="shopper" label="구매처" value={form.shopper} onChange={handleChange} fullWidth />
           <TextField name="price" label="가격" value={form.price} onChange={handleChange} type="number" fullWidth />
           <TextField name="date" label="구매일" value={form.date} onChange={handleChange} type="date" fullWidth InputLabelProps={{ shrink: true }} />
-          <TextField name="photo" label="사진 URL" value={form.photo} fullWidth margin="dense" onChange={handleChange} />
+          {/* <TextField name="photo" label="사진 URL" value={form.photo} fullWidth margin="dense" onChange={handleChange} />
+           */}
+          <Stack direction="column" spacing={1}>
+            <Button variant="outlined" component="label" disabled={uploading}>
+              {uploading ? '업로드 중...' : '사진 업로드'}
+              <input hidden accept="image/*" type="file" onChange={handleFileChange} />
+            </Button>
+            {form.photo && (
+              <Typography variant="body2" color="text.secondary">
+                업로드 완료: <a href={form.photo} target="_blank" rel="noopener noreferrer">미리보기</a>
+              </Typography>
+            )}
+          </Stack>
         </Stack>
       </DialogContent>
       <DialogActions>
