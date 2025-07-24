@@ -31,7 +31,7 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
       await deletePhotoFromStorage(form.photo);
       setForm((prev) => ({ ...prev, photo: photoUrl }));
     } catch (error) {
-      console.error('파일 업로드/삭제 실패:', error);
+      console.error('파일 업로드/ 실패:', error);
     } finally {
       setUploading(false);
     }
