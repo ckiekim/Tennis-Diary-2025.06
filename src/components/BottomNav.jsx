@@ -11,6 +11,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 // import EventNoteIcon from '@mui/icons-material/EventNote';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
@@ -40,6 +41,9 @@ const BottomNav = () => {
         case 'goods':
           navigate('/goods');
           break;
+        case 'more':
+          navigate('/more');
+          break;
         default:
           navigate('/');
       }
@@ -63,10 +67,11 @@ const BottomNav = () => {
         elevation={3}
       >
         <BottomNavigation value={value} onChange={handleNavClick} showLabels>
-          <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} />
-          <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} />
-          <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} />
-          <BottomNavigationAction label="관리" value="admin" icon={<SettingsIcon />} />
+          <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="관리" value="admin" icon={<SettingsIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="더보기" value="more" icon={<MoreHorizIcon />} sx={{ minWidth: 60 }} />
         </BottomNavigation>
       </Paper>
       {/* 결과 드롭다운 */}

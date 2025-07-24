@@ -7,6 +7,7 @@ import ResultTournamentPage from './components/ResultTournament/ResultTournament
 import GoodsPage from './components/Goods/GoodsPage';
 import CourtAdminPage from './components/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './components/UserAdmin/UserAdminPage';
+import MorePage from './components/More/MorePage';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/goods" element={<GoodsPage />} />
         <Route path="/admin/courts" element={<CourtAdminPage />} />
         <Route path="/admin/users" element={<UserAdminPage />} />
+        <Route path="/more" element={<MorePage />} />
       </Routes>
     </Router>
   );
