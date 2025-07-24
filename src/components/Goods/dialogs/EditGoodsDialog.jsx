@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { uploadImageToFirebase } from '../../../api/fileUpload';
+import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 
 export default function EditGoodsDialog({ open, onClose, item, onSave }) {
   const [name, setName] = useState('');
@@ -27,6 +27,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
     setUploading(true);
     try {
       const photoUrl = await uploadImageToFirebase(file, 'goods');
+      await deletePhotoFromStorage(photo);
       setPhoto(photoUrl);
     } catch (error) {
       console.error('파일 업로드 실패:', error);
@@ -70,11 +71,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
           {/* 이미지 미리보기 */}
           {photo && (
             <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <img
-                src={photo}
-                alt="미리보기"
-                style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 8 }}
-              />
+              <img src={photo} alt="미리보기" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 4 }} />
             </Box>
           )}
         </Stack>

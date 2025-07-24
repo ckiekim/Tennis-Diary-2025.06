@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Fab, FormControl, Grid, InputLabel, MenuItem, Select, TextField, } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 import useCourtList from '../../hooks/useCourtList';
 import CourtCard from './CourtCard';
 import AddCourtDialog from './dialogs/AddCourtDialog';
@@ -48,6 +49,7 @@ const CourtList = () => {
   };
 
   const handleDeleteConfirm = async () => {
+    await deletePhotoFromStorage(selectedCourt.photo);
     await deleteDoc(doc(db, 'courts', selectedCourt.id));
     setDeleteOpen(false);
     setRefreshKey((prev) => prev + 1);
@@ -55,10 +57,6 @@ const CourtList = () => {
 
   return (
     <>
-      {/* <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
-        🎾 테니스 코트 관리
-      </Typography> */}
-
       <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
         <Grid item xs={8} sx={{maxWidth: 200}}>
           <TextField

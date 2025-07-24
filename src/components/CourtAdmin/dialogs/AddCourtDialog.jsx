@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import {
-  Button, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, MenuItem, TextField, 
+  Box, Button, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, MenuItem, Stack, TextField
 } from '@mui/material';
+import { uploadImageToFirebase } from '../../../api/firebaseStorage';
 
 const AddCourtDialog = ({ open, onClose, onSave }) => {
   const [form, setForm] = useState({ name: '', location: '', surface: '', is_indoor: false, photo: ''  });
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -13,6 +15,20 @@ const AddCourtDialog = ({ open, onClose, onSave }) => {
 
   const handleCheckboxChange = (e) => {
     setForm((prev) => ({ ...prev, is_indoor: e.target.checked }));
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadImageToFirebase(file, 'courts');
+      setForm((prev) => ({ ...prev, photo: url }));
+    } catch (err) {
+      alert('사진 업로드 실패');
+    }
+    setUploading(false);
   };
 
   const handleSubmit = () => {
@@ -49,10 +65,20 @@ const AddCourtDialog = ({ open, onClose, onSave }) => {
           control={<Checkbox checked={form.is_indoor} onChange={handleCheckboxChange} />}
           label="실내 코트"
         />
-        <TextField
-          fullWidth margin="dense" label="사진 URL" name="photo" value={form.photo}
-          onChange={handleChange}
-        />
+
+        <Stack direction="column" spacing={1}>
+          <Button variant="outlined" component="label" disabled={uploading}>
+            {uploading ? '업로드 중...' : '사진 업로드'}
+            <input hidden accept="image/*" type="file" onChange={handleFileChange} />
+          </Button>
+
+          {/* 이미지 미리보기 */}
+          {form.photo && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img src={form.photo} alt="미리보기" style={{ width: '50%' }} />
+            </Box>
+          )}
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>취소</Button>

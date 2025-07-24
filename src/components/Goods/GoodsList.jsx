@@ -3,6 +3,7 @@ import useGoodsList from '../../hooks/useGoodsList';
 import { CircularProgress, Fab, Stack } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 import GoodsCard from './GoodsCard';
 import AddGoodsDialog from './dialogs/AddGoodsDialog';
 import EditGoodsDialog from './dialogs/EditGoodsDialog';
@@ -30,6 +31,7 @@ const GoodsList = () => {
   };
 
   const handleDeleteGoods = async () => {
+    await deletePhotoFromStorage(selectedItem.photo);
     await deleteDoc(doc(db, 'goods', selectedItem.id));
     setDeleteOpen(false);
     setRefreshKey(prev => prev + 1);

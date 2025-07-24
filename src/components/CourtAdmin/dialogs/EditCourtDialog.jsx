@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, FormControlLabel, Checkbox, MenuItem
+  Box, Button, Checkbox, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, MenuItem, TextField, Typography
 } from '@mui/material';
+import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 
 const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
   const [form, setForm] = useState(court);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setForm(court);
@@ -18,6 +19,22 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
 
   const handleCheckboxChange = (e) => {
     setForm((prev) => ({ ...prev, is_indoor: e.target.checked }));
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const photoUrl = await uploadImageToFirebase(file, 'courts');
+      await deletePhotoFromStorage(form.photo);
+      setForm((prev) => ({ ...prev, photo: photoUrl }));
+    } catch (error) {
+      console.error('파일 업로드/삭제 실패:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = () => {
@@ -55,10 +72,28 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
           control={<Checkbox checked={form.is_indoor || false} onChange={handleCheckboxChange} />}
           label="실내 코트"
         />
-        <TextField
-          fullWidth margin="dense" label="사진 URL" name="photo" value={form.photo || ''}
-          onChange={handleChange}
-        />
+
+        {/* 이미지 업로드 */}
+        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+          {uploading ? (
+            <>
+              <CircularProgress size={24} />
+              <Typography variant="body2" sx={{ ml: 1 }}>업로드 중...</Typography>
+            </>
+          ) : (
+            <Button component="label" variant="outlined" disabled={uploading}>
+              사진 선택
+              <input type="file" hidden onChange={handleFileChange} />
+            </Button>
+          )}
+        </Box>
+
+        {/* 이미지 미리보기 */}
+        {form.photo && (
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <img src={form.photo} alt="미리보기" style={{ width: '50%' }} />
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>취소</Button>

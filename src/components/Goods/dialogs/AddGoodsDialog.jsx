@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
-import { uploadImageToFirebase } from '../../../api/fileUpload';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
+import { uploadImageToFirebase } from '../../../api/firebaseStorage';
 
 export default function AddGoodsDialog({ open, onClose, onAdd }) {
   const [form, setForm] = useState({ name: '', shopper: '', price: 0, date: '', photo: '' });
@@ -54,10 +54,11 @@ export default function AddGoodsDialog({ open, onClose, onAdd }) {
               {uploading ? '업로드 중...' : '사진 업로드'}
               <input hidden accept="image/*" type="file" onChange={handleFileChange} />
             </Button>
+            {/* 이미지 미리보기 */}
             {form.photo && (
-              <Typography variant="body2" color="text.secondary">
-                업로드 완료: <a href={form.photo} target="_blank" rel="noopener noreferrer">미리보기</a>
-              </Typography>
+              <Box sx={{ mt: 2, textAlign: 'center' }}>
+                <img src={form.photo} alt="미리보기" style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 4 }} />
+              </Box>
             )}
           </Stack>
         </Stack>
