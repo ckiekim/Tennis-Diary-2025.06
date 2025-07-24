@@ -1,7 +1,7 @@
 import MainLayout from '../MainLayout';
 import ResultList from './ResultList';
 
-const ResultPage = () => {
+const ResultGamePage = () => {
   return (
     <MainLayout title='🎾 테니스 게임 결과'>
       <ResultList />
@@ -10,4 +10,4 @@ const ResultPage = () => {
 
 };
 
-export default ResultPage;
+export default ResultGamePage;
