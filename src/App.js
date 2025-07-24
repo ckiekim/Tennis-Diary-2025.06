@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import CalendarPage from './components/CalendarPage/CalendarPage';
-import ResultGamePage from './components/ResultGamePage/ResultGamePage';
-import ResultStatPage from './components/ResultStatPage/ResultStatPage';
-import ResultTournamentPage from './components/ResultTournamentPage/ResultTournamentPage';
-import GoodsPage from './components/GoodsPage/GoodsPage';
-import CourtAdminPage from './components/CourtAdminPage/CourtAdminPage';
+import CalendarPage from './components/Calendar/CalendarPage';
+import ResultGamePage from './components/ResultGame/ResultGamePage';
+import ResultStatPage from './components/ResultStat/ResultStatPage';
+import ResultTournamentPage from './components/ResultTournament/ResultTournamentPage';
+import GoodsPage from './components/Goods/GoodsPage';
+import CourtAdminPage from './components/CourtAdmin/CourtAdminPage';
+import UserAdminPage from './components/UserAdmin/UserAdminPage';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/result/tournament" element={<ResultTournamentPage />} />
         <Route path="/goods" element={<GoodsPage />} />
         <Route path="/admin/courts" element={<CourtAdminPage />} />
+        <Route path="/admin/users" element={<UserAdminPage />} />
       </Routes>
     </Router>
   );

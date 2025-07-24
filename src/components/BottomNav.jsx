@@ -10,9 +10,11 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import RestoreIcon from '@mui/icons-material/Restore';
 // import EventNoteIcon from '@mui/icons-material/EventNote';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
+import PeopleIcon from '@mui/icons-material/People';
 
 const BottomNav = () => {
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorElResult, setAnchorElResult] = useState(null);
+  const [anchorElAdmin, setAnchorElAdmin] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,13 +22,16 @@ const BottomNav = () => {
     if (pathname.startsWith('/result')) return 'result';
     if (pathname.startsWith('/calendar')) return 'calendar';
     if (pathname.startsWith('/goods')) return 'goods';
-    if (pathname.startsWith('/admin')) return 'admin/courts';
+    if (pathname.startsWith('/admin')) return 'admin';
     return 'calendar';
   };
+  const value = getValueFromPath(location.pathname);
 
-  const handleChange = (event, newValue) => {
+  const handleNavClick  = (event, newValue) => {
     if (newValue === 'result') {
-      setAnchorEl(event.currentTarget); // 메뉴 열기
+      setAnchorElResult(event.currentTarget);
+    } else if (newValue === 'admin') {
+      setAnchorElAdmin(event.currentTarget);
     } else {
       switch (newValue) {
         case 'calendar':
@@ -35,24 +40,20 @@ const BottomNav = () => {
         case 'goods':
           navigate('/goods');
           break;
-        case 'admin/courts':
-          navigate('/admin/courts');
-          break;
         default:
           navigate('/');
       }
     }
   };
 
-  const value = getValueFromPath(location.pathname);
-
-  const handleMenuClick = (path) => {
-    setAnchorEl(null);
+  const handleResultMenuClick = (path) => {
+    setAnchorElResult(null);
     navigate(path);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleAdminMenuClick = (path) => {
+    setAnchorElAdmin(null);
+    navigate(path);
   };
 
   return (
@@ -61,25 +62,46 @@ const BottomNav = () => {
         sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100, }}
         elevation={3}
       >
-        <BottomNavigation value={value} onChange={handleChange} showLabels>
+        <BottomNavigation value={value} onChange={handleNavClick} showLabels>
           <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} />
           <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} />
           <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} />
-          <BottomNavigationAction label="관리" value="admin/courts" icon={<SettingsIcon />} />
+          <BottomNavigationAction label="관리" value="admin" icon={<SettingsIcon />} />
         </BottomNavigation>
       </Paper>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={() => handleMenuClick('/result/game')}>
+      {/* 결과 드롭다운 */}
+      <Menu
+        anchorEl={anchorElResult}
+        open={Boolean(anchorElResult)}
+        onClose={() => setAnchorElResult(null)}
+      >
+        <MenuItem onClick={() => handleResultMenuClick('/result/game')}>
           <SportsTennisIcon fontSize="small" sx={{ mr: 1 }} />
           게임결과
         </MenuItem>
-        <MenuItem onClick={() => handleMenuClick('/result/tournament')}>
+        <MenuItem onClick={() => handleResultMenuClick('/result/tournament')}>
           <RestoreIcon fontSize="small" sx={{ mr: 1 }} />
           대회결과
         </MenuItem>
-        <MenuItem onClick={() => handleMenuClick('/result/stat')}>
+        <MenuItem onClick={() => handleResultMenuClick('/result/stat')}>
           <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
           통계
+        </MenuItem>
+      </Menu>
+
+      {/* 관리 드롭다운 */}
+      <Menu
+        anchorEl={anchorElAdmin}
+        open={Boolean(anchorElAdmin)}
+        onClose={() => setAnchorElAdmin(null)}
+      >
+        <MenuItem onClick={() => handleAdminMenuClick('/admin/courts')}>
+          <SportsTennisIcon fontSize="small" sx={{ mr: 1 }} />
+          코트관리
+        </MenuItem>
+        <MenuItem onClick={() => handleAdminMenuClick('/admin/users')}>
+          <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
+          사용자관리
         </MenuItem>
       </Menu>
     </>
