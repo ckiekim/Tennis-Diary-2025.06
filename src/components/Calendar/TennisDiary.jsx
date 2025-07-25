@@ -102,15 +102,11 @@ const TennisDiary = () => {
     await updateDoc(docRef, updateData);
     setMemoOpen(false);
     setRefreshKey((prev) => prev + 1);
-    navigate('/result');
+    navigate('/result/game');
   }
 
   return (
     <Container maxWidth="sm">
-      {/* <Typography variant="h5" sx={{ textAlign: 'center', mb: 2 }}>
-        🎾 테니스 다이어리
-      </Typography> */}
-
       {/* 📅 한글 달력 */}
       <KoreanDatePicker value={selectedDate} onChange={setSelectedDate} eventDateMap={eventDateMap}/>
 
