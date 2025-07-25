@@ -39,7 +39,7 @@ export default function ResultCard({ item, onAdd }) {
         </Box>
 
         {/* 버튼 영역 */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pr: 1 }}>
+        {/* <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pr: 1 }}>
           <Tooltip title="사진 또는 메모 추가">
             <IconButton onClick={() => setAddOpen(true)} size="small">
               <AddPhotoAlternateIcon fontSize="small" />
@@ -52,6 +52,24 @@ export default function ResultCard({ item, onAdd }) {
               <MoreVertIcon fontSize="small" />
             </IconButton>
           )}
+        </Box> */}
+        {/* 버튼 영역 개선 */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pr: 1 }}>
+          <Box sx={{ display: 'flex', gap: 0.25 }}>
+            <Tooltip title="사진 또는 메모 추가">
+              <IconButton onClick={() => setAddOpen(true)} size="small">
+                <AddPhotoAlternateIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {hasDetails && (
+              <Tooltip title="상세 보기">
+                <IconButton onClick={() => navigate(`/result/${item.id}`)} size="small">
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
       </Box>
 
