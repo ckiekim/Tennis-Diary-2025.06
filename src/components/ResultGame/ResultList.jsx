@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Stack } from '@mui/material';
 import useResultsWithPhoto from '../../hooks/useResultsWithPhoto';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion } from 'firebase/firestore';
-import { deletePhotoFromStorage } from '../../api/firebaseStorage';
+import { updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import ResultCard from './ResultCard';
 
 export default function ResultList() {

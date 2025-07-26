@@ -1,19 +1,13 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, IconButton, Tooltip, Typography } from '@mui/material';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Box, Card, Typography } from '@mui/material';
 import formatDay from '../../utils/formatDay';
-import AddPhotoDialog from './dialogs/AddPhotoDialog';
 
 export default function ResultCard({ item, onAdd }) {
   const navigate = useNavigate();
-  const [addOpen, setAddOpen] = useState(false);
   const day = formatDay(item.date);
-  const hasDetails = item.memo || (item.photoList && item.photoList.length > 0);
 
   return (
-    <Card sx={{ mb: 0, p: 0 }}>
+    <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/result/${item.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
           component="img" src={item.photo} alt="court"
@@ -37,43 +31,7 @@ export default function ResultCard({ item, onAdd }) {
             </Typography>
           }
         </Box>
-
-        {/* 버튼 영역 */}
-        {/* <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pr: 1 }}>
-          <Tooltip title="사진 또는 메모 추가">
-            <IconButton onClick={() => setAddOpen(true)} size="small">
-              <AddPhotoAlternateIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-        <Box display="flex" justifyContent="flex-end" alignItems="center" px={1} pb={1}>
-          {hasDetails && (
-            <IconButton onClick={() => navigate(`/result/${item.id}`)}>
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box> */}
-        {/* 버튼 영역 개선 */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', pr: 1 }}>
-          <Box sx={{ display: 'flex', gap: 0.25 }}>
-            <Tooltip title="사진 또는 메모 추가">
-              <IconButton onClick={() => setAddOpen(true)} size="small">
-                <AddPhotoAlternateIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
-            {hasDetails && (
-              <Tooltip title="상세 보기">
-                <IconButton onClick={() => navigate(`/result/${item.id}`)} size="small">
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        </Box>
       </Box>
-
-      <AddPhotoDialog open={addOpen} onClose={() => setAddOpen(false)} item={item} onAdd={onAdd} />
     </Card>
   );
 }

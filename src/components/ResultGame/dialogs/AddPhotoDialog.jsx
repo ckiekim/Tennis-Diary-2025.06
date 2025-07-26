@@ -45,9 +45,9 @@ export default function AddPhotoDialog({ open, onClose, item, onAdd }) {
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField 
             label="메모" fullWidth multiline rows={3} value={memo}
-            onChange={(e) => setMemo(e.target.value)}
+            onChange={(e) => setMemo(e.target.value)} onClick={(e) => e.stopPropagation()}
           />
-          <Button variant="outlined" component="label">
+          <Button variant="outlined" component="label" onClick={(e) => e.stopPropagation()}>
             📷 사진 업로드
             <input hidden multiple accept="image/*" type="file" onChange={handleFileChange} />
           </Button>
@@ -71,8 +71,10 @@ export default function AddPhotoDialog({ open, onClose, item, onAdd }) {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={uploading}>취소</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={uploading}>
+        <Button onClick={(e) => { e.stopPropagation(); onClose(); }} disabled={uploading}>
+          취소
+        </Button>
+        <Button onClick={(e) => { e.stopPropagation(); handleSubmit(); }} variant="contained" disabled={uploading}>
           {uploading ? '업로드 중...' : '저장'}
         </Button>
       </DialogActions>

@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import CalendarPage from './components/Calendar/CalendarPage';
 import ResultGamePage from './components/ResultGame/ResultGamePage';
-import ResultDetailPage from './components/ResultGame/ResultDetailPage';
+import ResultDetailPage from './components/ResultDetail/ResultDetailPage';
 import ResultStatPage from './components/ResultStat/ResultStatPage';
 import ResultTournamentPage from './components/ResultTournament/ResultTournamentPage';
 import GoodsPage from './components/Goods/GoodsPage';
