@@ -11,7 +11,7 @@ import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/fire
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function EditResultDialog({open, onClose, result}) {
-  const [form, setForm] = useState(result);
+  const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
   const [deleting, setDeleting] = useState(false);
@@ -109,7 +109,7 @@ export default function EditResultDialog({open, onClose, result}) {
             onChange={(e) => setForm({ ...form, memo: e.target.value })}
           />
 
-          <Button variant="outlined" component="label">
+          <Button variant="outlined" component="label" onClick={(e) => e.stopPropagation()}>
             📷 사진 업로드
             <input hidden multiple accept="image/*" type="file" onChange={handleFileChange} />
           </Button>
