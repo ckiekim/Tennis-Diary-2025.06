@@ -4,7 +4,7 @@ import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
 import { v4 as uuidv4 } from 'uuid';
 
-export default function ResultDialog({open, target, setOpen, setMemoTarget, onResult}) {
+export default function ResultDialog({open, target, setOpen, onResult}) {
   const [result, setResult] = useState('');
   const [price, setPrice] = useState(0);
   const [memo, setMemo] = useState('');

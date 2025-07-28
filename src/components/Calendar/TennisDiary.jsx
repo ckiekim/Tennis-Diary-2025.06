@@ -163,7 +163,7 @@ const TennisDiary = () => {
 
       {/* 결과 입력 다이얼로그 */}
       <ResultDialog 
-        open={resultOpen} target={resultTarget} setOpen={setResultOpen} setResultTarget={setResultTarget} onResult={handleResult}
+        open={resultOpen} target={resultTarget} setOpen={setResultOpen} onResult={handleResult}
       />
 
     </Container>

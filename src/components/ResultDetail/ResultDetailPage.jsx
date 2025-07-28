@@ -5,8 +5,10 @@ import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../MainLayout';
 import EditResultDialog from './dialogs/EditResultDialog';
+import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
+import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
 const ResultDetailPage = () => {
   const { id } = useParams();
@@ -14,7 +16,9 @@ const ResultDetailPage = () => {
   const [imageOpen, setImageOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [editOpen, setEditOpen] = useState(false);
-  const { docData: result, loading } = useEventDoc('events', id);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { docData: result, loading } = useEventDoc('events', id, refreshKey);
 
   if (loading) return <Typography>로딩 중...</Typography>;
   if (!result) return <Typography>데이터가 없습니다.</Typography>;
@@ -29,11 +33,25 @@ const ResultDetailPage = () => {
     setSelectedImage('');
   };
 
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setRefreshKey((prev) => prev + 1);
+  };
+
   const handleDelete = async () => {
-    const confirmed = window.confirm('이 기록을 삭제할까요?');
-    if (!confirmed) return;
-    await deleteDoc(doc(db, 'events', id));
-    navigate(-1); // 이전 화면으로
+    if (!result) return;
+    try {
+      const photoList = result.photoList || [];
+      for (const url of photoList) {
+        await deletePhotoFromStorage(url);
+      }
+      await deleteDoc(doc(db, 'events', id));
+      setDeleteOpen(false);
+      navigate(-1);
+    } catch (err) {
+      console.error('삭제 실패:', err);
+      alert('삭제 중 문제가 발생했습니다.');
+    }
   };
 
   if (!result) return <Typography>로딩 중...</Typography>;
@@ -101,7 +119,7 @@ const ResultDetailPage = () => {
 
       <Stack direction="row" spacing={2} justifyContent="center" my={3}>
         <Button variant="outlined" color="primary" onClick={() => setEditOpen(true)}>수정</Button>
-        <Button variant="outlined" color="error" onClick={handleDelete}>삭제</Button>
+        <Button variant="outlined" color="error" onClick={() => setDeleteOpen(true)}>삭제</Button>
         <Button variant="contained" onClick={() => navigate(-1)}>뒤로</Button>
       </Stack>
 
@@ -113,7 +131,10 @@ const ResultDetailPage = () => {
       </Dialog>
 
       {/* 수정 다이얼로그 */}
-      <EditResultDialog open={editOpen} onClose={() => setEditOpen(false)} result={result} />
+      <EditResultDialog open={editOpen} onClose={handleEditClose} result={result} />
+
+      {/* 삭제 확인 다이얼로그 */}
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} result={result} />
     </MainLayout>
   );
 };

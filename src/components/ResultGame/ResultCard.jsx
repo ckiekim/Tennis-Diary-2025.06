@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Card, Typography } from '@mui/material';
 import formatDay from '../../utils/formatDay';
 
-export default function ResultCard({ item, onAdd }) {
+export default function ResultCard({ item }) {
   const navigate = useNavigate();
   const day = formatDay(item.date);
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
 
-const useEventDoc = (collectionName, docId) => {
+const useEventDoc = (collectionName, docId, refreshKey=0) => {
   const [docData, setDocData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +27,7 @@ const useEventDoc = (collectionName, docId) => {
     };
 
     fetchData();
-  }, [collectionName, docId]);
+  }, [collectionName, docId, refreshKey]);
 
   return { docData, loading };
 };
