@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 
-export default function ScheduleCard({ schedule, onEdit, onDelete, onMemo }) {
+export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
   const isStringReplace = schedule.type === "스트링 교체";
   const isLesson = schedule.type === "레슨";
 
@@ -26,7 +26,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onMemo }) {
             <NotesIcon fontSize="small" />
           </IconButton>
         ) : (
-          <IconButton size="small" onClick={() => onMemo(schedule)}>
+          <IconButton size="small" onClick={() => onResult(schedule)}>
             <NotesIcon fontSize="small" />
           </IconButton>
         ) }

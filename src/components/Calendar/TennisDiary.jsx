@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 
 import useEventDateMap from '../../hooks/useEventDateMap';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
@@ -31,8 +31,8 @@ const TennisDiary = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [memoOpen, setMemoOpen] = useState(false);
-  const [memoTarget, setMemoTarget] = useState(null);
+  const [resultOpen, setResultOpen] = useState(false);
+  const [resultTarget, setResultTarget] = useState(null);
 
   const handleAddSchedule = async () => {
     if (!form.type) return;
@@ -90,17 +90,19 @@ const TennisDiary = () => {
     setRefreshKey((prev) => prev + 1);
   }
   
-  const handleMemo = (schedule) => {
-    setMemoTarget(schedule);
-    setMemoOpen(true);
+  const handleResultDialog = (schedule) => {
+    setResultTarget(schedule);
+    setResultOpen(true);
   };
 
-  const handleResult = async () => {
-    if (!memoTarget?.id) return; // 예외 처리
-    const docRef = doc(db, 'events', memoTarget.id);
-    const { id, ...updateData } = memoTarget;
-    await updateDoc(docRef, updateData);
-    setMemoOpen(false);
+  const handleResult = async (id, { result, price, memo, photoList }) => {
+    if (!id) return;  // 예외 처리
+    const docRef = doc(db, 'events', id);
+    await updateDoc(docRef, {
+      result, price, memo,
+      photoList: arrayUnion(...photoList),   // 사진은 여러 장 저장할 수 있으니 배열 유지
+    });
+    setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
     navigate('/result/game');
   }
@@ -125,7 +127,8 @@ const TennisDiary = () => {
           </Typography>
         ) : (
           <Box mt={1}>
-            {schedules.map(schedule => <ScheduleCard key={schedule.id} schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onMemo={handleMemo} />)}
+            {schedules.map(schedule => 
+              <ScheduleCard key={schedule.id} schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onResult={handleResultDialog} />)}
           </Box>
         )}
       </Box>
@@ -160,7 +163,7 @@ const TennisDiary = () => {
 
       {/* 결과 입력 다이얼로그 */}
       <ResultDialog 
-        memoOpen={memoOpen} memoTarget={memoTarget} setMemoOpen={setMemoOpen} setMemoTarget={setMemoTarget} onResult={handleResult}
+        open={resultOpen} target={resultTarget} setOpen={setResultOpen} setResultTarget={setResultTarget} onResult={handleResult}
       />
 
     </Container>
