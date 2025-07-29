@@ -1,6 +1,7 @@
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import GoogleLoginButton from './GoogleLoginButton';
 import BottomNav from './BottomNav';
 import TopRightCloseButton from './TopRightCloseButton';
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 
 export default function MainLayout({ children, title = '' }) {
   return (
@@ -11,7 +12,11 @@ export default function MainLayout({ children, title = '' }) {
           <Typography variant="h5" noWrap sx={{ ml: 1, mt: 1 }}>
             {title}
           </Typography>
-          <TopRightCloseButton />
+          {/* 오른쪽 영역: 로그인 버튼과 종료 버튼을 수평 정렬 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, mr: 0 }}>
+            <GoogleLoginButton />
+            <TopRightCloseButton absolute={false} />
+          </Box>
         </Toolbar>
       </AppBar>
 

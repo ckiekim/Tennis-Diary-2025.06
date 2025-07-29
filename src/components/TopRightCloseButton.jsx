@@ -4,7 +4,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import CloseIcon from '@mui/icons-material/Close';
 import HomeIcon from '@mui/icons-material/HomeOutlined';
 
-const TopRightCloseButton = ({ to = '/' }) => {
+const TopRightCloseButton = ({ to = '/', absolute = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMobileExitDialog, setShowMobileExitDialog] = useState(false);
@@ -32,13 +32,21 @@ const TopRightCloseButton = ({ to = '/' }) => {
 
   return (
     <>
-      <IconButton
+      {/* <IconButton
         onClick={handleClick}
         sx={{
           position: 'absolute',
           top: 8,
           right: 8,
           zIndex: 1000,
+        }}
+      > */}
+      <IconButton
+        onClick={handleClick}
+        sx={{
+          ...(absolute
+            ? { position: 'absolute', top: 8, right: 8, zIndex: 1000 }
+            : {}),
         }}
       >
         {isHome ? <CloseIcon /> : <HomeIcon />}
