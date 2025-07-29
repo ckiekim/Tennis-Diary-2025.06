@@ -21,8 +21,8 @@ const ResultStatPage = () => {
 
       snapshot.forEach(doc => {
         const { result, date } = doc.data();
+        if (!result || !date) return;
         const parsed = parseResult(result);
-        if (!parsed || !date) return;
         
         const { eventType, win, draw, loss } = parsed;
 
