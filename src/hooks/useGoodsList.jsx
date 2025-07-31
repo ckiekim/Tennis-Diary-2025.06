@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../api/firebaseConfig';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 
 const useGoodsList = (refreshKey = 0) => {
   const [goods, setGoods] = useState([]);
@@ -11,7 +11,6 @@ const useGoodsList = (refreshKey = 0) => {
   useEffect(() => {
     const fetchGoods = async () => {
       const user = auth.currentUser;
-      console.log(user);
       if (!user) {
         setGoods([]);
         setLoading(false); 

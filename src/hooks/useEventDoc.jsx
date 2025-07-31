@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 const useEventDoc = (collectionName, docId, refreshKey=0) => {
   const [docData, setDocData] = useState(null);

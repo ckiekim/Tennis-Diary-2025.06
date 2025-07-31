@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
 import { db } from '../api/firebaseConfig';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const useEventDateMap = (refreshKey = 0) => {
   const [eventDateMap, setEventDateMap] = useState({});
+  const auth = getAuth();
 
   useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) {
+      setEventDateMap({});
+      return;
+    }
+
     const fetchEventDates = async () => {
-      const querySnapshot = await getDocs(collection(db, 'events'));
+      const q = query(collection(db, 'events'), where('uid', '==', user.uid));
+      const querySnapshot = await getDocs(q);
       const map = {};
 
       querySnapshot.forEach((doc) => {
@@ -22,7 +31,7 @@ const useEventDateMap = (refreshKey = 0) => {
     };
 
     fetchEventDates();
-  }, [refreshKey]);
+  }, [auth.currentUser, refreshKey]);
 
   return eventDateMap;
 };
