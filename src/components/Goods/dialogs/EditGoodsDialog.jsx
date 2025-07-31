@@ -2,7 +2,7 @@ import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, Dial
 import { useState, useEffect } from 'react';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 
-export default function EditGoodsDialog({ open, onClose, item, onSave }) {
+export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [shopper, setShopper] = useState('');
@@ -26,7 +26,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave }) {
 
     setUploading(true);
     try {
-      const photoUrl = await uploadImageToFirebase(file, 'goods');
+      const photoUrl = await uploadImageToFirebase(file, `${uid}/goods`);
       await deletePhotoFromStorage(photo);
       setPhoto(photoUrl);
     } catch (error) {

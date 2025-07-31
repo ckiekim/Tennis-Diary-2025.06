@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import useGoodsList from '../../hooks/useGoodsList';
-import { CircularProgress, Fab, Stack } from '@mui/material';
+import useAuthState from '../../hooks/useAuthState';
+import { Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
@@ -17,6 +18,8 @@ const GoodsList = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const { goods, loading } = useGoodsList(refreshKey);
+  const { user } = useAuthState();
+  // console.log(user?.uid);
 
   const handleAddGoods = async (form) => {
     await addDoc(collection(db, 'goods'), form);
@@ -43,15 +46,23 @@ const GoodsList = () => {
 
   return (
     <>
-      <Stack spacing={1}>
-        {goods.map(item => 
-          <GoodsCard 
-            key={item.id} item={item}
-            onEdit={(item) => { setSelectedItem(item); setEditOpen(true); }}
-            onDelete={(item) => { setSelectedItem(item); setDeleteOpen(true); }} 
-          />
-        )}
-      </Stack>
+      {goods.length === 0 ? (
+        <Box textAlign="center" mt={4}>
+          <Typography variant="body1" color="text.secondary">
+            등록된 용품이 없습니다.
+          </Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1}>
+          {goods.map(item => 
+            <GoodsCard 
+              key={item.id} item={item}
+              onEdit={(item) => { setSelectedItem(item); setEditOpen(true); }}
+              onDelete={(item) => { setSelectedItem(item); setDeleteOpen(true); }} 
+            />
+          )}
+        </Stack>
+      )}
 
       <Fab
         color="default"
@@ -64,8 +75,8 @@ const GoodsList = () => {
         <AddIcon /> 
       </Fab>
 
-      <AddGoodsDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddGoods} />
-      <EditGoodsDialog open={editOpen} onClose={() => setEditOpen(false)} item={selectedItem} onSave={handleUpdateGoods} />
+      <AddGoodsDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddGoods} uid={user.uid} />
+      <EditGoodsDialog open={editOpen} onClose={() => setEditOpen(false)} item={selectedItem} onSave={handleUpdateGoods} uid={user.uid} />
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteGoods} />
     </>
   );

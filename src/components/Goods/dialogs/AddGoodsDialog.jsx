@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { uploadImageToFirebase } from '../../../api/firebaseStorage';
 
-export default function AddGoodsDialog({ open, onClose, onAdd }) {
+export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
   const [form, setForm] = useState({ name: '', shopper: '', price: 0, date: '', photo: '' });
   const [uploading, setUploading] = useState(false);
 
@@ -21,7 +21,7 @@ export default function AddGoodsDialog({ open, onClose, onAdd }) {
 
     setUploading(true);
     try {
-      const url = await uploadImageToFirebase(file, 'goods');
+      const url = await uploadImageToFirebase(file, `${uid}/goods`);
       setForm((prev) => ({ ...prev, photo: url }));
     } catch (error) {
       console.error('업로드 실패:', error);
@@ -33,7 +33,7 @@ export default function AddGoodsDialog({ open, onClose, onAdd }) {
 
   const handleSave = () => {
     if (!form.name || !form.date) return;
-    onAdd(form);
+    onAdd({ ...form, uid });
     onClose();
     setForm({ name: '', shopper: '', price: 0, date: '', photo: '' });
   };
