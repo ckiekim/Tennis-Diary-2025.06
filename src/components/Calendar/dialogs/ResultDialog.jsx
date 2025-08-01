@@ -4,7 +4,7 @@ import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
 import { v4 as uuidv4 } from 'uuid';
 
-export default function ResultDialog({open, target, setOpen, onResult}) {
+export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [result, setResult] = useState('');
   const [price, setPrice] = useState(0);
   const [memo, setMemo] = useState('');
@@ -21,7 +21,7 @@ export default function ResultDialog({open, target, setOpen, onResult}) {
       const urls = [];
 
       for (let file of files) {
-        const fileRef = ref(storage, `results/${uuidv4()}-${file.name}`);
+        const fileRef = ref(storage, `${uid}/results/${uuidv4()}-${file.name}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
         urls.push(url);

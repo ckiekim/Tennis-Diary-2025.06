@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 
+import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
@@ -21,12 +22,20 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 const TennisDiary = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [uid, setUid] = useState('');
   const eventDateMap = useEventDateMap(refreshKey);
   const schedules = useScheduleByDate(selectedDate, refreshKey);
+  const { user } = useAuthState();
   const courts = useCourtList();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ type: '', time: '', place: '', source: '', });
+  useEffect(() => {
+    if (user?.uid) {
+      setForm((prev) => ({ ...prev, uid: user.uid }));
+      setUid(user.uid);
+    }
+  }, [user]);
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -147,13 +156,13 @@ const TennisDiary = () => {
 
       {/* 일정 추가 다이얼로그 */}
       <AddScheduleDialog 
-        courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} onAddSchedule={handleAddSchedule}
+        courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} onAddSchedule={handleAddSchedule} 
       />
 
       {/* 일정 수정 다이얼로그 */}
       <EditScheduleDialog 
         courts={courts} open={editOpen} selectedSchedule={selectedSchedule} 
-        setOpen={setEditOpen} setSelectedSchedule={setSelectedSchedule} onUpdate={handleUpdate}
+        setOpen={setEditOpen} setSelectedSchedule={setSelectedSchedule} onUpdate={handleUpdate} 
       />
 
       <DeleteConfirmDialog
@@ -163,7 +172,7 @@ const TennisDiary = () => {
 
       {/* 결과 입력 다이얼로그 */}
       <ResultDialog 
-        open={resultOpen} target={resultTarget} setOpen={setResultOpen} onResult={handleResult}
+        open={resultOpen} target={resultTarget} setOpen={setResultOpen} onResult={handleResult} uid={uid}
       />
 
     </Container>
