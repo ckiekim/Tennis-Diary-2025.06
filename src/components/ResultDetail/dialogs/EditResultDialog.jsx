@@ -10,7 +10,7 @@ import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function EditResultDialog({open, onClose, result}) {
+export default function EditResultDialog({ open, onClose, result, uid }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
@@ -48,7 +48,7 @@ export default function EditResultDialog({open, onClose, result}) {
       // 2. 새 사진 업로드
       const newPhotoUrls = [];
       for (const file of newFiles) {
-        const url = await uploadImageToFirebase(file, 'results');
+        const url = await uploadImageToFirebase(file, `${uid}/results`);
         newPhotoUrls.push(url);
       }
 

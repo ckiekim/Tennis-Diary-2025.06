@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Divider, ImageList, ImageListItem, Stack, Typography } from '@mui/material';
+import useAuthState from '../../hooks/useAuthState';
 import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../MainLayout';
@@ -19,6 +20,7 @@ const ResultDetailPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const { docData: result, loading } = useEventDoc('events', id, refreshKey);
+  const { user } = useAuthState();
 
   if (loading) return <Typography>로딩 중...</Typography>;
   if (!result) return <Typography>데이터가 없습니다.</Typography>;
@@ -131,7 +133,7 @@ const ResultDetailPage = () => {
       </Dialog>
 
       {/* 수정 다이얼로그 */}
-      <EditResultDialog open={editOpen} onClose={handleEditClose} result={result} />
+      <EditResultDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />
 
       {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} result={result} />

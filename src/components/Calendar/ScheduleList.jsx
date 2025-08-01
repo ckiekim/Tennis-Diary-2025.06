@@ -19,7 +19,7 @@ import ResultDialog from './dialogs/ResultDialog';
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-const TennisDiary = () => {
+const ScheduleList = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
   const [uid, setUid] = useState('');
@@ -179,4 +179,4 @@ const TennisDiary = () => {
   );
 };
 
-export default TennisDiary;
+export default ScheduleList;

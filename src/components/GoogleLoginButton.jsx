@@ -31,7 +31,7 @@ export default function GoogleLoginButton() {
         <>
           <Tooltip title={`${user.displayName}님`}>
             <IconButton onClick={handleLogout} color="inherit">
-              <Avatar src={user.photoURL} alt={user.displayName} sx={{ width: 28, height: 28 }} />
+              <Avatar src={user.photoURL} alt={user.displayName} sx={{ width: 32, height: 32 }} />
             </IconButton>
           </Tooltip>
         </>

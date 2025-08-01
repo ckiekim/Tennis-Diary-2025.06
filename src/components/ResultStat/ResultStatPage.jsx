@@ -2,19 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { Box, Typography, Divider } from '@mui/material';
-import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
+import useAuthState from '../../hooks/useAuthState';
 import MainLayout from '../MainLayout';
 import parseResult from '../../utils/parseResult';
 
 const ResultStatPage = () => {
   const [eventStats, setEventStats] = useState({});
   const [monthStats, setMonthStats] = useState({});
+  const { user } = useAuthState();
 
   useEffect(() => {
+    if (!user) return;
+    
     const fetchData = async () => {
-      const q = query(collection(db, 'events'), where('type', '==', '게임'));
+      const q = query(collection(db, 'events'), where('type', '==', '게임'), where('uid', '==', user.uid));
       const snapshot = await getDocs(q);
       const eventData = {};
       const monthData = {};
@@ -59,7 +61,7 @@ const ResultStatPage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   // 그래프용 데이터 변환
   const eventChartData = Object.entries(eventStats).map(([event, stats]) => ({
