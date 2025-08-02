@@ -1,4 +1,4 @@
-import React from 'react';
+// import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthState from './hooks/useAuthState';
 import useAdminCheck from './hooks/useAdminCheck';
@@ -19,6 +19,12 @@ const App = () => {
   dayjs.locale('ko');
   const { user, loading } = useAuthState();
   const { isAdmin } = useAdminCheck();
+
+  // useEffect(() => {
+  //   if (window.Kakao && !window.Kakao.isInitialized()) {
+  //     window.Kakao.init(process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY);  // 복사한 JavaScript 키
+  //   }
+  // }, []);
 
   if (loading) return <div>로딩 중...</div>; 
 
