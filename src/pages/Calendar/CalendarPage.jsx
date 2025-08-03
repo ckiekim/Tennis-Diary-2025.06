@@ -1,5 +1,5 @@
 import React from 'react';
-import MainLayout from '../MainLayout';
+import MainLayout from '../../components/MainLayout';
 import ScheduleList from './ScheduleList';
 
 const CalendarPage = () => {

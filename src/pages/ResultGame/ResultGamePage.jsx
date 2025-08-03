@@ -1,4 +1,4 @@
-import MainLayout from '../MainLayout';
+import MainLayout from '../../components/MainLayout';
 import ResultList from './ResultList';
 
 const ResultGamePage = () => {

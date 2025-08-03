@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material';
-import MainLayout from '../MainLayout';
+import MainLayout from '../../components/MainLayout';
 
 const UserAdminPage = () => {
   return (

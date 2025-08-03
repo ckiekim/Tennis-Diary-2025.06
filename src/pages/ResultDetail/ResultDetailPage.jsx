@@ -4,7 +4,7 @@ import { Box, Button, Dialog, DialogContent, Divider, ImageList, ImageListItem, 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
-import MainLayout from '../MainLayout';
+import MainLayout from '../../components/MainLayout';
 import EditResultDialog from './dialogs/EditResultDialog';
 import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import { deleteDoc, doc } from 'firebase/firestore';

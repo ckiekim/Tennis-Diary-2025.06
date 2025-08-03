@@ -4,7 +4,7 @@ import { db } from '../../api/firebaseConfig';
 import { Box, Typography, Divider } from '@mui/material';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 import useAuthState from '../../hooks/useAuthState';
-import MainLayout from '../MainLayout';
+import MainLayout from '../../components/MainLayout';
 import parseResult from '../../utils/parseResult';
 
 const ResultStatPage = () => {

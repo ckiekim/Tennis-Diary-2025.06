@@ -2,16 +2,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthState from './hooks/useAuthState';
 import useAdminCheck from './hooks/useAdminCheck';
-import CalendarPage from './components/Calendar/CalendarPage';
-import LoginPage from './components/Home/LoginPage';
-import ResultGamePage from './components/ResultGame/ResultGamePage';
-import ResultDetailPage from './components/ResultDetail/ResultDetailPage';
-import ResultStatPage from './components/ResultStat/ResultStatPage';
-import ResultTournamentPage from './components/ResultTournament/ResultTournamentPage';
-import GoodsPage from './components/Goods/GoodsPage';
-import CourtAdminPage from './components/CourtAdmin/CourtAdminPage';
-import UserAdminPage from './components/UserAdmin/UserAdminPage';
-import MorePage from './components/More/MorePage';
+import CalendarPage from './pages/Calendar/CalendarPage';
+import LoginPage from './pages/Home/LoginPage';
+import ResultGamePage from './pages/ResultGame/ResultGamePage';
+import ResultDetailPage from './pages/ResultDetail/ResultDetailPage';
+import ResultStatPage from './pages/ResultStat/ResultStatPage';
+import ResultTournamentPage from './pages/ResultTournament/ResultTournamentPage';
+import GoodsPage from './pages/Goods/GoodsPage';
+import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
+import UserAdminPage from './pages/UserAdmin/UserAdminPage';
+import MorePage from './pages/More/MorePage';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 
