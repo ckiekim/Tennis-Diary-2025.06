@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [result, setResult] = useState('');
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState('0');
   const [memo, setMemo] = useState('');
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -28,9 +28,9 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
       }
 
       // onResult로 결과 전달
-      await onResult(target.id, { result, price, memo, photoList: urls });
+      await onResult(target.id, { result, price: Number(price), memo, photoList: urls });
       setOpen(false);
-      setResult(''); setPrice(0); setMemo(''); setFiles([]);
+      setResult(''); setPrice('0'); setMemo(''); setFiles([]);
     } catch (err) {
       console.error('업로드 실패:', err);
       alert('업로드 중 문제가 발생했습니다.');
@@ -50,8 +50,18 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
           />
           <TextField
             label="비용 (숫자)" fullWidth type="number" value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (/^\d*$/.test(val)) {    // 숫자 또는 빈 문자열만 허용
+                setPrice(val);
+              }
+            }}
+            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
           />
+          {/* <TextField
+            label="비용 (숫자)" fullWidth type="number" value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+          /> */}
           <TextField 
             label="메모" fullWidth multiline rows={3} value={memo}
             onChange={(e) => setMemo(e.target.value)} onClick={(e) => e.stopPropagation()}
