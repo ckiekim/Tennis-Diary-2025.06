@@ -1,91 +1,85 @@
-// functions/index.js
-
-const functions = require("firebase-functions");
+const { onCall } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/v2/params");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
-// ⚠️ 중요: Firebase 서비스 계정 키를 설정해야 합니다.
-// Firebase 콘솔 > 프로젝트 설정 > 서비스 계정 > '새 비공개 키 생성'으로 json 파일을 받아
-// Cloud Functions 환경 변수에 저장하는 것을 권장합니다.
+// kakao.rest_api_key 와 kakao.redirect_uri를 Firebase 환경 변수로 설정해야 합니다.
+// firebase functions:config:set kakao.rest_api_key="YOUR_KEY"
+// firebase functions:config:set kakao.redirect_uri="YOUR_URI"
+
 admin.initializeApp();
 
-const KAKAO_REST_API_KEY = functions.config().kakao.rest_api_key;
-const KAKAO_REDIRECT_URI = functions.config().kakao.redirect_uri;
+// 2. Secret Manager에 저장된 키를 참조하도록 정의
+const KAKAO_REST_API_KEY = defineSecret("KAKAO_REST_API_KEY");
 
-// 1. 인가 코드를 받아 카카오 토큰(access_token)을 요청하는 함수
-const getKakaoToken = async (code) => {
-  const tokenResponse = await axios.post(
-      "https://kauth.kakao.com/oauth/token",
-      null,
-      {
-        params: {
-          grant_type: "authorization_code",
-          client_id: KAKAO_REST_API_KEY,
-          redirect_uri: KAKAO_REDIRECT_URI,
-          code: code,
-        },
+// 인가 코드를 Access Token으로 교환하는 함수
+const getKakaoAccessToken = async (code, apiKey, redirectUri) => { // 3. 파라미터로 받도록 수정
+  const response = await axios.post(
+    "https://kauth.kakao.com/oauth/token",
+    new URLSearchParams({ // 4. URLSearchParams를 사용해 x-www-form-urlencoded 형식으로 전송
+      grant_type: "authorization_code",
+      client_id: apiKey,
+      redirect_uri: redirectUri,
+      code: code,
+    }).toString(),
+    {
+      headers: {
+        "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
       },
+    }
   );
-  return tokenResponse.data;
+  return response.data.access_token;
 };
 
-// 2. 카카오 토큰으로 사용자 정보를 요청하는 함수
-const getKakaoUserInfo = async (accessToken) => {
-  const userResponse = await axios.get("https://kapi.kakao.com/v2/user/me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  return userResponse.data;
-};
-
-// 3. 메인 Cloud Function (HTTP 요청으로 트리거)
-exports.kakaoLogin = functions.https.onCall(async (data, context) => {
-  const code = data.code;
-  if (!code) {
-    throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Authorization code is required.",
-    );
-  }
-
+// 5. secrets 옵션을 추가하고, 환경 변수를 올바르게 전달
+exports.kakaoLogin = onCall({ secrets: [KAKAO_REST_API_KEY] }, async (request) => {
   try {
-    // 카카오 토큰 및 사용자 정보 가져오기
-    const kakaoTokenData = await getKakaoToken(code);
-    const kakaoUserInfo = await getKakaoUserInfo(kakaoTokenData.access_token);
+    const { code } = request.data;
+    if (!code) {
+      throw new functions.https.HttpsError('invalid-argument', 'Authorization code is required.');
+    }
 
-    const uid = `kakao:${kakaoUserInfo.id}`; // Firebase에 저장될 고유 UID
+    // Secret Manager와 .env에서 값을 가져옵니다.
+    const apiKey = KAKAO_REST_API_KEY.value();
+    const redirectUri = process.env.KAKAO_REDIRECT_URI; // .env 파일에서 읽어옴
 
-    // Firebase Auth 사용자 업데이트 또는 생성
+    const accessToken = await getKakaoAccessToken(code, apiKey, redirectUri);
+
+    const kakaoRes = await axios.get("https://kapi.kakao.com/v2/user/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const kakaoData = kakaoRes.data;
+    const kakaoUid = `kakao:${kakaoData.id}`;
+    
+    // (여기에 사용자 생성/업데이트 로직 추가)
     try {
-      await admin.auth().updateUser(uid, {
-        displayName: kakaoUserInfo.properties.nickname,
-        photoURL: kakaoUserInfo.properties.profile_image,
-        email: kakaoUserInfo.kakao_account.email, // 사용자가 동의한 경우에만 존재
+      await admin.auth().updateUser(kakaoUid, {
+        displayName: kakaoData.properties.nickname,
+        photoURL: kakaoData.properties.profile_image,
+        email: kakaoData.kakao_account.email,
       });
     } catch (error) {
-      if (error.code === "auth/user-not-found") {
+      if (error.code === 'auth/user-not-found') {
         await admin.auth().createUser({
-          uid: uid,
-          displayName: kakaoUserInfo.properties.nickname,
-          photoURL: kakaoUserInfo.properties.profile_image,
-          email: kakaoUserInfo.kakao_account.email,
+          uid: kakaoUid,
+          displayName: kakaoData.properties.nickname,
+          photoURL: kakaoData.properties.profile_image,
+          email: kakaoData.kakao_account.email,
         });
       } else {
         throw error;
       }
     }
 
-    // Firebase Custom Token 생성
-    const customToken = await admin.auth().createCustomToken(uid);
+    const customToken = await admin.auth().createCustomToken(kakaoUid);
+    return { token: customToken };
 
-    // 클라이언트에 Custom Token 반환
-    return {customToken};
-  } catch (error) {
-    console.error("Kakao login failed:", error);
+  } catch (err) {
+    console.error("Authentication Error:", err.response ? err.response.data : err);
     throw new functions.https.HttpsError(
-        "internal",
-        "Failed to process Kakao login.",
+      'internal',
+      'Kakao authentication failed.'
     );
   }
 });

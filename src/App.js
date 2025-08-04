@@ -4,6 +4,7 @@ import useAuthState from './hooks/useAuthState';
 import useAdminCheck from './hooks/useAdminCheck';
 import CalendarPage from './pages/Calendar/CalendarPage';
 import LoginPage from './pages/Home/LoginPage';
+import KakaoCallback from './pages/Home/KakaoCallback';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
 import ResultDetailPage from './pages/ResultDetail/ResultDetailPage';
 import ResultStatPage from './pages/ResultStat/ResultStatPage';
@@ -41,6 +42,8 @@ const App = () => {
         <Route path="/result/tournament" element={ user ? <ResultTournamentPage /> : <Navigate to="/" replace /> } />
         <Route path="/goods" element={ user ? <GoodsPage /> : <Navigate to="/" replace /> } />
         <Route path="/more" element={ user ? <MorePage /> : <Navigate to="/" replace /> } />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
         {/* 관리자만 접근 가능한 페이지 */}
         <Route path="/admin/courts" element={ isAdmin ? <CourtAdminPage /> : <Navigate to="/" replace /> } />
         <Route path="/admin/users" element={ isAdmin ? <UserAdminPage /> : <Navigate to="/" replace /> } />

@@ -1,10 +1,21 @@
 import React from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
-import { loginWithGoogle, loginWithKakao } from '../../api/authService'; // 커스텀 auth 함수
+import { loginWithGoogle } from '../../api/authService'; // 커스텀 auth 함수
 import { Google } from '@mui/icons-material';
 import { FaComment } from 'react-icons/fa';
 
 export default function LoginPage() {
+  const handleKakaoLogin = () => {
+    if (!window.Kakao) {
+      alert("카카오 SDK를 불러오지 못했습니다.");
+      return;
+    }
+
+    window.Kakao.Auth.authorize({
+      redirectUri: process.env.REACT_APP_KAKAO_REDIRECT_URI,
+    });
+  }
+
   return (
     <Container
       maxWidth="sm"
@@ -30,7 +41,7 @@ export default function LoginPage() {
               backgroundColor: '#FEE500', // hover 시에도 색상 유지
             },
           }}
-          onClick={loginWithKakao}
+          onClick={handleKakaoLogin}
         >
           카카오톡<br />로그인
         </Button>

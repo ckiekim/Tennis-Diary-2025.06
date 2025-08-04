@@ -1,11 +1,18 @@
-import React from 'react';
-import { IconButton, Tooltip, Avatar } from '@mui/material';
+import React, { useState } from 'react';
+import { Avatar, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Login } from '@mui/icons-material';
 import { loginWithGoogle, logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
 
 export default function GoogleLoginButton() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const { user, loading } = useAuthState();
+
+  const handleMenuToggle = (event) => {
+    setAnchorEl(event.currentTarget);
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   const handleLogin = async () => {
     try {
@@ -30,7 +37,7 @@ export default function GoogleLoginButton() {
       {user ? (
         <>
           <Tooltip title={`${user.displayName}님`}>
-            <IconButton onClick={handleLogout} color="inherit">
+            <IconButton onClick={handleMenuToggle} color="inherit">
               <Avatar src={user.photoURL} alt={user.displayName} sx={{ width: 32, height: 32 }} />
             </IconButton>
           </Tooltip>
@@ -41,6 +48,17 @@ export default function GoogleLoginButton() {
             <Login />
           </IconButton>
         </Tooltip>
+      )}
+
+      {isMenuOpen && (
+        <Menu
+          open={isMenuOpen}
+          onClose={handleMenuToggle}
+          anchorEl={anchorEl}
+        >
+          <MenuItem onClick={() => { setIsMenuOpen(false); handleLogout(); }}>로그아웃</MenuItem>
+          <MenuItem onClick={() => { setIsMenuOpen(false); }}>사용설정</MenuItem>
+        </Menu>
       )}
     </>
   );

@@ -37,6 +37,16 @@
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "src/service-worker.js"
+        ],
+        "env": {
+          "serviceworker": true
+        }
+      }
     ]
   },
   "browserslist": {

@@ -36,6 +36,7 @@ const BottomNav = () => {
     if (pathname.startsWith('/calendar')) return 'calendar';
     if (pathname.startsWith('/goods')) return 'goods';
     if (pathname.startsWith('/admin')) return 'admin';
+    if (pathname.startsWith('/more')) return 'more';
     return 'calendar';
   };
   const value = getValueFromPath(location.pathname);

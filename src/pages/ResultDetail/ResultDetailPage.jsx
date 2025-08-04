@@ -59,7 +59,7 @@ const ResultDetailPage = () => {
   if (!result) return <Typography>로딩 중...</Typography>;
 
   return (
-    <MainLayout title='🎾 게임 상세'>
+    <MainLayout title='게임 상세'>
       <Box p={2}>
         <Typography variant="body2" fontWeight="bold">일시</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
