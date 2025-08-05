@@ -1,25 +1,19 @@
-const { onCall } = require("firebase-functions/v2/https");
-const { defineSecret } = require("firebase-functions/v2/params");
+// 1. HttpsError를 v2/https에서 직접 임포트합니다.
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
-// kakao.rest_api_key 와 kakao.redirect_uri를 Firebase 환경 변수로 설정해야 합니다.
-// firebase functions:config:set kakao.rest_api_key="YOUR_KEY"
-// firebase functions:config:set kakao.redirect_uri="YOUR_URI"
-
 admin.initializeApp();
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
+const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
 
-// 2. Secret Manager에 저장된 키를 참조하도록 정의
-const KAKAO_REST_API_KEY = defineSecret("KAKAO_REST_API_KEY");
-
-// 인가 코드를 Access Token으로 교환하는 함수
-const getKakaoAccessToken = async (code, apiKey, redirectUri) => { // 3. 파라미터로 받도록 수정
+const getKakaoAccessToken = async (code) => {
   const response = await axios.post(
     "https://kauth.kakao.com/oauth/token",
-    new URLSearchParams({ // 4. URLSearchParams를 사용해 x-www-form-urlencoded 형식으로 전송
+    new URLSearchParams({
       grant_type: "authorization_code",
-      client_id: apiKey,
-      redirect_uri: redirectUri,
+      client_id: KAKAO_REST_API_KEY,
+      redirect_uri: KAKAO_REDIRECT_URI,
       code: code,
     }).toString(),
     {
@@ -31,17 +25,21 @@ const getKakaoAccessToken = async (code, apiKey, redirectUri) => { // 3. 파라�
   return response.data.access_token;
 };
 
-// 5. secrets 옵션을 추가하고, 환경 변수를 올바르게 전달
-exports.kakaoLogin = onCall({ secrets: [KAKAO_REST_API_KEY] }, async (request) => {
+exports.kakaoLogin = onCall({ secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
   try {
     const { code } = request.data;
     if (!code) {
-      throw new functions.https.HttpsError('invalid-argument', 'Authorization code is required.');
+      // 2. new HttpsError(...) 로 직접 사용합니다.
+      throw new HttpsError('invalid-argument', 'Authorization code is required.');
     }
 
-    // Secret Manager와 .env에서 값을 가져옵니다.
-    const apiKey = KAKAO_REST_API_KEY.value();
-    const redirectUri = process.env.KAKAO_REDIRECT_URI; // .env 파일에서 읽어옴
+    const apiKey = KAKAO_REST_API_KEY;
+    const redirectUri = KAKAO_REDIRECT_URI;
+
+    if (!apiKey || !redirectUri) {
+      console.error("환경 변수가 설정되지 않았습니다.");
+      throw new HttpsError('internal', 'Server configuration error.');
+    }
 
     const accessToken = await getKakaoAccessToken(code, apiKey, redirectUri);
 
@@ -51,22 +49,17 @@ exports.kakaoLogin = onCall({ secrets: [KAKAO_REST_API_KEY] }, async (request) =
 
     const kakaoData = kakaoRes.data;
     const kakaoUid = `kakao:${kakaoData.id}`;
-    
-    // (여기에 사용자 생성/업데이트 로직 추가)
+    console.log(kakaoData);
+    // ✅ 아래와 같이 ?. 와 || 를 사용해 안전하게 값을 가져오도록 수정합니다.
+    const displayName = kakaoData.properties?.nickname || '카카오사용자';
+    const photoURL = kakaoData.properties?.profile_image;
+    const email = kakaoData.kakao_account?.email;
+
     try {
-      await admin.auth().updateUser(kakaoUid, {
-        displayName: kakaoData.properties.nickname,
-        photoURL: kakaoData.properties.profile_image,
-        email: kakaoData.kakao_account.email,
-      });
+      await admin.auth().updateUser(kakaoUid, { displayName, photoURL, email });
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
-        await admin.auth().createUser({
-          uid: kakaoUid,
-          displayName: kakaoData.properties.nickname,
-          photoURL: kakaoData.properties.profile_image,
-          email: kakaoData.kakao_account.email,
-        });
+        await admin.auth().createUser({ uid: kakaoUid, displayName, photoURL, email });
       } else {
         throw error;
       }
@@ -76,10 +69,12 @@ exports.kakaoLogin = onCall({ secrets: [KAKAO_REST_API_KEY] }, async (request) =
     return { token: customToken };
 
   } catch (err) {
-    console.error("Authentication Error:", err.response ? err.response.data : err);
-    throw new functions.https.HttpsError(
-      'internal',
-      'Kakao authentication failed.'
-    );
+    console.error("Authentication Error:", err.response ? err.response.data : err.message);
+    
+    // 3. catch 블록에서도 HttpsError를 직접 사용합니다.
+    if (err instanceof HttpsError) {
+      throw err; // 이미 HttpsError인 경우 그대로 던집니다.
+    }
+    throw new HttpsError('internal', 'Kakao authentication failed.');
   }
 });
