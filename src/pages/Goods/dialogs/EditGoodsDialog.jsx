@@ -1,6 +1,7 @@
 import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, Stack, TextField, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
+import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
   const [name, setName] = useState('');
@@ -47,8 +48,8 @@ export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField label="용품명" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
-          <TextField label="가격" type="number" value={price}
-            onChange={(e) => setPrice(e.target.value)} fullWidth />
+          <TextField label="가격" type="number" value={price} fullWidth
+            onChange={(e) => setPrice(handleNumericInputChange(e.target.value))} />
           <TextField label="구매처" value={shopper} onChange={(e) => setShopper(e.target.value)} fullWidth />
           <TextField label="구매일" type="date" value={date}
             onChange={(e) => setDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />

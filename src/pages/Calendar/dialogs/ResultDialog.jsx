@@ -3,6 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListIt
 import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
 import { v4 as uuidv4 } from 'uuid';
+import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [result, setResult] = useState('');
@@ -48,7 +49,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
             label="결과 (예: 남복 4-0-0)" fullWidth value={result}
             onChange={(e) => setResult(e.target.value)}
           />
-          <TextField
+          {/* <TextField
             label="비용 (숫자)" fullWidth type="number" value={price}
             onChange={(e) => {
               const val = e.target.value;
@@ -57,11 +58,11 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
               }
             }}
             inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-          />
-          {/* <TextField
-            label="비용 (숫자)" fullWidth type="number" value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
           /> */}
+          <TextField
+            label="비용 (숫자)" fullWidth type="number" value={price}
+            onChange={(e) => setPrice(handleNumericInputChange(e.target.value))}
+          />
           <TextField 
             label="메모" fullWidth multiline rows={3} value={memo}
             onChange={(e) => setMemo(e.target.value)} onClick={(e) => e.stopPropagation()}
@@ -75,14 +76,13 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
               {files.map((file, idx) => (
                 <ListItem key={idx}>
                   <Tooltip title={file.name}>
-
                     <Typography
                       variant="body2"
                       sx={{ fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', }}
                     >
                       {file.name}
                     </Typography>
-                    </Tooltip>
+                  </Tooltip>
                 </ListItem>
               ))}
             </List>

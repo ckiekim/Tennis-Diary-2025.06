@@ -3,12 +3,13 @@ import {
   Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem,
   MenuItem, Stack, TextField, Typography 
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import useCourtList from '../../../hooks/useCourtList';
-import formatDay from '../../../utils/formatDay';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
-import DeleteIcon from '@mui/icons-material/Delete';
+import formatDay from '../../../utils/formatDay';
+import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function EditResultDialog({ open, onClose, result, uid }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
@@ -61,7 +62,7 @@ export default function EditResultDialog({ open, onClose, result, uid }) {
         place: form.place,
         result: form.result,
         source: form.source,
-        price: form.price,
+        price: Number(form.price),
         memo: form.memo,
         photoList: finalPhotoList,
       });
@@ -102,7 +103,7 @@ export default function EditResultDialog({ open, onClose, result, uid }) {
           />
           <TextField
             label="비용" fullWidth type="number" value={form.price || ''} size='small'
-            onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+            onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
           />
           <TextField
             label="메모" fullWidth value={form?.memo || ''} size='small'

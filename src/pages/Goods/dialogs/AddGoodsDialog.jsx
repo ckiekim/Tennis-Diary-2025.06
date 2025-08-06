@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 import { uploadImageToFirebase } from '../../../api/firebaseStorage';
+import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
-  const [form, setForm] = useState({ name: '', shopper: '', price: 0, date: '', photo: '' });
+  const [form, setForm] = useState({ name: '', shopper: '', price: '0', date: '', photo: '' });
   const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
@@ -33,9 +34,10 @@ export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
 
   const handleSave = () => {
     if (!form.name || !form.date) return;
+    setForm((prev) => ({ ...prev, price: Number(prev.price) }));
     onAdd({ ...form, uid });
     onClose();
-    setForm({ name: '', shopper: '', price: 0, date: '', photo: '' });
+    setForm({ name: '', shopper: '', price: '0', date: '', photo: '' });
   };
 
   return (
@@ -45,7 +47,10 @@ export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
         <Stack spacing={2} mt={1}>
           <TextField name="name" label="용품명" value={form.name} onChange={handleChange} fullWidth />
           <TextField name="shopper" label="구매처" value={form.shopper} onChange={handleChange} fullWidth />
-          <TextField name="price" label="가격" value={form.price} onChange={handleChange} type="number" fullWidth />
+          {/* <TextField name="price" label="가격" value={form.price} onChange={handleChange} type="number" fullWidth /> */}
+          <TextField label="비용" fullWidth type="number" value={form.price || ''} 
+            onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })} 
+          />
           <TextField name="date" label="구매일" value={form.date} onChange={handleChange} type="date" fullWidth InputLabelProps={{ shrink: true }} />
           {/* <TextField name="photo" label="사진 URL" value={form.photo} fullWidth margin="dense" onChange={handleChange} />
            */}

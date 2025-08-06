@@ -1,4 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 
 export default function EditScheduleDialog({courts, open, selectedSchedule, setOpen, setSelectedSchedule, onUpdate}) {
   if (!selectedSchedule) return null;
@@ -35,14 +36,14 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
               />
               <TextField
                 label="비용" fullWidth type="number" value={selectedSchedule.price || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: Number(e.target.value) })}
+                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
               />
             </>
           ) : (
             <>
               <TextField
                 label="시간" fullWidth value={selectedSchedule?.time || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, time: e.target.value })}
+                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, time: handleTimeInputChange(e.target.value) })}
               />
               <TextField
                 label="장소" select fullWidth value={selectedSchedule?.place || ''}
@@ -56,7 +57,7 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
               { isLesson ? (
                 <TextField
                   label="비용" fullWidth type="number" value={selectedSchedule.price || ''}
-                  onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: Number(e.target.value) })}
+                  onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
                 />
               ) : (
                 <TextField
