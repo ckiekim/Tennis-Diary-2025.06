@@ -27,3 +27,4 @@ yarn-error.log*
 
 # CK Kim adds
 .firebase/hosting.*
+firebase-debug.log

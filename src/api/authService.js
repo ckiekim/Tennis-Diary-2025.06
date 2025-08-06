@@ -49,6 +49,14 @@ export const loginWithCustomToken = async (customToken) => {
 export const logout = async () => {
   try {
     await signOut(auth);
+
+    // 카카오 로그인 상태도 함께 로그아웃
+    // window.Kakao.Auth.getAccessToken() 으로 카카오 로그인 여부를 확인합니다.
+    if (window.Kakao && window.Kakao.Auth.getAccessToken()) {
+      window.Kakao.Auth.logout(() => {
+        console.log('Kakao logout 성공');
+      });
+    }
   } catch (error) {
     console.error('로그아웃 실패:', error);
     throw error;
