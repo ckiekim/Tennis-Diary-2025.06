@@ -21,11 +21,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
         <IconButton size="small" onClick={() => onDelete(schedule)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
-        { isStringReplace || isLesson ? (
-          <IconButton size="small">
-            <NotesIcon fontSize="small" />
-          </IconButton>
-        ) : (
+        { ! (isStringReplace || isLesson) && (
           <IconButton size="small" onClick={() => onResult(schedule)}>
             <NotesIcon fontSize="small" />
           </IconButton>
@@ -77,7 +73,10 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
       {schedule.price && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>💰</Box>
-          <Typography variant="body2">{schedule.price.toLocaleString()}원</Typography>
+          <Typography variant="body2">
+            {schedule.price.toLocaleString()}
+            {isLesson ? '원/월' : '원'}
+          </Typography>
         </Box>
       )}
     </Box>

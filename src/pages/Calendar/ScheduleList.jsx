@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch } from 'firebase/firestore';
 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
@@ -42,6 +42,7 @@ const ScheduleList = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [resultTarget, setResultTarget] = useState(null);
+  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
 
   const handleAddSchedule = async () => {
     if (!form.type) return;
@@ -70,6 +71,63 @@ const ScheduleList = () => {
 
     setAddOpen(false);
     setForm({ type: '', time: '', place: '', source: '' });
+  };
+
+  const handleAddRecurringSchedule = async (recurringOptions) => {
+    const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
+    
+    // 장소와 종료일이 입력되었는지 확인합니다.
+    if (!form.place || !endDate) {
+      alert('장소와 종료일을 모두 입력해주세요.');
+      return;
+    }
+
+    // 여러 문서를 한 번에 쓰기 위한 batch 생성
+    const batch = writeBatch(db);
+    
+    let currentDate = dayjs(); // 오늘부터 시작
+    const finalDate = dayjs(endDate);
+
+    while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
+      const dayOfWeek = currentDate.day(); // 현재 날짜의 요일(숫자)
+      // 첫 번째 요일과 일치하는 경우
+      if (dayOfWeek === dayMap[day1]) {
+        const newEventRef = doc(collection(db, 'events'));
+        batch.set(newEventRef, {
+          uid: user.uid,
+          type: '레슨',
+          date: currentDate.format('YYYY-MM-DD'),
+          time: time1,
+          place: form.place, // 공통 form 상태에서 장소 가져오기
+          price: Number(monthlyPrice),
+          isRecurring: true, // 반복 일정임을 표시
+        });
+      }
+      // 주 2회인 경우, 두 번째 요일과 일치하는지 확인
+      if (frequency === 2 && dayOfWeek === dayMap[day2]) {
+        const newEventRef = doc(collection(db, 'events'));
+        batch.set(newEventRef, {
+          uid: user.uid,
+          type: '레슨',
+          date: currentDate.format('YYYY-MM-DD'),
+          time: time2,
+          place: form.place, // 공통 form 상태에서 장소 가져오기
+          price: Number(monthlyPrice),
+          isRecurring: true, // 반복 일정임을 표시
+        });
+      }
+      
+      currentDate = currentDate.add(1, 'day'); // 다음 날짜로 이동
+    }
+
+    await batch.commit(); // batch에 담긴 모든 쓰기 작업을 한 번에 실행
+
+    // 작업 완료 후 상태 초기화 및 화면 새로고침
+    setAddOpen(false);
+    setForm({ type: '', time: '', place: '', source: '' });
+    setTimeout(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 300);
   };
 
   const handleUpdate = async () => {
@@ -156,7 +214,8 @@ const ScheduleList = () => {
 
       {/* 일정 추가 다이얼로그 */}
       <AddScheduleDialog 
-        courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} onAddSchedule={handleAddSchedule} 
+        courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} 
+        onAddSchedule={handleAddSchedule} onAddRecurringSchedule={handleAddRecurringSchedule}
       />
 
       {/* 일정 수정 다이얼로그 */}
