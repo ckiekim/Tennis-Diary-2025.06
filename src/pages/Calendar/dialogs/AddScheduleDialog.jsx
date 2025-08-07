@@ -56,7 +56,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             <MenuItem value="대회">대회</MenuItem>
             <MenuItem value="스트링 교체">스트링 교체</MenuItem>
           </TextField>
-
+          
           {isLesson && (
             <FormGroup>
               <FormControlLabel
@@ -78,6 +78,39 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
           ) : isLesson && isRecurring ? (
             // 레슨 && 반복 일정 UI
             <Stack spacing={2}>
+              <Typography variant="subtitle2" color="primary">반복 설정</Typography>
+              <TextField select label="반복 주기" value={recurringOptions.frequency}
+                onChange={(e) => setRecurringOptions({ ...recurringOptions, frequency: Number(e.target.value) })}
+              >
+                <MenuItem value={1}>주 1회</MenuItem>
+                <MenuItem value={2}>주 2회</MenuItem>
+              </TextField>
+              <Grid container spacing={1}>
+                <Grid item xs={4}>
+                  <TextField select label="요일 1" fullWidth value={recurringOptions.day1} onChange={(e) => setRecurringOptions({...recurringOptions, day1: e.target.value})}>
+                    {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid item xs={8} sx={{maxWidth: 170}}>
+                  <TextField label="시간 1" value={recurringOptions.time1} fullWidth
+                    onChange={(e) => setRecurringOptions({ ...recurringOptions, time1: handleTimeInputChange(e.target.value) })}
+                  />
+                </Grid>
+              </Grid>
+              {recurringOptions.frequency === 2 && (
+                <Grid container spacing={1}>
+                  <Grid item xs={4}>
+                    <TextField select label="요일 2" fullWidth value={recurringOptions.day2} onChange={(e) => setRecurringOptions({...recurringOptions, day2: e.target.value})}>
+                      {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={8} sx={{maxWidth: 170}}>
+                    <TextField label="시간 2" fullWidth value={recurringOptions.time2} 
+                      onChange={(e) => setRecurringOptions({ ...recurringOptions, time2: handleTimeInputChange(e.target.value) })} 
+                    />
+                  </Grid>
+                </Grid>
+              )}
               <Autocomplete
                 options={courts.map(c => c.name)}
                 value={form.place || ''}
@@ -87,39 +120,6 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 )}
                 freeSolo // 입력값이 courts 목록에 없을 경우도 허용 (선택사항)
               />
-              <Typography variant="subtitle2" color="primary">반복 설정</Typography>
-              <TextField select label="반복 주기" value={recurringOptions.frequency}
-                onChange={(e) => setRecurringOptions({ ...recurringOptions, frequency: Number(e.target.value) })}
-              >
-                <MenuItem value={1}>주 1회</MenuItem>
-                <MenuItem value={2}>주 2회</MenuItem>
-              </TextField>
-              <Grid container spacing={1}>
-                <Grid item xs={3}>
-                  <TextField select label="요일 1" fullWidth value={recurringOptions.day1} onChange={(e) => setRecurringOptions({...recurringOptions, day1: e.target.value})}>
-                    {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
-                  </TextField>
-                </Grid>
-                <Grid item xs={9}>
-                  <TextField label="시간 1" fullWidth value={recurringOptions.time1} 
-                    onChange={(e) => setRecurringOptions({ ...recurringOptions, time1: handleTimeInputChange(e.target.value) })}
-                  />
-                </Grid>
-              </Grid>
-              {recurringOptions.frequency === 2 && (
-                <Grid container spacing={1}>
-                  <Grid item xs={3}>
-                    <TextField select label="요일 2" fullWidth value={recurringOptions.day2} onChange={(e) => setRecurringOptions({...recurringOptions, day2: e.target.value})}>
-                      {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={9}>
-                    <TextField label="시간 2" fullWidth value={recurringOptions.time2} 
-                      onChange={(e) => setRecurringOptions({ ...recurringOptions, time2: handleTimeInputChange(e.target.value) })} 
-                    />
-                  </Grid>
-                </Grid>
-              )}
               <TextField
                 label="월 비용" type="number" fullWidth
                 value={recurringOptions.monthlyPrice}
@@ -135,7 +135,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
           ) : (
             <>
               <TextField label="시간 (예: 13:00~15:00)" fullWidth value={form.time} 
-                onChange={(e) => setRecurringOptions({ ...recurringOptions, time: handleTimeInputChange(e.target.value) })}
+                onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
               />
               <Autocomplete
                 options={courts.map(c => c.name)}
