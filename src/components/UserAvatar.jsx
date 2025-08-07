@@ -26,7 +26,7 @@ export default function UserAvatar() {
 
   const handleSettings = () => {
     setIsMenuOpen(false);
-    navigate('/more');
+    navigate('/setting');
   }
 
   if (loading) return null;
@@ -47,8 +47,8 @@ export default function UserAvatar() {
           onClose={handleMenuToggle}
           anchorEl={anchorEl}
         >
+          <MenuItem onClick={handleSettings}>프로필 설정</MenuItem>
           <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
-          <MenuItem onClick={handleSettings}>사용설정</MenuItem>
         </Menu>
       )}
     </>

@@ -12,6 +12,7 @@ import ResultTournamentPage from './pages/ResultTournament/ResultTournamentPage'
 import GoodsPage from './pages/Goods/GoodsPage';
 import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
+import UserSettingPage from './pages/UserSetting/UserSettingPage';
 import MorePage from './pages/More/MorePage';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
@@ -42,6 +43,7 @@ const App = () => {
         <Route path="/result/tournament" element={ user ? <ResultTournamentPage /> : <Navigate to="/" replace /> } />
         <Route path="/goods" element={ user ? <GoodsPage /> : <Navigate to="/" replace /> } />
         <Route path="/more" element={ user ? <MorePage /> : <Navigate to="/" replace /> } />
+        <Route path="/setting" element={ user ? <UserSettingPage /> : <Navigate to="/" replace /> } />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
         {/* 관리자만 접근 가능한 페이지 */}
