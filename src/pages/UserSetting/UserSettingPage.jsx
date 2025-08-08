@@ -1,22 +1,30 @@
 import { useState, useEffect, useRef } from 'react';
-import { Alert, Avatar, Box, Button, CircularProgress, Container, FormControl, Grid, IconButton, InputLabel,
-  MenuItem, Paper, Select, TextField, Tooltip, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Alert, Avatar, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
+  FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, TextField, Tooltip, Typography 
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import MainLayout from '../../components/MainLayout';
 import useAuthState from '../../hooks/useAuthState';
 import useUserSettings from '../../hooks/useUserSettings';
 import { updateProfilePhoto } from '../../api/userProfileService';
+import { parseLocation, joinLocation } from '../../utils/handleLocation';
 import KOREA_DISTRICTS from '../../data/korea-administrative-districts.json';
 
 const UserSettingPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuthState();
   const { settings, loading, error, updateSettings } = useUserSettings();
+  const fileInputRef = useRef(null);
   
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
-  const fileInputRef = useRef(null);
   const [nickname, setNickname] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
+  const [dialog, setDialog] = useState({
+    open: false, title: '', message: '',
+    onConfirm: null, // 확인 버튼 클릭 시 실행할 콜백
+  });
   const [province, setProvince] = useState(''); // 광역시도
   const [city, setCity] = useState('');         // 기초자치단체
 
@@ -24,16 +32,22 @@ const UserSettingPage = () => {
   useEffect(() => {
     if (settings) {
       setNickname(settings.nickname || '');
-      if (settings.location) {
-        const [prov, cty] = settings.location.split(' ');
-        setProvince(prov || '');
-        setCity(cty || '');
-      }
+      const { province, city } = parseLocation(settings.location);
+      setProvince(province);
+      setCity(city);
     }
   }, [settings]);
 
   const handleEditPhotoClick = () => {
     fileInputRef.current.click();
+  };
+
+  const handleCloseDialog = () => {
+    // 확인 버튼에 연결된 콜백이 있으면 실행
+    if (dialog.onConfirm) {
+      dialog.onConfirm();
+    }
+    setDialog({ open: false, title: '', message: '' });
   };
 
   const handlePhotoChange = async (event) => {
@@ -46,10 +60,10 @@ const UserSettingPage = () => {
       const newPhotoUrl = await updateProfilePhoto(user, file, settings?.photo);
       // 2. Firestore에 새 URL 업데이트
       await updateSettings({ photo: newPhotoUrl });
-      alert('프로필 사진이 성공적으로 변경되었습니다.');
+      setDialog({ open: true, title: '성공', message: '프로필 사진이 성공적으로 변경되었습니다.', });
     } catch (err) {
       console.error('프로필 사진 변경 실패:', err);
-      alert('프로필 사진 변경에 실패했습니다.');
+      setDialog({ open: true, title: '오류', message: '프로필 사진 변경에 실패했습니다.', });
     } finally {
       setIsPhotoUploading(false);
     }
@@ -58,12 +72,14 @@ const UserSettingPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const location = province && city ? `${province} ${city}` : '';
+      const location = joinLocation(province, city);
       await updateSettings({ nickname, location, });
-      alert('설정이 성공적으로 저장되었습니다.');
+      setDialog({ open: true, title: '저장 완료', message: '설정이 성공적으로 저장되었습니다.',
+        onConfirm: () => navigate(-1) // 이전 페이지로 이동
+      });
     } catch (err) {
       console.error("설정 저장 실패:", err);
-      alert('설정 저장에 실패했습니다.');
+      setDialog({ open: true, title: '오류', message: '설정 저장에 실패했습니다.', });
     } finally {
       setIsSaving(false);
     }
@@ -174,6 +190,20 @@ const UserSettingPage = () => {
           </Box>
         </Paper>
       </Container>
+
+      <Dialog open={dialog.open} onClose={handleCloseDialog}>
+        <DialogTitle>{dialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {dialog.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} autoFocus>
+            확인
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainLayout>
   );
 };
