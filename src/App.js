@@ -1,10 +1,13 @@
-// import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import useAuthState from './hooks/useAuthState';
-import useAdminCheck from './hooks/useAdminCheck';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+
+import AuthGuard from './components/AuthGuard';
+import AdminGuard from './components/AdminGuard';
 import CalendarPage from './pages/Calendar/CalendarPage';
 import LoginPage from './pages/Home/LoginPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
+import NotFoundError from './pages/Home/NotFoundError';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
 import ResultDetailPage from './pages/ResultDetail/ResultDetailPage';
 import ResultStatPage from './pages/ResultStat/ResultStatPage';
@@ -14,43 +17,40 @@ import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserSettingPage from './pages/UserSetting/UserSettingPage';
 import MorePage from './pages/More/MorePage';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ko';
 
 const App = () => {
   dayjs.locale('ko');
-  const { user, loading } = useAuthState();
-  const { isAdmin } = useAdminCheck();
-
-  // useEffect(() => {
-  //   if (window.Kakao && !window.Kakao.isInitialized()) {
-  //     window.Kakao.init(process.env.REACT_APP_KAKAO_JAVASCRIPT_KEY);  // 복사한 JavaScript 키
-  //   }
-  // }, []);
-
-  if (loading) return <div>로딩 중...</div>; 
 
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* 홈화면: 로그인 상태면 /calendar로 리다이렉트 */}
-        <Route path="/" element={ user ? <Navigate to="/calendar" replace /> : <LoginPage /> } />
-        {/* 로그인해야 접근 가능한 페이지 */}
-        <Route path="/calendar" element={ user ? <CalendarPage /> : <Navigate to="/" replace /> } />
-        <Route path="/result/game" element={ user ? <ResultGamePage /> : <Navigate to="/" replace /> } />
-        <Route path="/result/:id" element={ user ? <ResultDetailPage /> : <Navigate to="/" replace /> } />
-        <Route path="/result/stat" element={ user ? <ResultStatPage /> : <Navigate to="/" replace /> } />
-        <Route path="/result/tournament" element={ user ? <ResultTournamentPage /> : <Navigate to="/" replace /> } />
-        <Route path="/goods" element={ user ? <GoodsPage /> : <Navigate to="/" replace /> } />
-        <Route path="/more" element={ user ? <MorePage /> : <Navigate to="/" replace /> } />
-        <Route path="/setting" element={ user ? <UserSettingPage /> : <Navigate to="/" replace /> } />
+        {/* 로그인이 필요 없는 페이지 */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
+
+        {/* 로그인이 필요한 페이지들을 AuthGuard로 감싸기 */}
+        <Route element={<AuthGuard />}>
+          <Route path="/" element={<CalendarPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/result/game" element={<ResultGamePage />} />
+          <Route path="/result/:id" element={<ResultDetailPage />} />
+          <Route path="/result/stat" element={<ResultStatPage />} />
+          <Route path="/result/tournament" element={<ResultTournamentPage />} />
+          <Route path="/goods" element={<GoodsPage />} />
+          <Route path="/more" element={<MorePage />} />
+          <Route path="/setting" element={<UserSettingPage />} />
+        </Route>
+
         {/* 관리자만 접근 가능한 페이지 */}
-        <Route path="/admin/courts" element={ isAdmin ? <CourtAdminPage /> : <Navigate to="/" replace /> } />
-        <Route path="/admin/users" element={ isAdmin ? <UserAdminPage /> : <Navigate to="/" replace /> } />
+        <Route element={<AdminGuard />}>
+          <Route path="/admin/courts" element={<CourtAdminPage />} />
+          <Route path="/admin/users" element={<UserAdminPage />} />
+        </Route>
+        
+        {/* 일치하는 라우트가 없을 경우 */}
+        <Route path="*" element={<NotFoundError />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 };
 

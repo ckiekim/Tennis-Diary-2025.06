@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Avatar, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
+import useUserSettings from '../hooks/useUserSettings';
 
 export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, loading } = useAuthState();
+  const { user, loading: authLoading } = useAuthState(); 
+  // Firestore의 실시간 데이터를 가져오기 위해 useUserSettings를 사용합니다.
+  const { settings, loading: settingsLoading } = useUserSettings();
+
   const navigate = useNavigate();
 
   const handleMenuToggle = (event) => {
@@ -29,15 +33,15 @@ export default function UserAvatar() {
     navigate('/setting');
   }
 
-  if (loading) return null;
+  if (authLoading || settingsLoading) return null;
 
   return (
     <>
-      {user && (
-        <Tooltip title={`${user.displayName}님`}>
-        <IconButton onClick={handleMenuToggle} color="inherit">
-          <Avatar src={user.photoURL} alt={user.displayName} sx={{ width: 32, height: 32 }} />
-        </IconButton>
+      {user && settings && (
+        <Tooltip title={`${settings.nickname}님`}>
+          <IconButton onClick={handleMenuToggle} color="inherit">
+            <Avatar src={settings.photo} alt={settings.nickname} sx={{ width: 32, height: 32 }} />
+          </IconButton>
         </Tooltip>
       )}
 

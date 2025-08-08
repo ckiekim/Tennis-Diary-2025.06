@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig'; 
 import useAuthState from './useAuthState';
 
@@ -8,46 +8,51 @@ const useUserSettings = () => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+    let unsubscribe; // 리스너를 해제하기 위한 변수
 
-      setLoading(true);
-      try {
-        const userDocRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(userDocRef);
-
-        if (docSnap.exists()) {
-          // 문서가 존재하면 해당 데이터로 상태 설정
-          setSettings(docSnap.data());
-        } else {
-          // 문서가 없으면 (최초 로그인) 초기값으로 문서를 생성
-          const initialSettings = {
-            email: user.email,
-            nickname: user.displayName || '사용자',
-            photo: user.photoURL || '',
-            joinDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD 형식
-            location: '', // 지역 정보는 초기에 비워둠
-            createdAt: serverTimestamp(), // 생성 타임스탬프
-          };
-          await setDoc(userDocRef, initialSettings);
-          setSettings(initialSettings);
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      unsubscribe = onSnapshot(userDocRef, 
+        (docSnap) => { // 성공 콜백
+          if (docSnap.exists()) {
+            setSettings(docSnap.data());
+            // 문서가 존재하면 신규 유저가 아님
+            setIsNewUser(false);
+          } else {
+            // 문서가 없으면 신규 유저임
+            setIsNewUser(true);
+            const initialSettings = {
+              email: user.email,
+              nickname: user.displayName || '사용자',
+              photo: user.photoURL || '',
+              joinDate: new Date().toISOString().split('T')[0],
+              location: '',
+              createdAt: serverTimestamp(),
+            };
+            setDoc(userDocRef, initialSettings);
+            setSettings(initialSettings);
+          }
+          setLoading(false);
+        }, 
+        (err) => { // 에러 콜백
+          console.error("사용자 설정 정보 실시간 수신 실패:", err);
+          setError(err);
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("사용자 설정 정보 로딩 실패:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
+      );
+    } else if (!authLoading) {
+      setLoading(false);    // 사용자가 없거나 로딩이 끝났을 때
+    }
+
+    // 클린업 함수: 컴포넌트가 언마운트될 때 리스너를 해제하여 메모리 누수 방지
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
-
-    if (!authLoading) {
-      fetchSettings();
-    }
   }, [user, authLoading]);
 
   // 설정 정보 업데이트 함수
@@ -61,7 +66,7 @@ const useUserSettings = () => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  return { settings, loading, error, updateSettings };
+  return { settings, loading, error, isNewUser, updateSettings };
 };
 
 export default useUserSettings;

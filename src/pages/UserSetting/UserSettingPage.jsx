@@ -1,18 +1,24 @@
-import { useState, useEffect } from 'react';
-import { Alert, Avatar, Box, Button, CircularProgress, Container, FormControl, Grid, InputLabel,
-  MenuItem, Paper, Select, TextField, Typography } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Alert, Avatar, Box, Button, CircularProgress, Container, FormControl, Grid, IconButton, InputLabel,
+  MenuItem, Paper, Select, TextField, Tooltip, Typography } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import MainLayout from '../../components/MainLayout';
+import useAuthState from '../../hooks/useAuthState';
 import useUserSettings from '../../hooks/useUserSettings';
+import { updateProfilePhoto } from '../../api/userProfileService';
 import KOREA_DISTRICTS from '../../data/korea-administrative-districts.json';
 
 const UserSettingPage = () => {
+  const { user } = useAuthState();
   const { settings, loading, error, updateSettings } = useUserSettings();
-  // 폼 입력을 위한 로컬 state
+  
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [nickname, setNickname] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const [province, setProvince] = useState(''); // 광역시도
-  const [city, setCity] = useState('');       // 기초자치단체
+  const [city, setCity] = useState('');         // 기초자치단체
 
   // Firestore에서 데이터를 가져오면 로컬 state에 반영
   useEffect(() => {
@@ -25,6 +31,29 @@ const UserSettingPage = () => {
       }
     }
   }, [settings]);
+
+  const handleEditPhotoClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handlePhotoChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsPhotoUploading(true);
+    try {
+      // 1. 사진 업로드 및 기존 사진 삭제 (서비스 함수 호출)
+      const newPhotoUrl = await updateProfilePhoto(user, file, settings?.photo);
+      // 2. Firestore에 새 URL 업데이트
+      await updateSettings({ photo: newPhotoUrl });
+      alert('프로필 사진이 성공적으로 변경되었습니다.');
+    } catch (err) {
+      console.error('프로필 사진 변경 실패:', err);
+      alert('프로필 사진 변경에 실패했습니다.');
+    } finally {
+      setIsPhotoUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -68,7 +97,29 @@ const UserSettingPage = () => {
       <Container maxWidth="sm" sx={{ mt: 2 }}>
         <Paper elevation={3} sx={{ p: 2 }}>
           <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
-            <Avatar src={settings?.photo}  alt={settings?.nickname}  sx={{ width: 100, height: 100, mb: 3 }}  />
+            <Box sx={{ position: 'relative', mb: 2 }}>
+
+              <Avatar 
+                src={settings?.photo}  alt={settings?.nickname} 
+                sx={{ width: 100, height: 100, mb: 3, opacity: isPhotoUploading ? 0.5 : 1 }}  
+              />
+              {isPhotoUploading && (
+                <CircularProgress size={116} sx={{ position: 'absolute', top: -8, left: -8, zIndex: 1, }} />
+              )}
+              <input
+                type="file" ref={fileInputRef} onChange={handlePhotoChange} accept="image/*" style={{ display: 'none' }}
+              />
+              <Tooltip title="프로필 사진 변경">
+                <IconButton
+                  onClick={handleEditPhotoClick} disabled={isPhotoUploading} size="small"
+                  sx={{ position: 'absolute', bottom: 10, right: -5, backgroundColor: 'background.paper',
+                    '&:hover': { backgroundColor: 'action.hover' }
+                  }}
+                >
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
             <Typography variant="caption" color="text.secondary">
               프로필 사진은 가입한 Google 또는 Kakao 계정에서 변경할 수 있습니다.
             </Typography>
