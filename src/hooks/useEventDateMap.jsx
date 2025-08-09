@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
-import { db } from '../api/firebaseConfig';
+// import { getAuth } from 'firebase/auth';
+import { auth, db } from '../api/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const useEventDateMap = (refreshKey = 0) => {
   const [eventDateMap, setEventDateMap] = useState({});
-  const auth = getAuth();
+  // const auth = getAuth();
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -31,7 +31,8 @@ const useEventDateMap = (refreshKey = 0) => {
     };
 
     fetchEventDates();
-  }, [auth.currentUser, refreshKey]);
+  // }, [auth.currentUser, refreshKey]);
+  }, [refreshKey]);
 
   return eventDateMap;
 };

@@ -1,7 +1,7 @@
 /*
  *  Firebase Authentication
  */
-import { GoogleAuthProvider, signInWithPopup, signInWithCustomToken, signOut } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, signInWithCustomToken, signOut } from 'firebase/auth';
 import { auth } from './firebaseConfig';
 
 export const loginWithGoogle = async () => {
@@ -9,13 +9,14 @@ export const loginWithGoogle = async () => {
   provider.setCustomParameters({    // 계정 선택 강제
     prompt: 'select_account',
   });
-  try {
-    const result = await signInWithPopup(auth, provider);
-    return result.user;
-  } catch (error) {
-    console.error('Google 로그인 실패:', error);
-    throw error;
-  }
+  // try {
+  //   const result = await signInWithPopup(auth, provider);
+  //   return result.user;
+  // } catch (error) {
+  //   console.error('Google 로그인 실패:', error);
+  //   throw error;
+  // }
+  return signInWithRedirect(auth, provider);
 };
 
 /**

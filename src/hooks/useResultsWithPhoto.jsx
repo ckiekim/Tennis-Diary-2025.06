@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
-import { db } from '../api/firebaseConfig';
+// import { getAuth } from 'firebase/auth';
+import { auth, db } from '../api/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export default function useResultsWithPhoto(refreshKey = 0) {
   const [list, setList] = useState([]);
-  const auth = getAuth();
+  // const auth = getAuth();
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -40,6 +40,8 @@ export default function useResultsWithPhoto(refreshKey = 0) {
       setList(results);
     };
     fetch();
-  }, [auth.currentUser, refreshKey]);
+  // }, [auth.currentUser, refreshKey]);
+  }, [refreshKey]);
+
   return list;
 }
