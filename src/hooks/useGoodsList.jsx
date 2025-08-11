@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-// import { getAuth } from 'firebase/auth';
 import { auth, db } from '../api/firebaseConfig';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 
 const useGoodsList = (refreshKey = 0) => {
   const [goods, setGoods] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const auth = getAuth();
 
   useEffect(() => {
     const fetchGoods = async () => {

@@ -9,7 +9,7 @@ export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const { user, loading: authLoading } = useAuthState(); 
-  // Firestore의 실시간 데이터를 가져오기 위해 useUserSettings를 사용합니다.
+  // Firestore의 실시간 데이터를 가져옴
   const { settings, loading: settingsLoading } = useUserSettings();
 
   const navigate = useNavigate();

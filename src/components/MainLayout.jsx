@@ -2,7 +2,6 @@ import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/mater
 import { useNavigate } from 'react-router-dom';
 import UserAvatar from './UserAvatar';
 import BottomNav from './BottomNav';
-// import TopRightCloseButton from './TopRightCloseButton';
 
 export default function MainLayout({ children, title = '' }) {
   const navigate = useNavigate();

@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-// import { getAuth } from 'firebase/auth';
 import { auth, db } from '../api/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export default function useResultsWithPhoto(refreshKey = 0) {
   const [list, setList] = useState([]);
-  // const auth = getAuth();
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -17,7 +15,6 @@ export default function useResultsWithPhoto(refreshKey = 0) {
     const fetch = async () => {
       const [evSnap, courtSnap] = await Promise.all([
         getDocs(query(collection(db, 'events'), where('uid', '==', user.uid))),
-        // getDocs(collection(db, 'events')),
         getDocs(collection(db, 'courts')),
       ]);
       const courtMap = {};
@@ -40,7 +37,6 @@ export default function useResultsWithPhoto(refreshKey = 0) {
       setList(results);
     };
     fetch();
-  // }, [auth.currentUser, refreshKey]);
   }, [refreshKey]);
 
   return list;

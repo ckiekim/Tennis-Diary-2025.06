@@ -3,7 +3,6 @@ import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 import useAuthState from '../hooks/useAuthState';
 import useUserSettings from '../hooks/useUserSettings';
-// import { getAuth, getRedirectResult } from 'firebase/auth';
 import { getRedirectResult } from 'firebase/auth';
 import { auth } from '../api/firebaseConfig';
 
@@ -11,7 +10,6 @@ const AuthGuard = () => {
   const { user, loading: authLoading } = useAuthState();
   const { isNewUser, loading: settingsLoading } = useUserSettings();
   const location = useLocation(); // 현재 경로를 확인하기 위함
-  // const auth = getAuth();
 
   // --- 리디렉션 결과 처리 ---
   useEffect(() => {
@@ -30,7 +28,7 @@ const AuthGuard = () => {
     };
     
     checkRedirectResult();
-  }, []);
+  });
 
   // 인증 정보나 설정 정보를 로딩 중일 때는 로딩 화면 표시
   if (authLoading || settingsLoading) {

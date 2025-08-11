@@ -1,10 +1,10 @@
 import { uploadImageToFirebase, deletePhotoFromStorage, getPathFromUrl } from './firebaseStorage';
 
 /**
- * 사용자의 프로필 사진을 업데이트합니다.
- * 1. 기존 사진이 Firebase Storage에 있으면 삭제합니다.
- * 2. 새 사진을 'uid/settings' 경로에 업로드합니다.
- * 3. 새 사진의 다운로드 URL을 반환합니다.
+ * 사용자의 프로필 사진을 업데이트
+ * 1. 기존 사진이 Firebase Storage에 있으면 삭제
+ * 2. 새 사진을 'uid/settings' 경로에 업로드
+ * 3. 새 사진의 다운로드 URL을 반환
  *
  * @param {object} user - uid를 포함한 Firebase 사용자 객체
  * @param {File} newPhotoFile - 업로드할 새 이미지 파일

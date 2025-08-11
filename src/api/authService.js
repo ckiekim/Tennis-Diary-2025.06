@@ -9,13 +9,6 @@ export const loginWithGoogle = async () => {
   provider.setCustomParameters({    // 계정 선택 강제
     prompt: 'select_account',
   });
-  // try {
-  //   const result = await signInWithPopup(auth, provider);
-  //   return result.user;
-  // } catch (error) {
-  //   console.error('Google 로그인 실패:', error);
-  //   throw error;
-  // }
   return signInWithRedirect(auth, provider);
 };
 
@@ -28,8 +21,8 @@ export const loginWithGoogle = async () => {
  */
 export const loginWithKakao = () => {
   // 1. 카카오 인가 코드 받기 (Redirect)
-  const KAKAO_REST_API_KEY = process.env.REACT_APP_KAKAO_REST_API_KEY; // ⚠️ 환경 변수에서 키를 가져오세요.
-  const KAKAO_REDIRECT_URI = process.env.REACT_APP_KAKAO_REDIRECT_URI; // ⚠️ 환경 변수에서 리다이렉트 URI를 가져오세요.
+  const KAKAO_REST_API_KEY = process.env.REACT_APP_KAKAO_REST_API_KEY;
+  const KAKAO_REDIRECT_URI = process.env.REACT_APP_KAKAO_REDIRECT_URI;
   
   const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
   

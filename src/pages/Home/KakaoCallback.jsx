@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-// import { getAuth, signInWithCustomToken } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { auth } from '../../api/firebaseConfig';
 
