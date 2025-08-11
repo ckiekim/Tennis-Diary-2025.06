@@ -5,10 +5,12 @@ import {
 } from '@mui/material';
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
+import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 
 export default function AddScheduleDialog({courts, open, form, setOpen, setForm, onAddSchedule, onAddRecurringSchedule}) {
   const isStringReplace = form.type === "스트링 교체";
   const isLesson = form.type === "레슨";
+  const isTournament = form.type === "대회";
   const sourceList = useSourceList();
 
   // 반복 일정 입력을 위한 State 추가
@@ -39,6 +41,15 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
       // 기존 단일 일정 추가 함수 호출
       onAddSchedule();
     }
+  };
+
+  // 주관 변경 시 참가부문 초기화
+  const handleOrganizerChange = (e) => {
+    setForm({
+      ...form,
+      organizer: e.target.value,
+      division: '', // 주관 변경 시 참가부문 초기화
+    });
   };
 
   const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
@@ -130,6 +141,45 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 value={recurringOptions.endDate}
                 onChange={(e) => setRecurringOptions({ ...recurringOptions, endDate: e.target.value })}
                 InputLabelProps={{ shrink: true }}
+              />
+            </Stack>
+          ) : isTournament ? (
+            <Stack spacing={2}>
+              <TextField label="대회명" fullWidth value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              {/* <TextField label="일자" type="date" fullWidth value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} InputLabelProps={{ shrink: true }} /> */}
+              <Autocomplete
+                options={courts.map(c => c.name)}
+                value={form.place || ''}
+                onChange={(e, newValue) => setForm({ ...form, place: newValue })}
+                renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
+                freeSolo
+              />
+              <Grid container spacing={2}>
+                <Grid item xs={6} sx={{ minWidth: 100 }}>
+                  <TextField label="참가종목" select fullWidth value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                    {tournamentCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid item xs={6} sx={{ maxWidth: 120 }}>
+                  <TextField label="파트너" fullWidth value={form.partner || ''} onChange={(e) => setForm({ ...form, partner: e.target.value })} />
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={6} sx={{ minWidth: 100 }}>
+                  <TextField label="주관" select fullWidth value={form.organizer || ''} onChange={handleOrganizerChange}>
+                    {tournamentOrganizers.map(org => <MenuItem key={org} value={org}>{org}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                {form.organizer && (
+                  <Grid item xs={6} sx={{ minWidth: 120 }}>
+                    <TextField label="참가부문" select fullWidth value={form.division || ''} onChange={(e) => setForm({ ...form, division: e.target.value })}>
+                      {(form.organizer === 'KATA' ? kataDivisions : katoDivisions).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                    </TextField>
+                  </Grid>
+                )}
+              </Grid>
+              <TextField label="참가비" fullWidth type="number" value={form.price || ''}
+                onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
               />
             </Stack>
           ) : (

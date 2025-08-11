@@ -7,6 +7,7 @@ import NotesIcon from '@mui/icons-material/Notes';
 export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
   const isStringReplace = schedule.type === "스트링 교체";
   const isLesson = schedule.type === "레슨";
+  const isTournament = schedule.type === "대회";
 
   return (
     <Box
@@ -44,6 +45,22 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
             <Typography variant="body2">{schedule.place}</Typography>
+          </Box>
+        </>
+      ) : isTournament ? (
+        // 대회 정보 표시
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🏆</Box>
+            <Typography variant="body2" fontWeight="bold">{schedule.name}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🎾</Box>
+            <Typography variant="body2">{`${schedule.category} / ${schedule.organizer} ${schedule.division}`}</Typography>
+          </Box>
+           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
+            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
           </Box>
         </>
       ) : (

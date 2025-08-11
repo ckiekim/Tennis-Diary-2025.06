@@ -10,7 +10,7 @@ export default function LoginPage() {
 
   // Google 로그인 성공 시 호출될 콜백 함수
   const handleGoogleCredentialResponse = async (response) => {
-    console.log("Encoded JWT ID token: " + response.credential);
+    // console.log("Encoded JWT ID token: " + response.credential);
     
     // Google에서 받은 ID 토큰으로 Firebase credential 생성
     const credential = GoogleAuthProvider.credential(response.credential);

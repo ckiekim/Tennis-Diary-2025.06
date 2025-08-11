@@ -52,6 +52,11 @@ const ScheduleList = () => {
         alert('스트링 교체 항목을 모두 입력해주세요.');
         return;
       }
+    } else if (form.type === '대회') {
+      if (!form.name || !form.category) {
+        alert('대회 항목을 모두 입력해주세요.');
+        return;
+      }
     } else {
       if (!form.time || !form.place) {
         alert('시간과 장소를 입력해주세요.');
@@ -59,10 +64,14 @@ const ScheduleList = () => {
       }
     }
 
-    await addDoc(collection(db, 'events'), {
-      date: selectedDate.format('YYYY-MM-DD'),
+    const dataToSubmit = {
       ...form,
-    });
+      date: selectedDate.format('YYYY-MM-DD'),
+    };
+    if (dataToSubmit.price) 
+      dataToSubmit.price = Number(dataToSubmit.price);
+
+    await addDoc(collection(db, 'events'), dataToSubmit);
 
     // 🔁 0.3초후 화면 강제 리렌더
     setTimeout(() => {

@@ -28,7 +28,7 @@ const AuthGuard = () => {
     };
     
     checkRedirectResult();
-  });
+  }, []);
 
   // 인증 정보나 설정 정보를 로딩 중일 때는 로딩 화면 표시
   if (authLoading || settingsLoading) {
