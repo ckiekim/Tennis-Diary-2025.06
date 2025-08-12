@@ -42,7 +42,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
       }
 
       // onResult로 결과 전달
-      await onResult(target.id, { result, memo, photoList: urls });
+      await onResult(target.id, { type: target.type, result, memo, photoList: urls });
       handleClose();
     } catch (err) {
       console.error('업로드 실패:', err);

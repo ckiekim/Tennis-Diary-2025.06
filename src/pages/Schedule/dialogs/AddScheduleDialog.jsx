@@ -185,9 +185,11 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             </Stack>
           ) : (
             <>
-              <TextField label="시간 (예: 13:00~15:00)" fullWidth value={form.time} 
-                onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
-              />
+              {(isGame || (isLesson && !isRecurring)) && (
+                <TextField label="시간 (예: 13:00~15:00)" fullWidth value={form.time} 
+                  onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
+                />
+              )}
               <Autocomplete
                 options={courts.map(c => c.name)}
                 value={form.place || ''}

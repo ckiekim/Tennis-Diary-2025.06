@@ -29,7 +29,7 @@ const ScheduleList = () => {
   const courts = useCourtList();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ type: '', time: '', place: '', source: '', });
+  const [form, setForm] = useState({ type: '', place: '' });
   useEffect(() => {
     if (user?.uid) {
       setForm((prev) => ({ ...prev, uid: user.uid }));
@@ -85,7 +85,7 @@ const ScheduleList = () => {
     }, 300);
 
     setAddOpen(false);
-    setForm({ type: '', time: '', place: '', source: '' });
+    setForm({ type: '', place: '' });
   };
 
   const handleAddRecurringSchedule = async (recurringOptions) => {
@@ -182,7 +182,7 @@ const ScheduleList = () => {
     setResultOpen(true);
   };
 
-  const handleResult = async (id, { result, memo, photoList }) => {
+  const handleResult = async (id, { type, result, memo, photoList }) => {
     if (!id) return;  // 예외 처리
     const docRef = doc(db, 'events', id);
     await updateDoc(docRef, {
@@ -191,7 +191,7 @@ const ScheduleList = () => {
     });
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
-    if (result.type === '게임')
+    if (type === '게임')
       navigate('/result/game');
     else
       navigate('/result/tournament');
