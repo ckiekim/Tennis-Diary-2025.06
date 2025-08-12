@@ -1,10 +1,21 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
+import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 
 export default function EditScheduleDialog({courts, open, selectedSchedule, setOpen, setSelectedSchedule, onUpdate}) {
   if (!selectedSchedule) return null;
   const isStringReplace = selectedSchedule.type === "스트링 교체";
   const isLesson = selectedSchedule.type === "레슨";
+  const isTournament = selectedSchedule.type === "대회";
+
+  // 주관 변경 시 참가부문 초기화
+  const handleOrganizerChange = (e) => {
+    setSelectedSchedule({
+      ...selectedSchedule,
+      organizer: e.target.value,
+      division: '', // 주관 변경 시 참가부문 초기화
+    });
+  };
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
@@ -39,6 +50,44 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
                 onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
               />
             </>
+          ) : isTournament ? (
+            <Stack spacing={2}>
+              <TextField label="대회명" fullWidth value={selectedSchedule.name || ''} onChange={(e) => setSelectedSchedule({ ...selectedSchedule, name: e.target.value })} />
+              <Autocomplete
+                options={courts.map(c => c.name)}
+                value={selectedSchedule.place || ''}
+                onChange={(e, newValue) => setSelectedSchedule({ ...selectedSchedule, place: newValue })}
+                renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
+                freeSolo
+              />
+              <Grid container spacing={2}>
+                <Grid item xs={6} sx={{ minWidth: 100 }}>
+                  <TextField label="참가종목" select fullWidth value={selectedSchedule.category || ''} onChange={(e) => setSelectedSchedule({ ...selectedSchedule, category: e.target.value })}>
+                    {tournamentCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                <Grid item xs={6} sx={{ maxWidth: 120 }}>
+                  <TextField label="파트너" fullWidth value={selectedSchedule.partner || ''} onChange={(e) => setSelectedSchedule({ ...selectedSchedule, partner: e.target.value })} />
+                </Grid>
+              </Grid>
+              <Grid container spacing={2}>
+                <Grid item xs={6} sx={{ minWidth: 100 }}>
+                  <TextField label="주관" select fullWidth value={selectedSchedule.organizer || ''} onChange={handleOrganizerChange}>
+                    {tournamentOrganizers.map(org => <MenuItem key={org} value={org}>{org}</MenuItem>)}
+                  </TextField>
+                </Grid>
+                {selectedSchedule.organizer && (
+                  <Grid item xs={6} sx={{ minWidth: 120 }}>
+                    <TextField label="참가부문" select fullWidth value={selectedSchedule.division || ''} onChange={(e) => setSelectedSchedule({ ...selectedSchedule, division: e.target.value })}>
+                      {(selectedSchedule.organizer === 'KATA' ? kataDivisions : katoDivisions).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                    </TextField>
+                  </Grid>
+                )}
+              </Grid>
+              <TextField label="참가비" fullWidth type="number" value={selectedSchedule.price || ''}
+                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
+              />
+            </Stack>
           ) : (
             <>
               <TextField

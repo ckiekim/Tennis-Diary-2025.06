@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
@@ -63,10 +63,16 @@ const ScheduleList = () => {
         return;
       }
     }
+    if (!user?.uid) {
+      alert("사용자 인증 정보를 가져오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
 
     const dataToSubmit = {
       ...form,
+      uid: user.uid,
       date: selectedDate.format('YYYY-MM-DD'),
+      createdAt: serverTimestamp()
     };
     if (dataToSubmit.price) 
       dataToSubmit.price = Number(dataToSubmit.price);
@@ -110,6 +116,7 @@ const ScheduleList = () => {
           place: form.place, // 공통 form 상태에서 장소 가져오기
           price: Number(monthlyPrice),
           isRecurring: true, // 반복 일정임을 표시
+          createdAt: serverTimestamp()
         });
       }
       // 주 2회인 경우, 두 번째 요일과 일치하는지 확인
@@ -123,6 +130,7 @@ const ScheduleList = () => {
           place: form.place, // 공통 form 상태에서 장소 가져오기
           price: Number(monthlyPrice),
           isRecurring: true, // 반복 일정임을 표시
+          createdAt: serverTimestamp()
         });
       }
       
@@ -143,6 +151,9 @@ const ScheduleList = () => {
     if (!selectedSchedule?.id) return; // 예외 처리
     const docRef = doc(db, 'events', selectedSchedule.id);
     const { id, ...updateData } = selectedSchedule;
+    if (updateData.price && typeof updateData.price === 'string') {
+      updateData.price = Number(updateData.price);
+    }
     await updateDoc(docRef, updateData);
     setEditOpen(false);
     setTimeout(() => {
@@ -171,11 +182,11 @@ const ScheduleList = () => {
     setResultOpen(true);
   };
 
-  const handleResult = async (id, { result, price, memo, photoList }) => {
+  const handleResult = async (id, { result, memo, photoList }) => {
     if (!id) return;  // 예외 처리
     const docRef = doc(db, 'events', id);
     await updateDoc(docRef, {
-      result, price, memo,
+      result, memo,
       photoList: arrayUnion(...photoList),   // 사진은 여러 장 저장할 수 있으니 배열 유지
     });
     setResultOpen(false);

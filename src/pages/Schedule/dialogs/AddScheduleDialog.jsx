@@ -11,6 +11,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
   const isStringReplace = form.type === "스트링 교체";
   const isLesson = form.type === "레슨";
   const isTournament = form.type === "대회";
+  const isGame = form.type === "게임";
   const sourceList = useSourceList();
 
   // 반복 일정 입력을 위한 State 추가
@@ -196,12 +197,11 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 )}
                 freeSolo // 입력값이 courts 목록에 없을 경우도 허용 (선택사항)
               />
-              {isLesson ? (
-                <TextField
-                  label="비용" fullWidth type="number" value={form.price || ''}
-                  onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
-                />
-              ) : (
+              <TextField
+                label="비용" fullWidth type="number" value={form.price || ''}
+                onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
+              />
+              {isGame && (
                 <Autocomplete
                   freeSolo
                   options={sourceList}

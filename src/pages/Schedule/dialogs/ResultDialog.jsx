@@ -3,11 +3,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListIt
 import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
 import { v4 as uuidv4 } from 'uuid';
-import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [result, setResult] = useState('');
-  const [price, setPrice] = useState('0');
   const [memo, setMemo] = useState('');
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -29,9 +27,9 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
       }
 
       // onResult로 결과 전달
-      await onResult(target.id, { result, price: Number(price), memo, photoList: urls });
+      await onResult(target.id, { result, memo, photoList: urls });
       setOpen(false);
-      setResult(''); setPrice('0'); setMemo(''); setFiles([]);
+      setResult(''); setMemo(''); setFiles([]);
     } catch (err) {
       console.error('업로드 실패:', err);
       alert('업로드 중 문제가 발생했습니다.');
@@ -48,20 +46,6 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
           <TextField
             label="결과 (예: 남복 4-0-0)" fullWidth value={result}
             onChange={(e) => setResult(e.target.value)}
-          />
-          {/* <TextField
-            label="비용 (숫자)" fullWidth type="number" value={price}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (/^\d*$/.test(val)) {    // 숫자 또는 빈 문자열만 허용
-                setPrice(val);
-              }
-            }}
-            inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-          /> */}
-          <TextField
-            label="비용 (숫자)" fullWidth type="number" value={price}
-            onChange={(e) => setPrice(handleNumericInputChange(e.target.value))}
           />
           <TextField 
             label="메모" fullWidth multiline rows={3} value={memo}
