@@ -33,11 +33,11 @@ const BottomNav = () => {
 
   const getValueFromPath = (pathname) => {
     if (pathname.startsWith('/result')) return 'result';
-    if (pathname.startsWith('/calendar')) return 'calendar';
+    if (pathname.startsWith('/schedule')) return 'schedule';
     if (pathname.startsWith('/goods')) return 'goods';
     if (pathname.startsWith('/admin')) return 'admin';
     if (pathname.startsWith('/more')) return 'more';
-    return 'calendar';
+    return 'schedule';
   };
   const value = getValueFromPath(location.pathname);
 
@@ -48,8 +48,8 @@ const BottomNav = () => {
       setAnchorElAdmin(event.currentTarget);
     } else {
       switch (newValue) {
-        case 'calendar':
-          navigate('/calendar');
+        case 'schedule':
+          navigate('/schedule');
           break;
         case 'goods':
           navigate('/goods');
@@ -80,7 +80,7 @@ const BottomNav = () => {
         elevation={3}
       >
         <BottomNavigation value={value} onChange={handleNavClick} showLabels>
-          <BottomNavigationAction label="일정" value="calendar" icon={<CalendarMonthIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="일정" value="schedule" icon={<CalendarMonthIcon />} sx={{ minWidth: 60 }} />
           <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} sx={{ minWidth: 60 }} />
           <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} sx={{ minWidth: 60 }} />
           {isAdmin &&

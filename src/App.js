@@ -4,7 +4,7 @@ import 'dayjs/locale/ko';
 
 import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
-import CalendarPage from './pages/Calendar/CalendarPage';
+import SchedulePage from './pages/Schedule/SchedulePage';
 import LoginPage from './pages/Home/LoginPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
 import NotFoundError from './pages/Home/NotFoundError';
@@ -30,8 +30,8 @@ const App = () => {
 
         {/* 로그인이 필요한 페이지들을 AuthGuard로 감싸기 */}
         <Route element={<AuthGuard />}>
-          <Route path="/" element={<CalendarPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/" element={<SchedulePage />} />
+          <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/result/game" element={<ResultGamePage />} />
           <Route path="/result/:id" element={<ResultDetailPage />} />
           <Route path="/result/stat" element={<ResultStatPage />} />
