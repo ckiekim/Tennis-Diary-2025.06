@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
@@ -9,6 +9,21 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [memo, setMemo] = useState('');
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setResult(target?.result || '');
+      setMemo(target?.memo || '');
+      setFiles([]);
+    }
+  }, [open, target]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setResult('');
+    setMemo('');
+    setFiles([]);
+  };
 
   const handleFileChange = (e) => {
     setFiles([...e.target.files]);
@@ -28,8 +43,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
 
       // onResult로 결과 전달
       await onResult(target.id, { result, memo, photoList: urls });
-      setOpen(false);
-      setResult(''); setMemo(''); setFiles([]);
+      handleClose();
     } catch (err) {
       console.error('업로드 실패:', err);
       alert('업로드 중 문제가 발생했습니다.');
@@ -38,13 +52,16 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
     }
   };
 
+  const isTournament = target?.type === '대회';
+
   return (
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
       <DialogTitle>결과 입력</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField
-            label="결과 (예: 남복 4-0-0)" fullWidth value={result}
+            label={isTournament ? "결과 (예: 예선 통과, 16강)" : "결과 (예: 남복 4-0-0)"} 
+            fullWidth value={result}
             onChange={(e) => setResult(e.target.value)}
           />
           <TextField 

@@ -14,7 +14,7 @@ export default function useResultsWithPhoto(refreshKey = 0) {
 
     const fetch = async () => {
       const [evSnap, courtSnap] = await Promise.all([
-        getDocs(query(collection(db, 'events'), where('uid', '==', user.uid))),
+        getDocs(query(collection(db, 'events'), where('uid', '==', user.uid), where('type', '==', '게임'))),
         getDocs(collection(db, 'courts')),
       ]);
       const courtMap = {};

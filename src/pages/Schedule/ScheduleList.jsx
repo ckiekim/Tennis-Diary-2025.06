@@ -191,7 +191,10 @@ const ScheduleList = () => {
     });
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
-    navigate('/result/game');
+    if (result.type === '게임')
+      navigate('/result/game');
+    else
+      navigate('/result/tournament');
   }
 
   return (
