@@ -34,8 +34,8 @@ export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
 
   const handleSave = () => {
     if (!form.name || !form.date) return;
-    setForm((prev) => ({ ...prev, price: Number(prev.price) }));
-    onAdd({ ...form, uid });
+    const dataToSave = { ...form, price: Number(form.price), uid, };
+    onAdd(dataToSave);
     onClose();
     setForm({ name: '', shopper: '', price: '0', date: '', photo: '' });
   };
