@@ -85,7 +85,7 @@ const ResultStatPage = () => {
   };
 
   return (
-    <MainLayout title='🎾 게임 통계'>
+    <MainLayout title='게임 통계'>
       <Box p={2}>
         <Typography variant="h6" gutterBottom>📊 종목별 전적</Typography>
         <ResponsiveContainer width="100%" height={300}>

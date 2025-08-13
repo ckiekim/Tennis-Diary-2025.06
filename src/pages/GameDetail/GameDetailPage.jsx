@@ -5,13 +5,13 @@ import useAuthState from '../../hooks/useAuthState';
 import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
-import EditResultDialog from './dialogs/EditResultDialog';
+import EditResultDialog from './dialogs/EditGameDialog';
 import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
-const ResultDetailPage = () => {
+const GameDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [imageOpen, setImageOpen] = useState(false);
@@ -141,4 +141,4 @@ const ResultDetailPage = () => {
   );
 };
 
-export default ResultDetailPage;
+export default GameDetailPage;

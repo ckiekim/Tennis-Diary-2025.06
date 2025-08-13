@@ -7,7 +7,7 @@ export default function ResultCard({ item }) {
   const day = formatDay(item.date);
 
   return (
-    <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/result/${item.id}`)}>
+    <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/result/game/${item.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
           component="img" src={item.photo} alt="court"

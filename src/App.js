@@ -9,7 +9,7 @@ import LoginPage from './pages/Home/LoginPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
 import NotFoundError from './pages/Home/NotFoundError';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
-import ResultDetailPage from './pages/ResultDetail/ResultDetailPage';
+import GameDetailPage from './pages/GameDetail/GameDetailPage';
 import ResultStatPage from './pages/ResultStat/ResultStatPage';
 import ResultTournamentPage from './pages/ResultTournament/ResultTournamentPage';
 import TournamentDetailPage from './pages/TournamentDetail/TournamentDetailPage';
@@ -34,7 +34,7 @@ const App = () => {
           <Route path="/" element={<SchedulePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/result/game" element={<ResultGamePage />} />
-          <Route path="/result/:id" element={<ResultDetailPage />} />
+          <Route path="/result/game/:id" element={<GameDetailPage />} />
           <Route path="/result/stat" element={<ResultStatPage />} />
           <Route path="/result/tournament" element={<ResultTournamentPage />} />
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
