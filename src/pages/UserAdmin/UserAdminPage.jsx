@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select, Stack, Typography, TextField } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import useUserList from '../../hooks/useUserList';
 
 const UserAdminPage = () => {
+  const navigate = useNavigate();
   const { users, loading, sortBy, locationSearchText, setSortBy, setLocationSearchText } = useUserList();
 
   return (
@@ -40,7 +42,7 @@ const UserAdminPage = () => {
       ) : (
         <Stack spacing={1}>
           {users.map((user) => (
-            <Card sx={{ mb: 0, p: 0 }} key={user.id}>
+            <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
               <Box sx={{ display:'flex', alignItems:'center' }}>
                 <Box
                   component="img" src={user.photo} alt={user.nickname}

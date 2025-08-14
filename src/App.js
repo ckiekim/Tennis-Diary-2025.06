@@ -16,6 +16,7 @@ import TournamentDetailPage from './pages/TournamentDetail/TournamentDetailPage'
 import GoodsPage from './pages/Goods/GoodsPage';
 import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
+import UserDetailPage from './pages/UserAdmin/UserDetailPage';
 import UserSettingPage from './pages/UserSetting/UserSettingPage';
 import MorePage from './pages/More/MorePage';
 
@@ -47,6 +48,7 @@ const App = () => {
         <Route element={<AdminGuard />}>
           <Route path="/admin/courts" element={<CourtAdminPage />} />
           <Route path="/admin/users" element={<UserAdminPage />} />
+          <Route path="/admin/user/:uid" element={<UserDetailPage />} />
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}
