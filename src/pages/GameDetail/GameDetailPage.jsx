@@ -6,7 +6,7 @@ import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditResultDialog from './dialogs/EditGameDialog';
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
@@ -136,7 +136,10 @@ const GameDetailPage = () => {
       <EditResultDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />
 
       {/* 삭제 확인 다이얼로그 */}
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} result={result} />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+        "{result?.date} {result?.time}" 일정 및 결과를 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
     </MainLayout>
   );
 };

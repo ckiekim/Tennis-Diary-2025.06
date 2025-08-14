@@ -5,8 +5,8 @@ import useAuthState from '../../hooks/useAuthState';
 import useEventDoc from '../../hooks/useEventDoc';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
-import EditTournamentDialog from './dialogs/EditTournamentDialog'; // 수정된 다이얼로그
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog'; // 재사용
+import EditTournamentDialog from './dialogs/EditTournamentDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
@@ -136,7 +136,10 @@ const TournamentDetailPage = () => {
       
       {editOpen && <EditTournamentDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />}
 
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} result={result} />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+        "{result?.date}, {result?.name}" 대회 결과를 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
     </MainLayout>
   );
 };

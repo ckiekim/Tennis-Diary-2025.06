@@ -7,7 +7,7 @@ import useCourtList from '../../hooks/useCourtList';
 import CourtCard from './CourtCard';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import EditCourtDialog from './dialogs/EditCourtDialog';
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 
 import AddIcon from '@mui/icons-material/Add';
 
@@ -113,8 +113,10 @@ const CourtList = () => {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
-        court={selectedCourt}
-      />
+      >
+        "{selectedCourt?.name}" 코트를 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
     </>
   );
 }

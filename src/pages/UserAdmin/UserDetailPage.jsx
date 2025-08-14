@@ -6,8 +6,8 @@ import MainLayout from '../../components/MainLayout';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage.js';
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
 import EditUserDialog from './dialogs/EditUserDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog.jsx';
 
 const UserDetailPage = () => {
   const { uid } = useParams();
@@ -88,10 +88,11 @@ const UserDetailPage = () => {
         <Button variant="contained" onClick={() => navigate(-1)}>목록으로</Button>
       </Stack>
       
-      {editOpen && <EditUserDialog open={editOpen} onClose={handleEditClose} user={user} />}
-      {deleteOpen && 
-        <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} itemName={user.nickname} />
-      }
+      <EditUserDialog open={editOpen} onClose={handleEditClose} user={user} />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+        "{user.nickname}" 사용자를 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
     </MainLayout>
   );
 };

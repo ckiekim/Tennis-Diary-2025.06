@@ -13,7 +13,7 @@ import KoreanDatePicker from './KoreanDatePicker';
 import ScheduleCard from './ScheduleCard';
 import AddScheduleDialog from './dialogs/AddScheduleDialog';
 import EditScheduleDialog from './dialogs/EditScheduleDialog';
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import ResultDialog from './dialogs/ResultDialog';
 
 import AddIcon from '@mui/icons-material/Add';
@@ -247,10 +247,10 @@ const ScheduleList = () => {
         setOpen={setEditOpen} setSelectedSchedule={setSelectedSchedule} onUpdate={handleUpdate} 
       />
 
-      <DeleteConfirmDialog
-        open={deleteOpen} onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDeleteConfirm} schedule={selectedSchedule}
-      />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteConfirm}>
+        "{selectedSchedule?.date} {selectedSchedule?.type}" 일정을 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
 
       {/* 결과 입력 다이얼로그 */}
       <ResultDialog 

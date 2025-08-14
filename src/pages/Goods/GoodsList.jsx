@@ -8,7 +8,7 @@ import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 import GoodsCard from './GoodsCard';
 import AddGoodsDialog from './dialogs/AddGoodsDialog';
 import EditGoodsDialog from './dialogs/EditGoodsDialog';
-import DeleteConfirmDialog from './dialogs/DeleteConfirmDialog';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import AddIcon from '@mui/icons-material/Add';
 
 const GoodsList = () => {
@@ -77,7 +77,10 @@ const GoodsList = () => {
 
       <AddGoodsDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddGoods} uid={user.uid} />
       <EditGoodsDialog open={editOpen} onClose={() => setEditOpen(false)} item={selectedItem} onSave={handleUpdateGoods} uid={user.uid} />
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteGoods} />
+      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteGoods}>
+        "{selectedItem?.name}" 품목을 삭제하시겠습니까? <br />
+        이 작업은 되돌릴 수 없습니다.
+      </DeleteConfirmDialog>
     </>
   );
 };
