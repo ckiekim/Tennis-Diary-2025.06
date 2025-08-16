@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select, Stack, Typography, TextField } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
-// import useUserList from '../../hooks/useUserList';
 import usePaginatedUsers from '../../hooks/usePaginatedUsers';
 
 const UserAdminPage = () => {
@@ -10,8 +9,6 @@ const UserAdminPage = () => {
   const [sortBy, setSortBy] = useState('joinDate');
   const [locationSearchText, setLocationSearchText] = useState('');
   
-  // const { users, loading, sortBy, locationSearchText, setSortBy, setLocationSearchText } = useUserList();
-  // 페이지네이션 훅 사용
   const { users, loading, loadingMore, hasMore, loadMore } = usePaginatedUsers(sortBy, locationSearchText);
 
   // Intersection Observer 로직 추가
@@ -64,7 +61,6 @@ const UserAdminPage = () => {
         />
       </Box>
 
-      {/* {loading ? ( */}
       {(loading && users.length === 0) ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress />

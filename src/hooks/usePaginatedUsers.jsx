@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
-
-const PAGE_SIZE = 10;
+import { PAGE_SIZE } from '../constants/admin';
 
 const usePaginatedUsers = (sortBy, locationSearchText) => {
   const [users, setUsers] = useState([]);
