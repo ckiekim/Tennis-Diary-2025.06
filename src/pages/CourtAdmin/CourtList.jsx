@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Box, Fab, FormControl, Grid, InputLabel, MenuItem, Select, TextField, } from '@mui/material';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { Box, CircularProgress, Fab, FormControl, Grid, InputLabel, MenuItem, Select, TextField, } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
-import useCourtList from '../../hooks/useCourtList';
+import usePaginatedCourts from '../../hooks/usePaginatedCourts';
 import CourtCard from './CourtCard';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import EditCourtDialog from './dialogs/EditCourtDialog';
@@ -18,18 +18,45 @@ const CourtList = () => {
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [region, setRegion] = useState('');
   const [isIndoor, setIsIndoor] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
-  const courts = useCourtList(refreshKey);
+  
+  const filters = useMemo(() => ({ region, isIndoor }), [region, isIndoor]);
+  const { courts, loading, loadingMore, hasMore, loadMore, refresh } = usePaginatedCourts(filters);
+
+  // 1. Intersection Observer가 감시할 요소에 대한 ref 생성
+  const observerRef = useRef(null);
+
+  // 2. Intersection Observer 설정
+  const handleObserver = useCallback((entries) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasMore && !loading && !loadingMore) { 
+      loadMore();
+    }
+  }, [loadMore, hasMore, loading, loadingMore]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 0, // 요소가 1px이라도 보이면 콜백 실행
+    });
+
+    const currentObserverRef = observerRef.current;
+    if (currentObserverRef) {
+      observer.observe(currentObserverRef);
+    }
+
+    // 컴포넌트가 언마운트될 때 observer 정리
+    return () => {
+      if (currentObserverRef) {
+        observer.unobserve(currentObserverRef);
+      }
+    };
+  }, [handleObserver]);
 
   const handleRegionChange = (e) => setRegion(e.target.value);
   const handleIndoorChange = (e) => setIsIndoor(e.target.value);
-  const filteredCourts = courts
-    .filter(c => region === '' || c.location.includes(region))
-    .filter(c => isIndoor === '' || String(c.is_indoor) === isIndoor);
 
   const handleAddCourt = async (form) => {
     await addDoc(collection(db, 'courts'), form);
-    setRefreshKey(prev => prev + 1);
+    refresh();
   };
 
   const handleEdit = (court) => {
@@ -45,14 +72,14 @@ const CourtList = () => {
   const handleUpdateCourt = async (form) => {
     const ref = doc(db, 'courts', form.id);
     await updateDoc(ref, form);
-    setRefreshKey((prev) => prev + 1);
+    refresh();
   };
 
   const handleDeleteConfirm = async () => {
     await deletePhotoFromStorage(selectedCourt.photo);
     await deleteDoc(doc(db, 'courts', selectedCourt.id));
     setDeleteOpen(false);
-    setRefreshKey((prev) => prev + 1);
+    refresh();
   };
 
   return (
@@ -76,13 +103,25 @@ const CourtList = () => {
       </Grid>
 
       <Box display="flex" flexDirection="column" gap={1}>
-        {filteredCourts.map((court) => (
+        {courts.map((court) => (
           <CourtCard 
             key={court.id} court={court} 
             onEdit={() => handleEdit(court)} 
             onDelete={() => handleDelete(court)}
           />
         ))}
+      </Box>
+
+      {/* 3. 감시할 요소를 리스트 마지막에 추가하고 ref를 연결 */}
+      {/* 로딩 인디케이터와 마지막 메시지를 이 위치로 이동 */}
+      <Box 
+        ref={observerRef} 
+        sx={{ display: 'flex', justifyContent: 'center', my: 2, height: '50px' }}
+      >
+        { (loading || loadingMore) && <CircularProgress /> } {/* 로딩 상태를 둘 다 확인 */}
+        {!hasMore && !(loading || loadingMore) && courts.length > 0 && (
+          <p>마지막 코트입니다.</p>
+        )}
       </Box>
 
       <Fab
