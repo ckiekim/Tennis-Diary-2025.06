@@ -1,12 +1,41 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select, Stack, Typography, TextField } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
-import useUserList from '../../hooks/useUserList';
+// import useUserList from '../../hooks/useUserList';
+import usePaginatedUsers from '../../hooks/usePaginatedUsers';
 
 const UserAdminPage = () => {
   const navigate = useNavigate();
-  const { users, loading, sortBy, locationSearchText, setSortBy, setLocationSearchText } = useUserList();
+  const [sortBy, setSortBy] = useState('joinDate');
+  const [locationSearchText, setLocationSearchText] = useState('');
+  
+  // const { users, loading, sortBy, locationSearchText, setSortBy, setLocationSearchText } = useUserList();
+  // 페이지네이션 훅 사용
+  const { users, loading, loadingMore, hasMore, loadMore } = usePaginatedUsers(sortBy, locationSearchText);
+
+  // Intersection Observer 로직 추가
+  const observerRef = useRef(null);
+
+  const handleObserver = useCallback((entries) => {
+    const [target] = entries;
+    if (target.isIntersecting && hasMore && !loading && !loadingMore) {
+      loadMore();
+    }
+  }, [loadMore, hasMore, loading, loadingMore]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, { threshold: 0 });
+    const currentObserverRef = observerRef.current;
+    if (currentObserverRef) {
+      observer.observe(currentObserverRef);
+    }
+    return () => {
+      if (currentObserverRef) {
+        observer.unobserve(currentObserverRef);
+      }
+    };
+  }, [handleObserver]);
 
   return (
     <MainLayout title="사용자 관리">
@@ -35,38 +64,52 @@ const UserAdminPage = () => {
         />
       </Box>
 
-      {loading ? (
+      {/* {loading ? ( */}
+      {(loading && users.length === 0) ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
-        <Stack spacing={1}>
-          {users.map((user) => (
-            <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
-              <Box sx={{ display:'flex', alignItems:'center' }}>
-                <Box
-                  component="img" src={user.photo} alt={user.nickname}
-                  sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
-                  onError={(e) => (e.target.style.display = 'none')}
-                />
-                <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <Typography fontSize="14px" fontWeight="bold" noWrap>
-                    {user.nickname}
-                  </Typography>
-                  <Typography fontSize="13px">
-                    {user.email}
-                  </Typography>
-                  <Typography fontSize="12px">
-                    가입일: {user.joinDate}
-                  </Typography>
-                  <Typography fontSize="12px">
-                    지역: {user.location}
-                  </Typography>
+        <>
+          <Stack spacing={1} sx={{ mt: 1 }}>
+            {users.map((user) => (
+              <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
+                <Box sx={{ display:'flex', alignItems:'center' }}>
+                  <Box
+                    component="img" src={user.photo} alt={user.nickname}
+                    sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
+                    onError={(e) => (e.target.style.display = 'none')}
+                  />
+                  <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Typography fontSize="14px" fontWeight="bold" noWrap>
+                      {user.nickname}
+                    </Typography>
+                    <Typography fontSize="13px">
+                      {user.email}
+                    </Typography>
+                    <Typography fontSize="12px">
+                      가입일: {user.joinDate}
+                    </Typography>
+                    <Typography fontSize="12px">
+                      지역: {user.location}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            </Card>
-          ))}
-        </Stack>
+              </Card>
+            ))}
+          </Stack>
+            
+          {/* 감시할 요소 및 추가 로딩 인디케이터 */}
+          <Box 
+            ref={observerRef} 
+            sx={{ display: 'flex', justifyContent: 'center', my: 2, height: '50px' }}
+          >
+            {loadingMore && <CircularProgress />}
+            {!hasMore && !loadingMore && users.length > 0 && (
+              <Typography variant="body2" color="text.secondary">마지막 사용자입니다.</Typography>
+            )}
+          </Box>
+        </>
       )}
     </MainLayout>
   );
