@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import useTournaments from '../../hooks/useTournaments'; // 대회 데이터를 가져오는 커스텀 훅 (생성 필요)
 import TournamentCard from './TournamentCard';
@@ -8,11 +8,17 @@ const ResultTournamentPage = () => {
 
   return (
     <MainLayout title='대회 결과'>
-      <Stack spacing={1}>
-        {tournaments.map(item => 
-          <TournamentCard key={item.id} item={item} />
-        )}
-      </Stack>
+      {!tournaments || tournaments.length === 0 ? (
+        <Box textAlign="center" mt={4}>
+          <Typography>대회 결과가 없습니다.</Typography>
+        </Box>
+      ) : (
+        <Stack spacing={1}>
+          {tournaments.map(item => 
+            <TournamentCard key={item.id} item={item} />
+          )}
+        </Stack>
+      )}
     </MainLayout>
   );
 };
