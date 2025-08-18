@@ -18,7 +18,8 @@ import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserDetailPage from './pages/UserAdmin/UserDetailPage';
 import UserSettingPage from './pages/UserSetting/UserSettingPage';
-import MorePage from './pages/More/MorePage';
+// import MorePage from './pages/More/MorePage';
+import AppInfoPage from './pages/More/AppInfoPage';
 
 const App = () => {
   dayjs.locale('ko');
@@ -40,7 +41,7 @@ const App = () => {
           <Route path="/result/tournament" element={<ResultTournamentPage />} />
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
           <Route path="/goods" element={<GoodsPage />} />
-          <Route path="/more" element={<MorePage />} />
+          <Route path="/more" element={<AppInfoPage />} />
           <Route path="/setting" element={<UserSettingPage />} />
         </Route>
 
