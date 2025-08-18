@@ -52,7 +52,7 @@ const UserDetailPage = () => {
     <MainLayout title='사용자 상세 정보'>
       <Box p={2}>
         <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-          <Avatar alt={user.nickname} src={user.photo} sx={{ width: 48, height: 48 }} />
+          <Avatar alt={user.nickname} src={user.photo || '/img/no-image.jpeg'} sx={{ width: 48, height: 48 }} />
           <Typography variant="h6">{user.nickname}</Typography>
         </Stack>
         <Divider sx={{ my: 1 }} />

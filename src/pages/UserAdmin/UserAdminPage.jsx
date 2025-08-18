@@ -72,7 +72,7 @@ const UserAdminPage = () => {
               <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
                 <Box sx={{ display:'flex', alignItems:'center' }}>
                   <Box
-                    component="img" src={user.photo} alt={user.nickname}
+                    component="img" src={user.photo || '/img/no-image.jpeg'} alt={user.nickname}
                     sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
                     onError={(e) => (e.target.style.display = 'none')}
                   />

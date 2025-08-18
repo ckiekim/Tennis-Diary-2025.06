@@ -10,7 +10,7 @@ export default function GameCard({ item }) {
     <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/result/game/${item.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
-          component="img" src={item.photo} alt="court"
+          component="img" src={item.photo || '/img/no-image.jpeg'} alt="court"
           sx={{ width: 82, height: 82, objectFit: 'cover', borderRadius: 0, display: 'block', }}
           onError={(e) => (e.target.style.display = 'none')}
         />

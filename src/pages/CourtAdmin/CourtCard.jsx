@@ -5,18 +5,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 const CourtCard = ({ court, onEdit, onDelete }) => {
   return (
     <Card sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', px: 1, py: 1, }}>
-      {court.photo ? (
-        <CardMedia
-          component="img"
-          sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1, }}
-          image={court.photo}
-          alt={court.name}
-        />
-      ) : (
-        <Box sx={{ width: 60, height: 60, bgcolor: 'grey.300', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="caption">No Image</Typography>
-        </Box>
-      )}
+      <CardMedia
+        component="img"
+        sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1, }}
+        image={court.photo || '/img/no-image.jpeg'}
+        alt={court.name}
+      />
 
       <Box sx={{ ml: 2, flexGrow: 1 }}>
         <Typography fontSize="13px" fontWeight="bold" noWrap>
