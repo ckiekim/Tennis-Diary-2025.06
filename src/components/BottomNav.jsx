@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BottomNavigation, BottomNavigationAction, Menu, MenuItem, Paper } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getAuth, } from 'firebase/auth';
+import { ADMIN_UIDS } from '../constants/admin';
 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -12,17 +13,19 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
   const [anchorElAdmin, setAnchorElAdmin] = useState(null);
+  const [anchorElMore, setAnchorElMore] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const checkAdmin = async () => {
     const user = getAuth().currentUser;
-    if (user?.uid === 'uqoRhC7CDKUY1yeb2WhLgx2UDDn1') {
+    if (user && ADMIN_UIDS.includes(user.uid)) {
       setIsAdmin(true);
     }
   };
@@ -46,6 +49,8 @@ const BottomNav = () => {
       setAnchorElResult(event.currentTarget);
     } else if (newValue === 'admin') {
       setAnchorElAdmin(event.currentTarget);
+    } else if (newValue === 'more') {
+      setAnchorElMore(event.currentTarget);
     } else {
       switch (newValue) {
         case 'schedule':
@@ -53,9 +58,6 @@ const BottomNav = () => {
           break;
         case 'goods':
           navigate('/goods');
-          break;
-        case 'more':
-          navigate('/more');
           break;
         default:
           navigate('/');
@@ -71,6 +73,11 @@ const BottomNav = () => {
   const handleAdminMenuClick = (path) => {
     setAnchorElAdmin(null);
     navigate(path);
+  };
+
+  const handleMoreMenuClick = (path) => {
+    setAnchorElMore(null); // 메뉴를 닫습니다.
+    navigate(path); // 해당 경로로 이동합니다.
   };
 
   return (
@@ -89,6 +96,7 @@ const BottomNav = () => {
           <BottomNavigationAction label="더보기" value="more" icon={<MoreHorizIcon />} sx={{ minWidth: 60 }} />
         </BottomNavigation>
       </Paper>
+
       {/* 결과 드롭다운 */}
       <Menu
         anchorEl={anchorElResult}
@@ -126,6 +134,22 @@ const BottomNav = () => {
           </MenuItem>
         </Menu>
       }
+
+      {/* 더보기 드롭다운 */}
+      <Menu
+        anchorEl={anchorElMore}
+        open={Boolean(anchorElMore)}
+        onClose={() => setAnchorElMore(null)}
+      >
+        <MenuItem onClick={() => handleMoreMenuClick('/more/more')}>
+          <MoreHorizIcon fontSize="small" sx={{ mr: 1 }} />
+          더보기
+        </MenuItem>
+        <MenuItem onClick={() => handleMoreMenuClick('/more/appInfo')}>
+          <InfoOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+          앱 정보
+        </MenuItem>
+      </Menu>
     </>
   );
 };
