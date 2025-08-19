@@ -47,6 +47,7 @@ const UserAdminPage = () => {
           >
             <MenuItem value="joinDate">가입일순</MenuItem>
             <MenuItem value="nickname">닉네임순</MenuItem>
+            <MenuItem value="mileage">마일리지순</MenuItem>
           </Select>
         </FormControl>
 
@@ -88,6 +89,9 @@ const UserAdminPage = () => {
                     </Typography>
                     <Typography fontSize="12px">
                       지역: {user.location}
+                    </Typography>
+                    <Typography fontSize="12px">
+                      마일리지: {user.mileage.toLocaleString()} 포인트
                     </Typography>
                   </Box>
                 </Box>

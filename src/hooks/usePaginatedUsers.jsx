@@ -29,6 +29,8 @@ const usePaginatedUsers = (sortBy, locationSearchText) => {
           // 그 다음, 사용자가 선택한 기준으로 2차 정렬
           if (sortBy === 'nickname') {
             q = query(q, orderBy('nickname', 'asc'));
+          } else if (sortBy === 'mileage') { 
+            q = query(q, orderBy('mileage', 'desc'));
           } else {
             q = query(q, orderBy('joinDate', 'desc'));
           }
@@ -36,6 +38,8 @@ const usePaginatedUsers = (sortBy, locationSearchText) => {
           // 검색어가 없을 때는 기존 정렬 방식 사용
           if (sortBy === 'nickname') {
             q = query(q, orderBy('nickname', 'asc'));
+          } else if (sortBy === 'mileage') {
+            q = query(q, orderBy('mileage', 'desc'));
           } else {
             q = query(q, orderBy('joinDate', 'desc'));
           }
@@ -78,12 +82,16 @@ const usePaginatedUsers = (sortBy, locationSearchText) => {
         );
         if (sortBy === 'nickname') {
           q = query(q, orderBy('nickname', 'asc'));
+        } else if (sortBy === 'mileage') { 
+          q = query(q, orderBy('mileage', 'desc'));
         } else {
           q = query(q, orderBy('joinDate', 'desc'));
         }
       } else {
         if (sortBy === 'nickname') {
           q = query(q, orderBy('nickname', 'asc'));
+        } else if (sortBy === 'mileage') {
+          q = query(q, orderBy('mileage', 'desc'));
         } else {
           q = query(q, orderBy('joinDate', 'desc'));
         }

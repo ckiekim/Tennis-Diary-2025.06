@@ -18,7 +18,7 @@ import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserDetailPage from './pages/UserAdmin/UserDetailPage';
 import UserSettingPage from './pages/UserSetting/UserSettingPage';
-import MorePage from './pages/More/MorePage';
+import MileageInfoPage from './pages/More/MileageInfoPage';
 import AppInfoPage from './pages/More/AppInfoPage';
 
 const App = () => {
@@ -41,7 +41,7 @@ const App = () => {
           <Route path="/result/tournament" element={<ResultTournamentPage />} />
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
           <Route path="/goods" element={<GoodsPage />} />
-          <Route path="/more/more" element={<MorePage />} />
+          <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/setting" element={<UserSettingPage />} />
         </Route>

@@ -75,6 +75,12 @@ const UserDetailPage = () => {
         </Typography>
         <Divider sx={{ my: 1 }} />
 
+        <Typography variant="body2" fontWeight="bold">마일리지</Typography>
+        <Typography variant="body1" sx={{ mt: 1, ml: 4 }}>
+          {user.mileage.toLocaleString()} 포인트
+        </Typography>
+        <Divider sx={{ my: 1 }} />
+
         <Typography variant="body2" fontWeight="bold">고유 ID (UID)</Typography>
         <Typography variant="body1" sx={{ mt: 1, ml: 4, wordBreak: 'break-all' }}>
           {user.uid}
