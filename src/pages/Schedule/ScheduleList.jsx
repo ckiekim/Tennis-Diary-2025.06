@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Container, Fab, Stack, Typography } from '@mui/material';
+import { Box, Checkbox, Container, Fab, FormControlLabel, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
+import { 
+  collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp, increment, getDocs, query, where
+} from 'firebase/firestore';
 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
@@ -42,6 +44,7 @@ const ScheduleList = () => {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [resultTarget, setResultTarget] = useState(null);
+  const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
   const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
 
   const handleAddSchedule = async () => {
@@ -93,7 +96,6 @@ const ScheduleList = () => {
   const handleAddRecurringSchedule = async (recurringOptions) => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
     
-    // 장소와 종료일이 입력되었는지 확인합니다.
     if (!form.place || !endDate) {
       alert('장소와 종료일을 모두 입력해주세요.');
       return;
@@ -101,31 +103,34 @@ const ScheduleList = () => {
 
     // 여러 문서를 한 번에 쓰기 위한 batch 생성
     const batch = writeBatch(db);
+    const recurringId = doc(collection(db, 'events')).id;
     
-    let currentDate = dayjs(); // 오늘부터 시작
+    let currentDate = dayjs(); 
     const finalDate = dayjs(endDate);
     let eventCount = 0;
+
+    const addEventToBatch = (batch, date, time) => {
+      const newEventRef = doc(collection(db, 'events'));
+      batch.set(newEventRef, {
+        uid: user.uid, type: '레슨', date: date.format('YYYY-MM-DD'),
+        time, place: form.place, price: Number(monthlyPrice),
+        isRecurring: true, 
+        recurringId: recurringId,
+        createdAt: serverTimestamp()
+      });
+    };
 
     while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
       const dayOfWeek = currentDate.day();
       
-      const addEventToBatch = (time) => {
-        const newEventRef = doc(collection(db, 'events'));
-        batch.set(newEventRef, {
-          uid: user.uid, type: '레슨', date: currentDate.format('YYYY-MM-DD'),
-          time, place: form.place, price: Number(monthlyPrice),
-          isRecurring: true, createdAt: serverTimestamp()
-        });
-        eventCount++; // 일정 추가 시 카운트 증가
-      };
-
       if (dayOfWeek === dayMap[day1]) {
-        addEventToBatch(time1);
+        addEventToBatch(batch, currentDate, time1);
+        eventCount++;
       }
       if (frequency === 2 && dayOfWeek === dayMap[day2]) {
-        addEventToBatch(time2);
+        addEventToBatch(batch, currentDate, time2);
+        eventCount++;
       }
-      
       currentDate = currentDate.add(1, 'day');
     }
     if (user?.uid && eventCount > 0) {
@@ -135,7 +140,6 @@ const ScheduleList = () => {
 
     await batch.commit(); // batch에 담긴 모든 쓰기 작업을 한 번에 실행
 
-    // 작업 완료 후 상태 초기화 및 화면 새로고침
     setAddOpen(false);
     setForm({ type: '', time: '', place: '', source: '' });
     setTimeout(() => {
@@ -164,20 +168,47 @@ const ScheduleList = () => {
   
   const handleDelete = async (schedule) => {
     setSelectedSchedule(schedule);
+    setDeleteAllRecurring(false);
     setDeleteOpen(true);
   }
 
   const handleDeleteConfirm = async () => {
     if (!selectedSchedule?.id || !user?.uid) return;
 
-    await deleteDoc(doc(db, 'events', selectedSchedule.id));
-    let pointsToDeduct = 5;   // 기본 생성 포인트 5점
-    if (selectedSchedule.result) {    // 결과가 등록된 일정이었다면 5점 추가 차감
-      pointsToDeduct += 5;
-    }
+    if (deleteAllRecurring && selectedSchedule.recurringId) {
+      // 1. 동일한 recurringId를 가진 모든 일정 문서
+      const q = query(collection(db, 'events'), where('recurringId', '==', selectedSchedule.recurringId));
+      const querySnapshot = await getDocs(q);
+      
+      const batch = writeBatch(db);
+      let totalPointsToDeduct = 0;
 
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { mileage: increment(-pointsToDeduct) });
+      // 2. 찾은 모든 문서를 삭제하고, 차감할 마일리지를 계산
+      querySnapshot.forEach((document) => {
+        const eventData = document.data();
+        batch.delete(document.ref);
+        totalPointsToDeduct += 5; // 생성 포인트
+        if (eventData.result) {
+          totalPointsToDeduct += 5; // 결과 등록 포인트
+        }
+      });
+
+      // 3. 계산된 총 마일리지를 차감
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
+
+      await batch.commit();
+
+    } else {
+      // 단일 일정 삭제
+      await deleteDoc(doc(db, 'events', selectedSchedule.id));
+      let pointsToDeduct = 5;
+      if (selectedSchedule.result) {
+        pointsToDeduct += 5;
+      }
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { mileage: increment(-pointsToDeduct) });
+    }
 
     setDeleteOpen(false);
     setRefreshKey((prev) => prev + 1);
@@ -259,6 +290,14 @@ const ScheduleList = () => {
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteConfirm}>
         "{selectedSchedule?.date} {selectedSchedule?.type}" 일정을 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
+        {selectedSchedule?.isRecurring && (
+          <Box sx={{ mt: 2, textAlign: 'left' }}>
+            <FormControlLabel
+              control={<Checkbox checked={deleteAllRecurring} onChange={(e) => setDeleteAllRecurring(e.target.checked)} />}
+              label="이 반복 일정 전체를 삭제합니다."
+            />
+          </Box>
+        )}
       </DeleteConfirmDialog>
 
       {/* 결과 입력 다이얼로그 */}

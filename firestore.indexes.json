@@ -47,29 +47,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "location", "order": "ASCENDING" },
-        { "fieldPath": "joinDate", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "location", "order": "ASCENDING" },
-        { "fieldPath": "nickname", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "mileage", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "location", "order": "ASCENDING" },
         { "fieldPath": "mileage", "order": "DESCENDING" }
       ]
     }
