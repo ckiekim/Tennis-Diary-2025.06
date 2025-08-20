@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-// import useGoodsList from '../../hooks/useGoodsList';
 import usePaginatedGoods from '../../hooks/usePaginatedGoods';
 import useAuthState from '../../hooks/useAuthState';
 import { Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, increment } from 'firebase/firestore';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 import GoodsCard from './GoodsCard';
 import AddGoodsDialog from './dialogs/AddGoodsDialog';
@@ -19,7 +18,6 @@ const GoodsList = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const { user } = useAuthState();
-  // const { goods, loading } = useGoodsList(refreshKey);
   const { goods, loading, hasMore, fetchMore } = usePaginatedGoods(user?.uid, refreshKey);
 
   // Intersection Observer를 위한 ref 생성
@@ -57,6 +55,10 @@ const GoodsList = () => {
 
   const handleAddGoods = async (form) => {
     await addDoc(collection(db, 'goods'), form);
+    if (user?.uid) {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { mileage: increment(10) });
+    }
     setRefreshKey(prev => prev + 1);    // 데이터 다시 불러오도록
   };
 
@@ -70,6 +72,10 @@ const GoodsList = () => {
   const handleDeleteGoods = async () => {
     await deletePhotoFromStorage(selectedItem.photo);
     await deleteDoc(doc(db, 'goods', selectedItem.id));
+    if (user?.uid) {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { mileage: increment(-10) });
+    }
     setDeleteOpen(false);
     setRefreshKey(prev => prev + 1);
   };

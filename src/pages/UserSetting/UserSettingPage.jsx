@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Alert, Avatar, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
-  FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, TextField, Tooltip, Typography 
+  FormControl, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Stack, TextField, Tooltip, Typography 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import MainLayout from '../../components/MainLayout';
@@ -73,7 +73,11 @@ const UserSettingPage = () => {
     setIsSaving(true);
     try {
       const location = joinLocation(province, city);
-      await updateSettings({ nickname, location, });
+      const dataToUpdate = { nickname, location, };
+      if (!settings.mileage) {
+        dataToUpdate.mileage = 100;
+      }
+      await updateSettings(dataToUpdate);
       setDialog({ open: true, title: '저장 완료', message: '설정이 성공적으로 저장되었습니다.',
         onConfirm: () => navigate(-1) // 이전 페이지로 이동
       });
@@ -183,11 +187,19 @@ const UserSettingPage = () => {
 
           <TextField label="가입일" value={settings?.joinDate || ''} fullWidth margin="normal" disabled InputProps={{ readOnly: true }} />
 
-          <Box mt={3} textAlign="right">
+          {/* <Box mt={3} textAlign="right">
             <Button variant="contained"  onClick={handleSave} disabled={isSaving}>
               {isSaving ? <CircularProgress size={24} /> : '저장하기'}
             </Button>
-          </Box>
+          </Box> */}
+          <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Button variant="outlined" onClick={() => navigate(-1)} disabled={isSaving}>
+              취소
+            </Button>
+            <Button variant="contained"  onClick={handleSave} disabled={isSaving}>
+              {isSaving ? <CircularProgress size={24} /> : '저장하기'}
+            </Button>
+          </Stack>
         </Paper>
       </Container>
 

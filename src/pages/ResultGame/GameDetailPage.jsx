@@ -7,7 +7,7 @@ import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditResultDialog from './dialogs/EditGameDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
@@ -41,13 +41,18 @@ const GameDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!result) return;
+    if (!result || !user?.uid) {
+      alert('사용자 정보가 올바르지 않습니다.');
+      return;
+    }
     try {
       const photoList = result.photoList || [];
       for (const url of photoList) {
         await deletePhotoFromStorage(url);
       }
       await deleteDoc(doc(db, 'events', id));
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { mileage: increment(-10) });
       setDeleteOpen(false);
       navigate(-1);
     } catch (err) {

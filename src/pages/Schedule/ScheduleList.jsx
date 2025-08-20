@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
@@ -78,6 +78,8 @@ const ScheduleList = () => {
       dataToSubmit.price = Number(dataToSubmit.price);
 
     await addDoc(collection(db, 'events'), dataToSubmit);
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { mileage: increment(5) });
 
     // 🔁 0.3초후 화면 강제 리렌더
     setTimeout(() => {
@@ -102,39 +104,67 @@ const ScheduleList = () => {
     
     let currentDate = dayjs(); // 오늘부터 시작
     const finalDate = dayjs(endDate);
+    let eventCount = 0;
+
+    // while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
+    //   const dayOfWeek = currentDate.day(); // 현재 날짜의 요일(숫자)
+    //   // 첫 번째 요일과 일치하는 경우
+    //   if (dayOfWeek === dayMap[day1]) {
+    //     const newEventRef = doc(collection(db, 'events'));
+    //     batch.set(newEventRef, {
+    //       uid: user.uid,
+    //       type: '레슨',
+    //       date: currentDate.format('YYYY-MM-DD'),
+    //       time: time1,
+    //       place: form.place, // 공통 form 상태에서 장소 가져오기
+    //       price: Number(monthlyPrice),
+    //       isRecurring: true, // 반복 일정임을 표시
+    //       createdAt: serverTimestamp()
+    //     });
+    //   }
+    //   // 주 2회인 경우, 두 번째 요일과 일치하는지 확인
+    //   if (frequency === 2 && dayOfWeek === dayMap[day2]) {
+    //     const newEventRef = doc(collection(db, 'events'));
+    //     batch.set(newEventRef, {
+    //       uid: user.uid,
+    //       type: '레슨',
+    //       date: currentDate.format('YYYY-MM-DD'),
+    //       time: time2,
+    //       place: form.place, // 공통 form 상태에서 장소 가져오기
+    //       price: Number(monthlyPrice),
+    //       isRecurring: true, // 반복 일정임을 표시
+    //       createdAt: serverTimestamp()
+    //     });
+    //   }
+      
+    //   currentDate = currentDate.add(1, 'day'); // 다음 날짜로 이동
+    // }
 
     while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
-      const dayOfWeek = currentDate.day(); // 현재 날짜의 요일(숫자)
-      // 첫 번째 요일과 일치하는 경우
+      const dayOfWeek = currentDate.day();
+      
+      const addEventToBatch = (time) => {
+        const newEventRef = doc(collection(db, 'events'));
+        batch.set(newEventRef, {
+          uid: user.uid, type: '레슨', date: currentDate.format('YYYY-MM-DD'),
+          time, place: form.place, price: Number(monthlyPrice),
+          isRecurring: true, createdAt: serverTimestamp()
+        });
+        eventCount++; // 일정 추가 시 카운트 증가
+      };
+
       if (dayOfWeek === dayMap[day1]) {
-        const newEventRef = doc(collection(db, 'events'));
-        batch.set(newEventRef, {
-          uid: user.uid,
-          type: '레슨',
-          date: currentDate.format('YYYY-MM-DD'),
-          time: time1,
-          place: form.place, // 공통 form 상태에서 장소 가져오기
-          price: Number(monthlyPrice),
-          isRecurring: true, // 반복 일정임을 표시
-          createdAt: serverTimestamp()
-        });
+        addEventToBatch(time1);
       }
-      // 주 2회인 경우, 두 번째 요일과 일치하는지 확인
       if (frequency === 2 && dayOfWeek === dayMap[day2]) {
-        const newEventRef = doc(collection(db, 'events'));
-        batch.set(newEventRef, {
-          uid: user.uid,
-          type: '레슨',
-          date: currentDate.format('YYYY-MM-DD'),
-          time: time2,
-          place: form.place, // 공통 form 상태에서 장소 가져오기
-          price: Number(monthlyPrice),
-          isRecurring: true, // 반복 일정임을 표시
-          createdAt: serverTimestamp()
-        });
+        addEventToBatch(time2);
       }
       
-      currentDate = currentDate.add(1, 'day'); // 다음 날짜로 이동
+      currentDate = currentDate.add(1, 'day');
+    }
+    if (user?.uid && eventCount > 0) {
+      const userRef = doc(db, 'users', user.uid);
+      batch.update(userRef, { mileage: increment(eventCount * 5) });
     }
 
     await batch.commit(); // batch에 담긴 모든 쓰기 작업을 한 번에 실행
@@ -171,8 +201,23 @@ const ScheduleList = () => {
     setDeleteOpen(true);
   }
 
+  // const handleDeleteConfirm = async () => {
+  //   await deleteDoc(doc(db, 'events', selectedSchedule.id));
+  //   setDeleteOpen(false);
+  //   setRefreshKey((prev) => prev + 1);
+  // }
   const handleDeleteConfirm = async () => {
+    if (!selectedSchedule?.id || !user?.uid) return;
+
     await deleteDoc(doc(db, 'events', selectedSchedule.id));
+    let pointsToDeduct = 5;   // 기본 생성 포인트 5점
+    if (selectedSchedule.result) {    // 결과가 등록된 일정이었다면 5점 추가 차감
+      pointsToDeduct += 5;
+    }
+
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { mileage: increment(-pointsToDeduct) });
+
     setDeleteOpen(false);
     setRefreshKey((prev) => prev + 1);
   }
@@ -189,6 +234,9 @@ const ScheduleList = () => {
       result, memo,
       photoList: arrayUnion(...photoList),   // 사진은 여러 장 저장할 수 있으니 배열 유지
     });
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, { mileage: increment(5) });
+    
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
     if (type === '게임')

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Box, Divider, IconButton, Menu, MenuItem, Typography,
+import { Avatar, Box, Divider, IconButton, Menu, MenuItem, Stack, Typography,
   Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle 
  } from '@mui/material';
 import { logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
 import useUserSettings from '../hooks/useUserSettings';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -76,9 +77,20 @@ export default function UserAvatar() {
           anchorEl={anchorEl}
         >
           <Box sx={{ padding: '12px 16px' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+            {/* <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
               {settings.nickname}님
-            </Typography>
+            </Typography> */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                {settings.nickname}님
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <MonetizationOnIcon color="action" sx={{ fontSize: 18 }} />
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  {settings.mileage?.toLocaleString() || 0}
+                </Typography>
+              </Stack>
+            </Stack>
             <Typography variant="body2" color="text.secondary">
               {user.email}
             </Typography>
