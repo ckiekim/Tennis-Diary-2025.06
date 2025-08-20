@@ -13,7 +13,6 @@ export default function UserAvatar() {
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const { user, loading: authLoading } = useAuthState(); 
-  // Firestore의 실시간 데이터를 가져옴
   const { settings, loading: settingsLoading } = useUserSettings();
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -77,9 +76,6 @@ export default function UserAvatar() {
           anchorEl={anchorEl}
         >
           <Box sx={{ padding: '12px 16px' }}>
-            {/* <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              {settings.nickname}님
-            </Typography> */}
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 {settings.nickname}님

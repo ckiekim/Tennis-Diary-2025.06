@@ -106,40 +106,6 @@ const ScheduleList = () => {
     const finalDate = dayjs(endDate);
     let eventCount = 0;
 
-    // while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
-    //   const dayOfWeek = currentDate.day(); // 현재 날짜의 요일(숫자)
-    //   // 첫 번째 요일과 일치하는 경우
-    //   if (dayOfWeek === dayMap[day1]) {
-    //     const newEventRef = doc(collection(db, 'events'));
-    //     batch.set(newEventRef, {
-    //       uid: user.uid,
-    //       type: '레슨',
-    //       date: currentDate.format('YYYY-MM-DD'),
-    //       time: time1,
-    //       place: form.place, // 공통 form 상태에서 장소 가져오기
-    //       price: Number(monthlyPrice),
-    //       isRecurring: true, // 반복 일정임을 표시
-    //       createdAt: serverTimestamp()
-    //     });
-    //   }
-    //   // 주 2회인 경우, 두 번째 요일과 일치하는지 확인
-    //   if (frequency === 2 && dayOfWeek === dayMap[day2]) {
-    //     const newEventRef = doc(collection(db, 'events'));
-    //     batch.set(newEventRef, {
-    //       uid: user.uid,
-    //       type: '레슨',
-    //       date: currentDate.format('YYYY-MM-DD'),
-    //       time: time2,
-    //       place: form.place, // 공통 form 상태에서 장소 가져오기
-    //       price: Number(monthlyPrice),
-    //       isRecurring: true, // 반복 일정임을 표시
-    //       createdAt: serverTimestamp()
-    //     });
-    //   }
-      
-    //   currentDate = currentDate.add(1, 'day'); // 다음 날짜로 이동
-    // }
-
     while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
       const dayOfWeek = currentDate.day();
       
@@ -201,11 +167,6 @@ const ScheduleList = () => {
     setDeleteOpen(true);
   }
 
-  // const handleDeleteConfirm = async () => {
-  //   await deleteDoc(doc(db, 'events', selectedSchedule.id));
-  //   setDeleteOpen(false);
-  //   setRefreshKey((prev) => prev + 1);
-  // }
   const handleDeleteConfirm = async () => {
     if (!selectedSchedule?.id || !user?.uid) return;
 
