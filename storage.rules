@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 사용자의 UID와 일치하는 폴더에 대한 규칙
+    // {userId}는 와일드카드로, 실제 UID 값을 의미합니다.
+    match /{userId}/{allPaths=**} {
+
+      // allow create: 파일 생성을 허용합니다. (업로드는 create에 해당)
+      // 조건: 요청한 사용자가 로그인되어 있고(request.auth != null)
+      //      요청한 사용자의 UID(request.auth.uid)가 접근하려는 폴더의 이름({userId})과 같아야 합니다.
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // (선택사항) 모든 로그인한 사용자가 다른 사람의 이미지도 볼 수 있게 하려면 아래 규칙을 추가합니다.
+      allow read: if request.auth != null;
+
+      // (선택사항) 자신의 파일만 삭제할 수 있게 하려면 아래 규칙을 추가합니다.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

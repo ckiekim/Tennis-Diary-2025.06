@@ -3,19 +3,13 @@ import usePaginatedGoods from '../../hooks/usePaginatedGoods';
 import useAuthState from '../../hooks/useAuthState';
 import { Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
-import { collection, addDoc, deleteDoc, updateDoc, doc, increment } from 'firebase/firestore';
-import { deletePhotoFromStorage } from '../../api/firebaseStorage';
+import { collection, addDoc, updateDoc, doc, increment } from 'firebase/firestore';
 import GoodsCard from './GoodsCard';
 import AddGoodsDialog from './dialogs/AddGoodsDialog';
-import EditGoodsDialog from './dialogs/EditGoodsDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import AddIcon from '@mui/icons-material/Add';
 
 const GoodsList = () => {
   const [addOpen, setAddOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const { user } = useAuthState();
   const { goods, loading, hasMore, fetchMore } = usePaginatedGoods(user?.uid, refreshKey);
@@ -62,24 +56,6 @@ const GoodsList = () => {
     setRefreshKey(prev => prev + 1);    // 데이터 다시 불러오도록
   };
 
-  const handleUpdateGoods = async (form) => {
-    const { id, ...rest } = form;
-    await updateDoc(doc(db, 'goods', id), rest);
-    setEditOpen(false);
-    setRefreshKey(prev => prev + 1);
-  };
-
-  const handleDeleteGoods = async () => {
-    await deletePhotoFromStorage(selectedItem.photo);
-    await deleteDoc(doc(db, 'goods', selectedItem.id));
-    if (user?.uid) {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { mileage: increment(-10) });
-    }
-    setDeleteOpen(false);
-    setRefreshKey(prev => prev + 1);
-  };
-
   if (loading && goods.length === 0) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -99,11 +75,7 @@ const GoodsList = () => {
       ) : (
         <Stack spacing={1}>
           {goods.map(item => 
-            <GoodsCard 
-              key={item.id} item={item}
-              onEdit={(item) => { setSelectedItem(item); setEditOpen(true); }}
-              onDelete={(item) => { setSelectedItem(item); setDeleteOpen(true); }} 
-            />
+            <GoodsCard  key={item.id} item={item} />
           )}
         </Stack>
       )}
@@ -131,11 +103,6 @@ const GoodsList = () => {
       </Fab>
 
       <AddGoodsDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddGoods} uid={user?.uid} />
-      <EditGoodsDialog open={editOpen} onClose={() => setEditOpen(false)} item={selectedItem} onSave={handleUpdateGoods} uid={user?.uid} />
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteGoods}>
-        "{selectedItem?.name}" 품목을 삭제하시겠습니까? <br />
-        이 작업은 되돌릴 수 없습니다.
-      </DeleteConfirmDialog>
     </>
   );
 };

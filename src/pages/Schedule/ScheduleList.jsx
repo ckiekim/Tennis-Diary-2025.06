@@ -278,6 +278,7 @@ const ScheduleList = () => {
       {/* 일정 추가 다이얼로그 */}
       <AddScheduleDialog 
         courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} 
+        selectedDate={selectedDate}
         onAddSchedule={handleAddSchedule} onAddRecurringSchedule={handleAddRecurringSchedule}
       />
 

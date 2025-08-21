@@ -14,6 +14,7 @@ import ResultStatPage from './pages/ResultStat/ResultStatPage';
 import ResultTournamentPage from './pages/ResultTournament/ResultTournamentPage';
 import TournamentDetailPage from './pages/ResultTournament/TournamentDetailPage';
 import GoodsPage from './pages/Goods/GoodsPage';
+import GoodsDetailPage from './pages/Goods/GoodsDetailPage';
 import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserDetailPage from './pages/UserAdmin/UserDetailPage';
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/result/tournament" element={<ResultTournamentPage />} />
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
           <Route path="/goods" element={<GoodsPage />} />
+          <Route path="/goods/:id" element={<GoodsDetailPage />} />
           <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/setting" element={<UserSettingPage />} />

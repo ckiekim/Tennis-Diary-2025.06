@@ -8,6 +8,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
   const [price, setPrice] = useState('');
   const [shopper, setShopper] = useState('');
   const [date, setDate] = useState('');
+  const [memo, setMemo] = useState('');
   const [photo, setPhoto] = useState('');
   const [uploading, setUploading] = useState(false);
 
@@ -17,6 +18,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
       setPrice(item.price || '');
       setShopper(item.shopper || '');
       setDate(item.date || '');
+      setMemo(item.memo || '');
       setPhoto(item.photo || '');
     }
   }, [item]);
@@ -38,7 +40,7 @@ export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
   };
   
   const handleSave = async () => {
-    onSave({ ...item, name, price: Number(price), shopper, date, photo });
+    onSave({ ...item, name, price: Number(price), shopper, date, memo, photo });
     onClose();
   };
 
@@ -53,7 +55,14 @@ export default function EditGoodsDialog({ open, onClose, item, onSave, uid }) {
           <TextField label="구매처" value={shopper} onChange={(e) => setShopper(e.target.value)} fullWidth />
           <TextField label="구매일" type="date" value={date}
             onChange={(e) => setDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-
+          <TextField 
+            label="메모" 
+            value={memo} 
+            onChange={(e) => setMemo(e.target.value)} 
+            multiline 
+            rows={3} 
+            fullWidth 
+          />
           {/* 이미지 업로드 */}
           <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
             {uploading ? (

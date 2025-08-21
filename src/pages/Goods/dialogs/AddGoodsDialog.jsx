@@ -4,7 +4,7 @@ import { uploadImageToFirebase } from '../../../api/firebaseStorage';
 import { handleNumericInputChange } from '../../../utils/handleInput';
 
 export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
-  const [form, setForm] = useState({ name: '', shopper: '', price: '0', date: '', photo: '' });
+  const [form, setForm] = useState({ name: '', shopper: '', price: '0', date: '', photo: '', memo: '' });
   const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
@@ -37,7 +37,7 @@ export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
     const dataToSave = { ...form, price: Number(form.price), uid, };
     onAdd(dataToSave);
     onClose();
-    setForm({ name: '', shopper: '', price: '0', date: '', photo: '' });
+    setForm({ name: '', shopper: '', price: '0', date: '', photo: '', memo: '' });
   };
 
   return (
@@ -47,13 +47,19 @@ export default function AddGoodsDialog({ open, onClose, onAdd, uid }) {
         <Stack spacing={2} mt={1}>
           <TextField name="name" label="용품명" value={form.name} onChange={handleChange} fullWidth />
           <TextField name="shopper" label="구매처" value={form.shopper} onChange={handleChange} fullWidth />
-          {/* <TextField name="price" label="가격" value={form.price} onChange={handleChange} type="number" fullWidth /> */}
           <TextField label="비용" fullWidth type="number" value={form.price || ''} 
             onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })} 
           />
           <TextField name="date" label="구매일" value={form.date} onChange={handleChange} type="date" fullWidth InputLabelProps={{ shrink: true }} />
-          {/* <TextField name="photo" label="사진 URL" value={form.photo} fullWidth margin="dense" onChange={handleChange} />
-           */}
+          <TextField 
+            name="memo" 
+            label="메모" 
+            value={form.memo} 
+            onChange={handleChange} 
+            multiline 
+            rows={3} 
+            fullWidth 
+          />
           <Stack direction="column" spacing={1}>
             <Button variant="outlined" component="label" disabled={uploading}>
               {uploading ? '업로드 중...' : '사진 업로드'}

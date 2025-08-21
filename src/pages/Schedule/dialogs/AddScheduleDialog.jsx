@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
   FormGroup, FormControlLabel, Grid, MenuItem, Stack, Switch, TextField, Typography 
@@ -7,7 +7,10 @@ import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 
-export default function AddScheduleDialog({courts, open, form, setOpen, setForm, onAddSchedule, onAddRecurringSchedule}) {
+const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
+const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
+
+export default function AddScheduleDialog({courts, open, form, setOpen, setForm, selectedDate, onAddSchedule, onAddRecurringSchedule}) {
   const isStringReplace = form.type === "스트링 교체";
   const isLesson = form.type === "레슨";
   const isTournament = form.type === "대회";
@@ -25,6 +28,19 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
     monthlyPrice: '',
     endDate: '',
   });
+
+  useEffect(() => {
+    // 다이얼로그가 열리고, selectedDate 값이 있을 때
+    if (open && selectedDate) {
+      const dayOfWeekIndex = selectedDate.day();  // 일요일=0, 월요일=1 ... 토요일=6을 반환
+      const selectedDay = weekDaysKorMap[dayOfWeekIndex];
+      // 반복 옵션의 첫 번째 요일(day1)을 선택된 요일로 업데이트
+      setRecurringOptions(prevOptions => ({
+        ...prevOptions,
+        day1: selectedDay,
+      }));
+    }
+  }, [open, selectedDate]);
 
   // 다이얼로그가 닫힐 때 모든 상태 초기화
   const handleClose = () => {
@@ -52,8 +68,6 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
       division: '', // 주관 변경 시 참가부문 초기화
     });
   };
-
-  const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth>
@@ -98,7 +112,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 <MenuItem value={2}>주 2회</MenuItem>
               </TextField>
               <Grid container spacing={1}>
-                <Grid item xs={4}>
+                <Grid item xs={4} sx={{maxWidth: 70}}>
                   <TextField select label="요일 1" fullWidth value={recurringOptions.day1} onChange={(e) => setRecurringOptions({...recurringOptions, day1: e.target.value})}>
                     {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
                   </TextField>
