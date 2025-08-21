@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Divider, ImageList, ImageListItem, Stack, Typography } from '@mui/material';
 import useAuthState from '../../hooks/useAuthState';
-import useEventDoc from '../../hooks/useEventDoc';
+import useDocument from '../../hooks/useDocument';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditTournamentDialog from './dialogs/EditTournamentDialog';
@@ -19,7 +19,7 @@ const TournamentDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const { docData: result, loading } = useEventDoc('events', id, refreshKey);
+  const { docData: result, loading } = useDocument('events', id, refreshKey);
   const { user } = useAuthState();
 
   if (loading) return <Typography>로딩 중...</Typography>;
