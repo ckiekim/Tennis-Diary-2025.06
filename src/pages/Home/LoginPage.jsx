@@ -56,7 +56,7 @@ export default function LoginPage() {
       maxWidth="sm"
       sx={{ mt: 10, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4, }}
     >
-      <img src="/logo512.png" alt="Logo" style={{ maxWidth: '300px', margin: '0 auto' }} />
+      <img src="/img/logo.png" alt="Logo" style={{ maxWidth: '300px', margin: '0 auto' }} />
       <Typography variant="h5" sx={{marginTop: '60px'}}>로그인이 필요합니다</Typography>
       <Box 
         sx={{ 
