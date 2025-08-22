@@ -70,7 +70,7 @@ const ResultGamePage = () => {
       >
         { (loading && hasMore) &&  <CircularProgress size={30} /> }
         {!hasMore && results.length > 0 && (
-          <Typography variant="body2" color="text.secondary">마지막 게임결과입니다.</Typography>
+          <Typography variant="body2" color="text.secondary">마지막 목록입니다.</Typography>
         )}
       </Box>
     </MainLayout>

@@ -1,10 +1,16 @@
-import React from 'react';
 import { Box, Typography } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const AppInfoPage = () => {
   return (
-    <MainLayout title="앱 정보">
+    <MainLayout title="테니스 다이어리">
+      <Box sx={{ display:'flex', alignItems:'center', mb: 1, p: 2 }}>
+        <InfoOutlinedIcon sx={{ mr: 1 }} />
+        <Typography variant="h6">
+          앱 정보
+        </Typography>
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -13,7 +19,8 @@ const AppInfoPage = () => {
           justifyContent: 'center',
           // 전체 뷰포트 높이에서 헤더(56px)와 하단 네비게이션(56px) 높이를 뺀 값으로 설정하여
           // 콘텐츠가 화면 중앙에 오도록 함.
-          height: 'calc(100vh - 112px)',
+          // height: 'calc(100vh - 112px)',
+          height: '600px',
           textAlign: 'center',
           padding: 3
         }}

@@ -106,7 +106,7 @@ const UserAdminPage = () => {
           >
             {loadingMore && <CircularProgress />}
             {!hasMore && !loadingMore && users.length > 0 && (
-              <Typography variant="body2" color="text.secondary">마지막 사용자입니다.</Typography>
+              <Typography variant="body2" color="text.secondary">마지막 목록입니다.</Typography>
             )}
           </Box>
         </>

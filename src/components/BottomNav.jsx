@@ -13,7 +13,8 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import TollIcon from '@mui/icons-material/Toll';
+// import TollIcon from '@mui/icons-material/Toll';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const BottomNav = () => {
@@ -143,7 +144,7 @@ const BottomNav = () => {
         onClose={() => setAnchorElMore(null)}
       >
         <MenuItem onClick={() => handleMoreMenuClick('/more/mileageInfo')}>
-          <TollIcon fontSize="small" sx={{ mr: 1 }} />
+          <MonetizationOnIcon fontSize="small" sx={{ mr: 1 }} />
           마일리지 안내
         </MenuItem>
         <MenuItem onClick={() => handleMoreMenuClick('/more/appInfo')}>

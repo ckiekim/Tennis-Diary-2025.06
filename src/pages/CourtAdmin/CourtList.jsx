@@ -120,7 +120,7 @@ const CourtList = () => {
       >
         { (loading || loadingMore) && <CircularProgress /> } {/* 로딩 상태를 둘 다 확인 */}
         {!hasMore && !(loading || loadingMore) && courts.length > 0 && (
-          <p>마지막 코트입니다.</p>
+          <p>마지막 목록입니다.</p>
         )}
       </Box>
 
