@@ -11,7 +11,7 @@ const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function AddScheduleDialog({courts, open, form, setOpen, setForm, selectedDate, onAddSchedule, onAddRecurringSchedule}) {
-  const isStringReplace = form.type === "스트링 교체";
+  const isJeongmo = form.type === "정모";
   const isLesson = form.type === "레슨";
   const isTournament = form.type === "대회";
   const isGame = form.type === "게임";
@@ -42,6 +42,16 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
     }
   }, [open, selectedDate]);
 
+  useEffect(() => {
+    if (isJeongmo && isRecurring) {
+      setRecurringOptions(prev => ({
+        ...prev,
+        time1: '09:00~12:00',
+        time2: '09:00~12:00'
+      }));
+    }
+  }, [isJeongmo, isRecurring]);
+
   // 다이얼로그가 닫힐 때 모든 상태 초기화
   const handleClose = () => {
     setOpen(false);
@@ -51,7 +61,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
 
   // 저장 버튼 클릭 시 단일/반복에 따라 다른 함수 호출
   const handleSave = () => {
-    if (isLesson && isRecurring) {
+    if ((isLesson || isJeongmo) && isRecurring) {
       // 부모 컴포넌트에 반복 옵션 전달
       onAddRecurringSchedule(recurringOptions);
     } else {
@@ -80,10 +90,10 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             <MenuItem value="게임">게임</MenuItem>
             <MenuItem value="레슨">레슨</MenuItem>
             <MenuItem value="대회">대회</MenuItem>
-            <MenuItem value="스트링 교체">스트링 교체</MenuItem>
+            <MenuItem value="정모">정모</MenuItem>
           </TextField>
           
-          {isLesson && (
+          {(isLesson || isJeongmo) && (
             <FormGroup>
               <FormControlLabel
                 control={<Switch checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
@@ -92,17 +102,8 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             </FormGroup>
           )}
 
-          { isStringReplace ? (
-            <>
-              <TextField label="스트링" fullWidth value={form.string || ''} onChange={(e) => setForm({ ...form, string: e.target.value })} />
-              <TextField label="텐션" fullWidth value={form.tension || ''} onChange={(e) => setForm({ ...form, tension: e.target.value })} />
-              <TextField label="교체 장소" fullWidth value={form.place || ''} onChange={(e) => setForm({ ...form, place: e.target.value })} />
-              <TextField label="비용" fullWidth type="number" value={form.price || ''} 
-                onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })} 
-              />
-            </>
-          ) : isLesson && isRecurring ? (
-            // 레슨 && 반복 일정 UI
+          {(isLesson || isJeongmo) && isRecurring ? (
+            // 반복 일정 UI
             <Stack spacing={2}>
               <Typography variant="subtitle2" color="primary">반복 설정</Typography>
               <TextField select label="반복 주기" value={recurringOptions.frequency}
@@ -113,7 +114,9 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
               </TextField>
               <Grid container spacing={1}>
                 <Grid item xs={4} sx={{maxWidth: 70}}>
-                  <TextField select label="요일 1" fullWidth value={recurringOptions.day1} onChange={(e) => setRecurringOptions({...recurringOptions, day1: e.target.value})}>
+                  <TextField select label="요일 1" fullWidth value={recurringOptions.day1} 
+                    onChange={(e) => setRecurringOptions({...recurringOptions, day1: e.target.value})}
+                  >
                     {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
                   </TextField>
                 </Grid>
@@ -126,7 +129,9 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
               {recurringOptions.frequency === 2 && (
                 <Grid container spacing={1}>
                   <Grid item xs={4}>
-                    <TextField select label="요일 2" fullWidth value={recurringOptions.day2} onChange={(e) => setRecurringOptions({...recurringOptions, day2: e.target.value})}>
+                    <TextField select label="요일 2" fullWidth value={recurringOptions.day2} 
+                      onChange={(e) => setRecurringOptions({...recurringOptions, day2: e.target.value})}
+                    >
                       {weekDays.map(day => <MenuItem key={day} value={day}>{day}</MenuItem>)}
                     </TextField>
                   </Grid>
@@ -199,14 +204,14 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             </Stack>
           ) : (
             <>
-              {(isGame || (isLesson && !isRecurring)) && (
+              
+              {(isGame || ((isLesson || isJeongmo) && !isRecurring)) && (
                 <TextField label="시간 (예: 13:00~15:00)" fullWidth value={form.time} 
                   onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
                 />
               )}
               <Autocomplete
-                options={courts.map(c => c.name)}
-                value={form.place || ''}
+                options={courts.map(c => c.name)} value={form.place || ''}
                 onChange={(e, newValue) => setForm({ ...form, place: newValue })}
                 renderInput={(params) => (
                   <TextField {...params} label="장소" fullWidth />
@@ -219,9 +224,7 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
               />
               {isGame && (
                 <Autocomplete
-                  freeSolo
-                  options={sourceList}
-                  value={form.source || ''}
+                  freeSolo options={sourceList} value={form.source || ''}
                   onChange={(e, newValue) => setForm({ ...form, source: newValue })}
                   onInputChange={(e, newInputValue) => setForm({ ...form, source: newInputValue })}
                   renderInput={(params) => (
@@ -231,6 +234,11 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
               )}
             </>
           ) }
+          {isJeongmo && (
+            <TextField label="정모 이름" fullWidth value={form.club || ''} 
+              onChange={(e) => setForm({ ...form, club: e.target.value })} 
+            />
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>

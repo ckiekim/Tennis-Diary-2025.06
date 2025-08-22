@@ -31,7 +31,7 @@ const ScheduleList = () => {
   const courts = useCourtList();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ type: '', place: '' });
+  const [form, setForm] = useState({ type: '', place: '', club: '' });
   useEffect(() => {
     if (user?.uid) {
       setForm((prev) => ({ ...prev, uid: user.uid }));
@@ -50,9 +50,10 @@ const ScheduleList = () => {
   const handleAddSchedule = async () => {
     if (!form.type) return;
 
-    if (form.type === '스트링 교체') {
-      if (!form.string || !form.tension || !form.place) {
-        alert('스트링 교체 항목을 모두 입력해주세요.');
+    if (form.type === '정모') {
+      if (!form.club || !form.place) {
+        console.log(form);
+        alert('정모 항목을 모두 입력해주세요.');
         return;
       }
     } else if (form.type === '대회') {
@@ -105,19 +106,23 @@ const ScheduleList = () => {
     const batch = writeBatch(db);
     const recurringId = doc(collection(db, 'events')).id;
     
-    let currentDate = dayjs(); 
+    let currentDate = dayjs(selectedDate); 
     const finalDate = dayjs(endDate);
     let eventCount = 0;
 
     const addEventToBatch = (batch, date, time) => {
       const newEventRef = doc(collection(db, 'events'));
-      batch.set(newEventRef, {
-        uid: user.uid, type: '레슨', date: date.format('YYYY-MM-DD'),
+      const dataToSave = {
+        uid: user.uid, type: form.type, date: date.format('YYYY-MM-DD'),
         time, place: form.place, price: Number(monthlyPrice),
         isRecurring: true, 
         recurringId: recurringId,
         createdAt: serverTimestamp()
-      });
+      }
+      if (form.type === '정모') {
+        dataToSave.club = form.club;
+      }
+      batch.set(newEventRef, dataToSave);
     };
 
     while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
@@ -141,7 +146,7 @@ const ScheduleList = () => {
     await batch.commit(); // batch에 담긴 모든 쓰기 작업을 한 번에 실행
 
     setAddOpen(false);
-    setForm({ type: '', time: '', place: '', source: '' });
+    setForm({ type: '', time: '', place: '', source: '', club: '' });
     setTimeout(() => {
       setRefreshKey(prev => prev + 1);
     }, 300);
@@ -231,10 +236,10 @@ const ScheduleList = () => {
     
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
-    if (type === '게임')
-      navigate('/result/game');
-    else
+    if (type === '대회')
       navigate('/result/tournament');
+    else
+      navigate('/result/game');
   }
 
   return (

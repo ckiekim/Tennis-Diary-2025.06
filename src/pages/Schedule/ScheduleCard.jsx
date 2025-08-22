@@ -5,9 +5,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 
 export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
-  const isStringReplace = schedule.type === "스트링 교체";
+  // const isStringReplace = schedule.type === "스트링 교체";
   const isLesson = schedule.type === "레슨";
   const isTournament = schedule.type === "대회";
+  const isJeongmo = schedule.type === "정모";
 
   return (
     <Box
@@ -22,7 +23,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
         <IconButton size="small" onClick={() => onDelete(schedule)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
-        { ! (isStringReplace || isLesson) && (
+        { !isLesson && (
           <IconButton size="small" onClick={() => onResult(schedule)}>
             <NotesIcon fontSize="small" />
           </IconButton>
@@ -32,23 +33,22 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
       <Typography variant="subtitle2" fontWeight="bold">
         {schedule.type}
       </Typography>
-      { isStringReplace ? (
+      { isJeongmo ? (
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🧵</Box>
-            <Typography variant="body2">{schedule.string}</Typography>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🧑‍🤝‍🧑</Box>
+            <Typography variant="body2">{schedule.club}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📏</Box>
-            <Typography variant="body2">{schedule.tension} lbs</Typography>
+            <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>⏰</Box>
+            <Typography variant="body2">{schedule.time}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
-            <Typography variant="body2">{schedule.place}</Typography>
+            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
           </Box>
         </>
       ) : isTournament ? (
-        // 대회 정보 표시
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🏆</Box>

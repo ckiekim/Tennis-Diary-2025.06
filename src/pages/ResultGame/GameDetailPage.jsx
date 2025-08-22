@@ -66,6 +66,16 @@ const GameDetailPage = () => {
   return (
     <MainLayout title='게임 상세'>
       <Box p={2}>
+        {result.club && (
+          <>
+            <Typography variant="body2" fontWeight="bold">정모</Typography>
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
+              {result.club}
+            </Typography>
+            <Divider sx={{ my: 1 }} />
+          </>
+        )}
+
         <Typography variant="body2" fontWeight="bold">일시</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
           {`${result.date} (${formatDay(result.date)}) ${result.time}`}

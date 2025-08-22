@@ -4,9 +4,11 @@ import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivision
 
 export default function EditScheduleDialog({courts, open, selectedSchedule, setOpen, setSelectedSchedule, onUpdate}) {
   if (!selectedSchedule) return null;
-  const isStringReplace = selectedSchedule.type === "스트링 교체";
-  const isLesson = selectedSchedule.type === "레슨";
+
+  const isJeongmo = selectedSchedule.type === "정모";
+  // const isLesson = selectedSchedule.type === "레슨";
   const isTournament = selectedSchedule.type === "대회";
+  const isGame = selectedSchedule.type === "게임";
 
   // 주관 변경 시 참가부문 초기화
   const handleOrganizerChange = (e) => {
@@ -29,28 +31,9 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
             <MenuItem value="레슨">레슨</MenuItem>
             <MenuItem value="게임">게임</MenuItem>
             <MenuItem value="대회">대회</MenuItem>
-            <MenuItem value="스트링 교체">스트링 교체</MenuItem>
+            <MenuItem value="정모">정모</MenuItem>
           </TextField>
-          {isStringReplace ? (
-            <>
-              <TextField
-                label="스트링" fullWidth value={selectedSchedule.string || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, string: e.target.value })}
-              />
-              <TextField
-                label="텐션" fullWidth value={selectedSchedule.tension || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, tension: e.target.value })}
-              />
-              <TextField
-                label="교체 장소" fullWidth value={selectedSchedule.place || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, place: e.target.value })}
-              />
-              <TextField
-                label="비용" fullWidth type="number" value={selectedSchedule.price || ''}
-                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
-              />
-            </>
-          ) : isTournament ? (
+          {isTournament ? (
             <Stack spacing={2}>
               <TextField label="대회명" fullWidth value={selectedSchedule.name || ''} onChange={(e) => setSelectedSchedule({ ...selectedSchedule, name: e.target.value })} />
               <Autocomplete
@@ -90,6 +73,12 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
             </Stack>
           ) : (
             <>
+              {isJeongmo && (
+                <TextField 
+                  label="정모 이름" fullWidth value={selectedSchedule.club || ''}
+                  onChange={(e) => setSelectedSchedule({...selectedSchedule, club: e.target.value})}
+                />
+              )}
               <TextField
                 label="시간" fullWidth value={selectedSchedule?.time || ''}
                 onChange={(e) => setSelectedSchedule({ ...selectedSchedule, time: handleTimeInputChange(e.target.value) })}
@@ -103,12 +92,11 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
                   </MenuItem>
                 ))}
               </TextField>
-              { isLesson ? (
-                <TextField
-                  label="비용" fullWidth type="number" value={selectedSchedule.price || ''}
-                  onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
-                />
-              ) : (
+              <TextField
+                label="비용" fullWidth type="number" value={selectedSchedule.price || ''}
+                onChange={(e) => setSelectedSchedule({ ...selectedSchedule, price: handleNumericInputChange(e.target.value) })}
+              />
+             {isGame && (
                 <TextField
                   label="소스" fullWidth value={selectedSchedule?.source || ''}
                   onChange={(e) => setSelectedSchedule({ ...selectedSchedule, source: e.target.value })}

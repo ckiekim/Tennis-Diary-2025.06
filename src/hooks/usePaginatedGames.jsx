@@ -41,7 +41,7 @@ export default function usePaginatedGames(uid, refreshKey = 0) {
         const q = query(
           eventsRef,
           where('uid', '==', uid),
-          where('type', '==', '게임'),
+          where('type', 'in', ['게임', '정모']),
           orderBy('date', 'desc'),
           limit(PAGE_SIZE)
         );

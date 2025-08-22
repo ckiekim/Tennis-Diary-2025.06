@@ -30,6 +30,11 @@ export default function GameCard({ item }) {
               소스: {item.source}
             </Typography>
           }
+          {item.club && 
+            <Typography fontSize="12px">
+              정모: {item.club}
+            </Typography>
+          }
         </Box>
       </Box>
     </Card>
