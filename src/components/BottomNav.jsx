@@ -16,6 +16,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 // import TollIcon from '@mui/icons-material/Toll';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import GavelIcon from '@mui/icons-material/Gavel';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
@@ -107,7 +108,7 @@ const BottomNav = () => {
       >
         <MenuItem onClick={() => handleResultMenuClick('/result/game')}>
           <SportsTennisIcon fontSize="small" sx={{ mr: 1 }} />
-          게임결과
+          게임결과 &nbsp;&nbsp;
         </MenuItem>
         <MenuItem onClick={() => handleResultMenuClick('/result/tournament')}>
           <RestoreIcon fontSize="small" sx={{ mr: 1 }} />
@@ -150,6 +151,10 @@ const BottomNav = () => {
         <MenuItem onClick={() => handleMoreMenuClick('/more/appInfo')}>
           <InfoOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
           앱 정보
+        </MenuItem>
+        <MenuItem onClick={() => handleMoreMenuClick('/more/agreement')}>
+          <GavelIcon fontSize="small" sx={{ mr: 1 }} />
+          이용 약관
         </MenuItem>
       </Menu>
     </>
