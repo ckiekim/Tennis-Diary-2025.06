@@ -13,7 +13,8 @@ const DeleteConfirmDialog = ({ open, onClose, onConfirm, children }) => {
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>삭제 확인</DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        {/* p 태그 대신 div로 렌더링되도록 component 속성 추가 */}
+        <DialogContentText component="div">
           {children}
         </DialogContentText>
       </DialogContent>
