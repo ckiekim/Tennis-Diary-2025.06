@@ -14,7 +14,7 @@ export default function MainLayout({ children, title = '' }) {
         <Toolbar sx={{ justifyContent: 'space-between', mt: 0.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0, mr: 0 }}>
             <IconButton onClick={goToHome} color="inherit">
-              <Avatar src="/img/logo192.png" alt="tennis diary logo" sx={{ width: 32, height: 32 }} />
+              <Avatar src="/img/logo.png" alt="tennis diary logo" sx={{ width: 32, height: 32 }} />
             </IconButton>
             <Typography variant="h5" noWrap>
               {title}
