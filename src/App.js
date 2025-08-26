@@ -22,6 +22,7 @@ import UserSettingPage from './pages/UserSetting/UserSettingPage';
 import MileageInfoPage from './pages/More/MileageInfoPage';
 import AppInfoPage from './pages/More/AppInfoPage';
 import AgreementPage from './pages/More/AgreementPage';
+import PwaInstallGuidePage from './pages/More/PwaInstallGuidePage';
 
 const App = () => {
   dayjs.locale('ko');
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/more/agreement" element={<AgreementPage />} />
+          <Route path="/more/installGuide" element={<PwaInstallGuidePage />} />
           <Route path="/setting" element={<UserSettingPage />} />
         </Route>
 

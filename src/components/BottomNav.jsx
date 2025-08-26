@@ -17,6 +17,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GavelIcon from '@mui/icons-material/Gavel';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
@@ -155,6 +156,10 @@ const BottomNav = () => {
         <MenuItem onClick={() => handleMoreMenuClick('/more/agreement')}>
           <GavelIcon fontSize="small" sx={{ mr: 1 }} />
           이용 약관
+        </MenuItem>
+        <MenuItem onClick={() => handleMoreMenuClick('/more/installGuide')}>
+          <DownloadForOfflineIcon fontSize="small" sx={{ mr: 1 }} />
+          앱 설치안내
         </MenuItem>
       </Menu>
     </>
