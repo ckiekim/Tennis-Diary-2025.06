@@ -11,14 +11,17 @@
 5. 이제 홈 화면에 추가된 Tennis Diary 아이콘으로 바로 접속할 수 있습니다.
 
 #### 📱 iPhone / iPad (Safari 브라우저)
-1. Chrome 브라우저를 열고 <strong>www.tennis-diary.kr</strong> 사이트로 이동합니다. <br />
+1. Safari 브라우저를 열고 <strong>www.tennis-diary.kr</strong> 사이트로 이동합니다. <br />
 2. 화면에 'Tennis Diary 앱을 설치하시겠습니까?' 라는 팝업이 나타나면 '설치' 버튼을 누릅니다. <br />
 3. 만약 팝업이 나타나지 않는다면, 우측 상단의 더보기 메뉴(점 3개 아이콘)를 누릅니다. <br />
 4. 나타나는 메뉴에서 '앱 설치' 또는 '홈 화면에 추가'를 선택합니다. <br />
 5. 이제 홈 화면에 추가된 Tennis Diary 아이콘으로 바로 접속할 수 있습니다.
 
 #### 💻 PC (Chrome, Edge 브라우저)
-
+1. Chrome 또는 Edge 브라우저를 열고 <strong>www.tennis-diary.kr</strong> 사이트로 이동합니다. <br />
+2. 주소창 오른쪽 끝에 나타나는 설치 아이콘(컴퓨터와 아래쪽 화살표 모양)을 클릭합니다. <br />
+3. 나타나는 팝업에서 '설치' 버튼을 누릅니다. <br />
+4. 이제 Tennis Diary가 별도의 창으로 실행되며, 작업 표시줄에 고정하여 언제든지 빠르게 실행할 수 있습니다.
 
 ### 사용
 1. 구글 로그인 / 카카오 로그인 으로 가입합니다.
