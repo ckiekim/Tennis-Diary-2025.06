@@ -211,12 +211,19 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
                 />
               )}
               <Autocomplete
-                options={courts.map(c => c.name)} value={form.place || ''}
-                onChange={(e, newValue) => setForm({ ...form, place: newValue })}
+                options={courts.map(c => c.name)}
+                value={form.place || ''}
+                onInputChange={(event, newInputValue) => {
+                  // 이 핸들러는 단순히 form의 place 텍스트만 업데이트
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    place: newInputValue,
+                  }));
+                }}
                 renderInput={(params) => (
                   <TextField {...params} label="장소" fullWidth />
                 )}
-                freeSolo // 입력값이 courts 목록에 없을 경우도 허용 (선택사항)
+                freeSolo
               />
               <TextField
                 label="비용" fullWidth type="number" value={form.price || ''}

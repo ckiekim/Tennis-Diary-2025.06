@@ -49,10 +49,10 @@ const ScheduleList = () => {
 
   const handleAddSchedule = async () => {
     if (!form.type) return;
-
+    
     if (form.type === '정모') {
       if (!form.club || !form.place) {
-        console.log(form);
+        // console.log(form);
         alert('정모 항목을 모두 입력해주세요.');
         return;
       }
@@ -62,6 +62,7 @@ const ScheduleList = () => {
         return;
       }
     } else {
+      // console.log(form);
       if (!form.time || !form.place) {
         alert('시간과 장소를 입력해주세요.');
         return;
@@ -72,10 +73,13 @@ const ScheduleList = () => {
       return;
     }
 
+    const courtNames = courts.map(court => court.name);
+    const isCustom = form.place && !courtNames.includes(form.place);
     const dataToSubmit = {
       ...form,
       uid: user.uid,
       date: selectedDate.format('YYYY-MM-DD'),
+      isPlaceCustom: isCustom,
       createdAt: serverTimestamp()
     };
     if (dataToSubmit.price) 
