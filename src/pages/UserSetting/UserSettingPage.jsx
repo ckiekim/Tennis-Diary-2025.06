@@ -79,7 +79,7 @@ const UserSettingPage = () => {
       }
       await updateSettings(dataToUpdate);
       setDialog({ open: true, title: '저장 완료', message: '설정이 성공적으로 저장되었습니다.',
-        onConfirm: () => navigate(-1) // 이전 페이지로 이동
+        onConfirm: () => navigate('/')  // 메인 페이지로 명시적으로 이동 
       });
     } catch (err) {
       console.error("설정 저장 실패:", err);
