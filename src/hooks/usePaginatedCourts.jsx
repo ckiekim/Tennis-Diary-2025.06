@@ -67,7 +67,10 @@ const usePaginatedCourts = (filters) => {
 
       // 필터 쿼리 추가
       if (filters.region) {
-        q = query(q, where('location', '==', filters.region));
+        q = query(q, 
+          where('location', '>=', filters.region),
+          where('location', '<=', filters.region + '\uf8ff')
+        );
       }
       if (filters.isIndoor !== '') {
         q = query(q, where('is_indoor', '==', filters.isIndoor === 'true'));

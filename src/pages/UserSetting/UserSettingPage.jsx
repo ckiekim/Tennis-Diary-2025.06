@@ -149,7 +149,7 @@ const UserSettingPage = () => {
         
         <Typography variant="subtitle1" sx={{ mt: 3, mb: 1 }}>지역 정보</Typography>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={6} sx={{minWidth: 110}}>
             <FormControl fullWidth>
               <InputLabel id="province-select-label">광역시/도</InputLabel>
               <Select
@@ -164,7 +164,7 @@ const UserSettingPage = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} sx={{minWidth: 100}}>
             <FormControl fullWidth disabled={!province}>
               <InputLabel id="city-select-label">시/군/구</InputLabel>
               <Select

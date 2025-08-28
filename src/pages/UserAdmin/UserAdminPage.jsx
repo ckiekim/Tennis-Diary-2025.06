@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select, Stack, Typography, TextField } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import usePaginatedUsers from '../../hooks/usePaginatedUsers';
+import { PLACEHOLDER_URL } from '../../constants/admin';
 
 const UserAdminPage = () => {
   const navigate = useNavigate();
@@ -33,6 +34,10 @@ const UserAdminPage = () => {
       }
     };
   }, [handleObserver]);
+
+  const handleImageError = (e) => {
+    e.target.src = '/img/no-image.jpeg'; 
+  };
 
   return (
     <MainLayout title="사용자 관리">
@@ -69,34 +74,39 @@ const UserAdminPage = () => {
       ) : (
         <>
           <Stack spacing={1} sx={{ mt: 1 }}>
-            {users.map((user) => (
-              <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
-                <Box sx={{ display:'flex', alignItems:'center' }}>
-                  <Box
-                    component="img" src={user.photo || '/img/no-image.jpeg'} alt={user.nickname}
-                    sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
-                    onError={(e) => (e.target.style.display = 'none')}
-                  />
-                  <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <Typography fontSize="14px" fontWeight="bold" noWrap>
-                      {user.nickname}
-                    </Typography>
-                    <Typography fontSize="13px">
-                      {user.email}
-                    </Typography>
-                    <Typography fontSize="12px">
-                      가입일: {user.joinDate}
-                    </Typography>
-                    <Typography fontSize="12px">
-                      지역: {user.location}
-                    </Typography>
-                    <Typography fontSize="12px">
-                      마일리지: {user.mileage.toLocaleString()} 포인트
-                    </Typography>
+            {users.map((user) => { 
+              const isValidPhoto = user.photo && !user.photo.includes(PLACEHOLDER_URL);
+              const photoSrc = isValidPhoto ? user.photo : '/img/no-image.jpeg';
+
+              return (
+                <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
+                  <Box sx={{ display:'flex', alignItems:'center' }}>
+                    <Box
+                      component="img" src={photoSrc} alt={user.nickname}
+                      sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
+                      onError={handleImageError}
+                    />
+                    <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <Typography fontSize="14px" fontWeight="bold" noWrap>
+                        {user.nickname}
+                      </Typography>
+                      <Typography fontSize="13px">
+                        {user.email}
+                      </Typography>
+                      <Typography fontSize="12px">
+                        가입일: {user.joinDate}
+                      </Typography>
+                      <Typography fontSize="12px">
+                        지역: {user.location}
+                      </Typography>
+                      <Typography fontSize="12px">
+                        마일리지: {user.mileage.toLocaleString()} 포인트
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              </Card>
-            ))}
+                </Card>
+              )}
+            )}
           </Stack>
             
           {/* 감시할 요소 및 추가 로딩 인디케이터 */}
