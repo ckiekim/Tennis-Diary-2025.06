@@ -5,7 +5,7 @@ import useAuthState from '../../hooks/useAuthState';
 import useDocument from '../../hooks/useDocument';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
-import EditResultDialog from './dialogs/EditGameDialog';
+import EditGameDialog from './dialogs/EditGameDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
@@ -148,7 +148,7 @@ const GameDetailPage = () => {
       </Dialog>
 
       {/* 수정 다이얼로그 */}
-      <EditResultDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />
+      <EditGameDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />
 
       {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>

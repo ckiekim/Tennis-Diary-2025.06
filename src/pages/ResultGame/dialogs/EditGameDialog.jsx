@@ -1,26 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem,
-  MenuItem, Stack, TextField, Typography 
+  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, ImageList, ImageListItem,
+  InputLabel, MenuItem, Select, Stack, TextField, Typography 
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import useCourtList from '../../../hooks/useCourtList';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import formatDay from '../../../utils/formatDay';
 import { handleNumericInputChange } from '../../../utils/handleInput';
+import { stringToResults, resultsToString } from '../../../utils/resultConverter';
+import { gameTypes } from '../../../constants/typeGames';
+import { v4 as uuidv4 } from 'uuid';
 
-export default function EditResultDialog({ open, onClose, result, uid }) {
+export default function EditGameDialog({ open, onClose, result, uid }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
+  const [results, setResults] = useState([]);
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setForm({ ...result });
+    setResults(stringToResults(result.result));
     setNewFiles([]);
-  }, [result]);
+  }, [open, result]);
+
+  const handleResultChange = (id, field, value) => {
+    setResults(results.map(r => 
+      r.id === id ? { ...r, [field]: value } : r
+    ));
+  };
+  
+  const handleAddResult = () => {
+    setResults([...results, { id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
+  };
+  
+  const handleRemoveResult = (id) => {
+    setResults(results.filter(r => r.id !== id));
+  };
 
   const handleFileChange = (e) => {
     setNewFiles([...e.target.files]);
@@ -58,9 +78,10 @@ export default function EditResultDialog({ open, onClose, result, uid }) {
 
       // 4. Firestore 업데이트
       const docRef = doc(db, 'events', result.id);
+      const resultString = resultsToString(results);
       await updateDoc(docRef, {
         place: form.place,
-        result: form.result,
+        result: resultString,
         source: form.source,
         price: Number(form.price),
         memo: form.memo,
@@ -93,10 +114,46 @@ export default function EditResultDialog({ open, onClose, result, uid }) {
               </MenuItem>
             ))}
           </TextField>
-          <TextField
+          {/* <TextField
             label="결과" fullWidth value={form?.result || ''} size='small'
             onChange={(e) => setForm({ ...form, result: e.target.value })}
-          />
+          /> */}
+          <Stack spacing={1}>
+            {results.map((resultItem) => (
+              <Box key={resultItem.id} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: '8px' }}>
+                <Stack spacing={2}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>종목</InputLabel>
+                    <Select
+                      label="종목" size="small"
+                      value={resultItem.type} // 호환성을 위해 event도 확인
+                      onChange={(e) => handleResultChange(resultItem.id, 'type', e.target.value)}
+                    >
+                      {gameTypes.map(type => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <TextField label="승" type="number" size="small" value={resultItem.win} onChange={(e) => handleResultChange(resultItem.id, 'win', e.target.value)} sx={{ flex: 1 }} />
+                    <TextField label="무" type="number" size="small" value={resultItem.draw} onChange={(e) => handleResultChange(resultItem.id, 'draw', e.target.value)} sx={{ flex: 1 }} />
+                    <TextField label="패" type="number" size="small" value={resultItem.loss} onChange={(e) => handleResultChange(resultItem.id, 'loss', e.target.value)} sx={{ flex: 1 }} />
+                    {results.length > 1 && (
+                      <IconButton onClick={() => handleRemoveResult(resultItem.id)} color="error">
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Stack>
+              </Box>
+            ))}
+            <Button
+              variant="outlined"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={handleAddResult}
+            >
+              종목 추가
+            </Button>
+          </Stack>
+
           <TextField
             label="소스" fullWidth value={form?.source || ''} size='small'
             onChange={(e) => setForm({ ...form, source: e.target.value })}
