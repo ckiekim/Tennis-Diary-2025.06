@@ -114,10 +114,6 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
               </MenuItem>
             ))}
           </TextField>
-          {/* <TextField
-            label="결과" fullWidth value={form?.result || ''} size='small'
-            onChange={(e) => setForm({ ...form, result: e.target.value })}
-          /> */}
           <Stack spacing={1}>
             {results.map((resultItem) => (
               <Box key={resultItem.id} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: '8px' }}>
@@ -126,7 +122,7 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
                     <InputLabel>종목</InputLabel>
                     <Select
                       label="종목" size="small"
-                      value={resultItem.type} // 호환성을 위해 event도 확인
+                      value={resultItem.type} 
                       onChange={(e) => handleResultChange(resultItem.id, 'type', e.target.value)}
                     >
                       {gameTypes.map(type => <MenuItem key={type} value={type}>{type}</MenuItem>)}
@@ -145,15 +141,10 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
                 </Stack>
               </Box>
             ))}
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutlineIcon />}
-              onClick={handleAddResult}
-            >
+            <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handleAddResult}>
               종목 추가
             </Button>
           </Stack>
-
           <TextField
             label="소스" fullWidth value={form?.source || ''} size='small'
             onChange={(e) => setForm({ ...form, source: e.target.value })}

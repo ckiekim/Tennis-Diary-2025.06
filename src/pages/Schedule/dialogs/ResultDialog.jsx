@@ -12,7 +12,6 @@ import { resultsToString } from '../../../utils/resultConverter';
 import { gameTypes } from '../../../constants/typeGames';
 
 export default function ResultDialog({open, target, setOpen, onResult, uid}) {
-  // const [result, setResult] = useState('');
   const [results, setResults] = useState([]);
   const [memo, setMemo] = useState('');
   const [files, setFiles] = useState([]);
@@ -20,7 +19,6 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
 
   useEffect(() => {
     if (open) {
-      // setResult(target?.result || '');
       setResults([{ id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
       setMemo(target?.memo || '');
       setFiles([]);
@@ -29,24 +27,21 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
 
   const handleClose = () => {
     setOpen(false);
-    // setResult('');
-    // setMemo('');
-    // setFiles([]);
   };
 
-  // 2. 결과 항목(종목, 승/무/패) 변경 핸들러
+  // 결과 항목(종목, 승/무/패) 변경 핸들러
   const handleResultChange = (id, field, value) => {
     setResults(results.map(r => 
       r.id === id ? { ...r, [field]: value } : r
     ));
   };
   
-  // 3. 새로운 결과 입력 필드 추가 핸들러
+  // 새로운 결과 입력 필드 추가 핸들러
   const handleAddResult = () => {
     setResults([...results, { id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
   };
   
-  // 4. 결과 입력 필드 삭제 핸들러
+  // 결과 입력 필드 삭제 핸들러
   const handleRemoveResult = (id) => {
     setResults(results.filter(r => r.id !== id));
   };
@@ -59,11 +54,13 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
     setUploading(true);
     try {
       // 데이터 유효성 검사 (빈 값이 있는지 확인)
-      const isInvalid = results.some(r => !r.type || r.win === '' || r.draw === '' || r.loss === '');
-      if (isInvalid) {
-        alert('모든 종목과 승/무/패 값을 입력해주세요.');
-        setUploading(false);
-        return;
+      if (target.type === '게임') {
+        const isInvalid = results.some(r => !r.type || r.win === '' || r.draw === '' || r.loss === '');
+        if (isInvalid) {
+          alert('모든 종목과 승/무/패 값을 입력해주세요.');
+          setUploading(false);
+          return;
+        }
       }
 
       const urls = [];
@@ -74,8 +71,8 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
         urls.push(url);
       }
 
-      // onResult로 결과 전달
-      await onResult(target.id, { type: target.type, result: resultsToString(results), memo, photoList: urls });
+      const resultStr = target.type === '게임' ? resultsToString(results) : results[0].type;
+      await onResult(target.id, { type: target.type, result: resultStr, memo, photoList: urls });
       handleClose();
     } catch (err) {
       console.error('업로드 실패:', err);
@@ -85,19 +82,14 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
     }
   };
 
-  const isTournament = target?.type === '대회';
+  const isGame = target?.type === '게임';
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
       <DialogTitle>결과 입력</DialogTitle>
       <DialogContent>
         <Stack spacing={2} mt={1}>
-          {/* <TextField
-            label={isTournament ? "결과 (예: 예선 통과, 16강)" : "결과 (예: 남복 4-0-0)"} 
-            fullWidth value={result}
-            onChange={(e) => setResult(e.target.value)}
-          /> */}
-          {!isTournament ? (
+          {isGame ? (
             <Stack spacing={1}>
               {/* 6. results 배열을 map으로 순회하며 동적으로 입력 필드 생성 */}
               {results.map((resultItem, index) => (
@@ -106,8 +98,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
                     <FormControl fullWidth size="small">
                       <InputLabel>종목</InputLabel>
                       <Select
-                        label="종목" size="small"
-                        value={resultItem.type}
+                        label="종목" size="small" value={resultItem.type}
                         onChange={(e) => handleResultChange(resultItem.id, 'type', e.target.value)}
                       >
                         {gameTypes.map(type => <MenuItem key={type} value={type}>{type}</MenuItem>)}
@@ -127,23 +118,19 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
                   </Stack>
                 </Box>
               ))}
-              <Button
-                variant="outlined"
-                startIcon={<AddCircleOutlineIcon />}
-                onClick={handleAddResult}
-              >
+              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handleAddResult}>
                 종목 추가
               </Button>
             </Stack>
           ) : (
-            // 기존 대회 결과 입력 필드
             <TextField
               label="결과 (예: 예선 통과, 16강)"
               fullWidth
-              value={results[0]?.event || ''} // 기존 구조와 호환성을 위해 results[0] 사용
-              onChange={(e) => setResults([{ ...results[0], event: e.target.value }])}
+              value={results[0]?.type || ''} // 호환성을 위해 results[0] 사용
+              onChange={(e) => setResults([{ ...results[0], type: e.target.value }])}
             />
           )}
+
           <TextField 
             label="메모" fullWidth multiline rows={3} value={memo}
             onChange={(e) => setMemo(e.target.value)} onClick={(e) => e.stopPropagation()}
