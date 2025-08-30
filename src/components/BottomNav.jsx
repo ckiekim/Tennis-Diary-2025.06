@@ -12,8 +12,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import RestoreIcon from '@mui/icons-material/Restore';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
+import StyleIcon from '@mui/icons-material/Style';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-// import TollIcon from '@mui/icons-material/Toll';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GavelIcon from '@mui/icons-material/Gavel';
@@ -135,6 +135,10 @@ const BottomNav = () => {
           <MenuItem onClick={() => handleAdminMenuClick('/admin/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
             사용자관리
+          </MenuItem>
+          <MenuItem onClick={() => handleAdminMenuClick('/admin/advertise')}>
+            <StyleIcon fontSize="small" sx={{ mr: 1 }} />
+            홍보
           </MenuItem>
         </Menu>
       }

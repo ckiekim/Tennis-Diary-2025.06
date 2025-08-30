@@ -23,6 +23,7 @@ import MileageInfoPage from './pages/More/MileageInfoPage';
 import AppInfoPage from './pages/More/AppInfoPage';
 import AgreementPage from './pages/More/AgreementPage';
 import PwaInstallGuidePage from './pages/More/PwaInstallGuidePage';
+import AdvertisementPage from './pages/More/AdvertisementPage';
 
 const App = () => {
   dayjs.locale('ko');
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="/admin/courts" element={<CourtAdminPage />} />
           <Route path="/admin/users" element={<UserAdminPage />} />
           <Route path="/admin/user/:uid" element={<UserDetailPage />} />
+          <Route path="/admin/advertise" element={<AdvertisementPage />} />
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}
