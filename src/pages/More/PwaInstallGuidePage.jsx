@@ -1,6 +1,7 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import DownloadIcon from '@mui/icons-material/Download';
 
 const PwaInstallGuidePage = () => {
   return (
@@ -53,6 +54,15 @@ const PwaInstallGuidePage = () => {
             3. 나타나는 팝업에서 '설치' 버튼을 누릅니다. <br />
             4. 이제 Tennis Diary가 별도의 창으로 실행되며, 작업 표시줄에 고정하여 언제든지 빠르게 실행할 수 있습니다.
           </Typography>
+        </Box>
+
+        <Box sx={{ mb: 2, textAlign: 'center' }}>
+          <Button
+            variant="contained" startIcon={<DownloadIcon />} href="/Tennis Diary 사용설명서.pdf" download 
+            sx={{ mt: 2, mb: 2 }}
+          >
+            사용설명서 다운로드
+          </Button>
         </Box>
 
       </Box>
