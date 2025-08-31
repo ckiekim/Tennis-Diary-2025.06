@@ -4,6 +4,7 @@ import { Box, Button, Container, Typography } from '@mui/material';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../../api/firebaseConfig';
 import { FaComment } from 'react-icons/fa';
+import DownloadIcon from '@mui/icons-material/Download';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function LoginPage() {
   return (
     <Container
       maxWidth="sm"
-      sx={{ mt: 10, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4, }}
+      sx={{ mt: 8, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4, }}
     >
       <img src="/img/logo.png" alt="Logo" style={{ maxWidth: '300px', margin: '0 auto' }} />
       <Typography variant="h5" sx={{marginTop: '60px'}}>로그인이 필요합니다</Typography>
@@ -69,15 +70,18 @@ export default function LoginPage() {
           variant="contained"
           startIcon={<FaComment />}
           sx={{
-            backgroundColor: '#FEE500', // 카카오톡 공식 색상
-            color: '#000000',
-            '&:hover': {
-              backgroundColor: '#FEE500', // hover 시에도 색상 유지
-            },
+            color: '#000000', backgroundColor: '#FEE500', // 카카오톡 공식 색상
+            '&:hover': { backgroundColor: '#FEE500', }    // hover 시에도 색상 유지
           }}
           onClick={handleKakaoLogin}
         >
           카카오 로그인
+        </Button>
+        <Button
+          variant="contained" startIcon={<DownloadIcon />} href="/Tennis Diary 사용설명서.pdf" download 
+          sx={{ mt: 4, mb: 2 }}
+        >
+          사용설명서 다운로드
         </Button>
       </Box>
     </Container>
