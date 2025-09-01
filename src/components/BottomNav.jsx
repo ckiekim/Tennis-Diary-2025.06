@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BottomNavigation, BottomNavigationAction, Menu, MenuItem, Paper } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Divider, Menu, MenuItem, Paper } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getAuth, } from 'firebase/auth';
 import { ADMIN_UIDS } from '../constants/admin';
@@ -18,6 +18,7 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GavelIcon from '@mui/icons-material/Gavel';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
+import GroupsIcon from '@mui/icons-material/Groups';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
@@ -149,6 +150,11 @@ const BottomNav = () => {
         open={Boolean(anchorElMore)}
         onClose={() => setAnchorElMore(null)}
       >
+        <MenuItem onClick={() => handleMoreMenuClick('/more/clubs')}>
+          <GroupsIcon fontSize="small" sx={{ mr: 1 }} />
+          클럽
+        </MenuItem>
+        <Divider sx={{ my: 0.5 }} /> 
         <MenuItem onClick={() => handleMoreMenuClick('/more/mileageInfo')}>
           <MonetizationOnIcon fontSize="small" sx={{ mr: 1 }} />
           마일리지 안내
