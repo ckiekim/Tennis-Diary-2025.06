@@ -77,6 +77,8 @@ export default function LoginPage() {
         >
           카카오 로그인
         </Button>
+      </Box>
+      <Box sx={{ justifyContent: 'center' }}>
         <Button
           variant="contained" startIcon={<DownloadIcon />} href="/Tennis Diary 사용설명서.pdf" download 
           sx={{ mt: 4, mb: 2 }}
