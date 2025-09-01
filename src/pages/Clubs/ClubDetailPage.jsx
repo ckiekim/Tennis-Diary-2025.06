@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Divider, Stack, Avatar, Paper, List, ListItem, ListItemText, ListItemAvatar } from '@mui/material';
+import { Box, Button, CircularProgress, Typography, Divider, Stack, Avatar, Paper, } from '@mui/material';
 import dayjs from 'dayjs';
 
 import useAuthState from '../../hooks/useAuthState';
@@ -10,7 +10,8 @@ import useSubcollection from '../../hooks/useSubcollection';
 import MainLayout from '../../components/MainLayout';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
-import { deleteDoc, doc } from 'firebase/firestore';
+import InviteMemberDialog from './dialogs/InviteMemberDialog';
+import { deleteDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
@@ -19,6 +20,7 @@ const ClubDetailPage = () => {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { user, loading: authLoading } = useAuthState();
@@ -79,6 +81,25 @@ const ClubDetailPage = () => {
     }
   };
 
+  const handleInvite = async (invitedUser) => {
+    try {
+      // clubs/{clubId}/members/{userId} 경로에 'invited' 상태로 문서를 생성
+      const memberRef = doc(db, 'clubs', clubId, 'members', invitedUser.uid);
+      await setDoc(memberRef, {
+        username: invitedUser.nickname,
+        photoUrl: invitedUser.photo,
+        role: 'member',
+        status: 'invited',
+        invitedAt: serverTimestamp(),
+      });
+      alert(`${invitedUser.nickname}님을 초대했습니다.`);
+      setInviteOpen(false);
+    } catch (error) {
+      console.error("초대 실패:", error);
+      alert("초대 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <MainLayout title="클럽 상세">
       <Box p={2}>
@@ -90,52 +111,57 @@ const ClubDetailPage = () => {
             <Typography variant="body1" color="text.secondary">{club.region}</Typography>
           </Box>
         </Box>
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="body2" fontWeight="bold">클럽 소개</Typography>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1 }}>
-            {club.description || '클럽 소개가 없습니다.'}
-          </Typography>
-          <Divider sx={{ my: 2 }} />
 
-          <Typography variant="body2" fontWeight="bold">클럽장</Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {club.ownerName}
-          </Typography>
-          <Divider sx={{ my: 1 }} />
+        <Typography variant="body2" fontWeight="bold">클럽 소개</Typography>
+        <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
+          {club.description || '클럽 소개가 없습니다.'}
+        </Typography>
+        <Divider sx={{ my: 1 }} />
 
-          <Typography variant="body2" fontWeight="bold">멤버 수</Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {club.memberCount} 명
-          </Typography>
-          <Divider sx={{ my: 1 }} />
+        <Typography variant="body2" fontWeight="bold">클럽장</Typography>
+        <Typography variant="body2" sx={{ mt: 1, ml: 4 }}>
+          {club.ownerName}
+        </Typography>
+        <Divider sx={{ my: 1 }} />
 
-          <Typography variant="body2" fontWeight="bold">클럽 생성일</Typography>
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {club.createdAt ? dayjs(club.createdAt.toDate()).format('YYYY년 MM월 DD일') : '날짜 정보 없음'}
-          </Typography>
-        </Paper>
+        <Typography variant="body2" fontWeight="bold">멤버 수</Typography>
+        <Typography variant="body2" sx={{ mt: 1, ml: 4 }}>
+          {club.memberCount} 명
+        </Typography>
+        <Divider sx={{ my: 1 }} />
 
-        {/* 멤버 목록 (구현 필요) */}
-        <Typography variant="h6" fontWeight="bold" mt={3}>멤버 목록</Typography>
-        <Paper variant="outlined" sx={{ mt: 1 }}>
-          <List>
-            {members.length > 0 ? (
-              members.map(member => (
-                <ListItem key={member.id}>
-                  <ListItemAvatar><Avatar src={member.photoUrl} alt={member.username} /></ListItemAvatar>
-                  <ListItemText primary={member.username} secondary={member.role === 'owner' ? '클럽장' : '멤버'} />
-                </ListItem>
-              ))
-            ) : (
-              <ListItem>
-                <ListItemText primary="아직 멤버가 없습니다." />
-              </ListItem>
-            )}
-          </List>
-        </Paper>
+        <Typography variant="body2" fontWeight="bold">클럽 생성일</Typography>
+        <Typography variant="body2" sx={{ mt: 1, ml: 4 }}>
+          {club.createdAt ? dayjs(club.createdAt.toDate()).format('YYYY-MM-DD') : '날짜 정보 없음'}
+        </Typography>
+        <Divider sx={{ my: 1 }} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+          <Typography fontSize="13" fontWeight="bold">멤버 목록</Typography>
+          {isOwner && (
+            <Button variant="contained" size="small" onClick={() => setInviteOpen(true)}>
+              멤버 추가
+            </Button>
+          )}
+        </Box>
+
+        <Stack spacing={1} sx={{ mt: 1, ml: 4 }}>
+          {members.map(member => (
+            <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar src={member.photoUrl || ''} alt={member.username} sx={{ mr: 2 }} />
+              <Box>
+                <Typography fontSize="12">{member.username}</Typography>
+                <Typography fontSize="12" color="text.secondary">
+                  {member.role === 'owner' ? '클럽장' : member.role === 'admin' ? '관리자' : '멤버'}
+                </Typography>
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+        <Divider sx={{ my: 1 }} />
 
         {/* 클럽 일정 (구현 필요) */}
-        <Typography variant="h6" fontWeight="bold" mt={3}>클럽 일정</Typography>
+        <Typography fontSize="13" fontWeight="bold" mt={1}>클럽 일정</Typography>
         <Paper variant="outlined" sx={{ mt: 1 }}>
           {/* TODO: schedules 배열을 map으로 렌더링 */}
           <Typography sx={{ p: 2 }}>클럽 일정이 없습니다. (구현 필요)</Typography>
@@ -173,6 +199,14 @@ const ClubDetailPage = () => {
           "{club.name}" 클럽을 정말 삭제하시겠습니까? <br />
           모든 관련 데이터가 삭제되며 이 작업은 되돌릴 수 없습니다.
         </DeleteConfirmDialog>
+      )}
+
+      {isOwner && (
+        <InviteMemberDialog
+          open={inviteOpen}
+          onClose={() => setInviteOpen(false)}
+          onInvite={handleInvite}
+        />
       )}
     </MainLayout>
   );
