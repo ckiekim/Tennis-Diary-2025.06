@@ -11,9 +11,9 @@ import MainLayout from '../../components/MainLayout';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
-import { deleteDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../../api/firebaseConfig';
-import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
 const ClubDetailPage = () => {
   const { clubId } = useParams();
@@ -61,23 +61,16 @@ const ClubDetailPage = () => {
       return;
     }
     try {
-      // 1. 클럽 대표 이미지 스토리지에서 삭제
-      if (club.profileUrl) {
-        await deletePhotoFromStorage(club.profileUrl);
-      }
-      
-      // 2. clubs 컬렉션에서 클럽 문서 삭제
-      await deleteDoc(doc(db, 'clubs', clubId));
-
-      // 참고: 실제 프로덕션에서는 Cloud Function을 사용하여
-      // 이 클럽에 가입된 모든 유저의 myClubs 서브컬렉션에서도 해당 클럽 정보를 삭제하고,
-      // members, schedules 서브컬렉션의 모든 문서를 삭제하는 작업이 필요합니다.
+      // Cloud Function을 호출합니다.
+      const functions = getFunctions();
+      const deleteClub = httpsCallable(functions, 'deleteClub');
+      await deleteClub({ clubId }); // clubId를 인자로 전달
 
       setDeleteOpen(false);
       navigate('/more/clubs'); // 나의 클럽 목록으로 이동
     } catch (err) {
       console.error('클럽 삭제 실패:', err);
-      alert('클럽 삭제 중 문제가 발생했습니다.');
+      alert(err.message || '클럽 삭제 중 문제가 발생했습니다.');
     }
   };
 
