@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 
-import { useMyClubs } from '../../hooks/useMyClubs';
+import useMyClubs from '../../hooks/useMyClubs';
 import useAuthState from '../../hooks/useAuthState';
 import useUserDoc from '../../hooks/useUserDoc';
 import ClubCard from './ClubCard';
@@ -14,15 +14,14 @@ import AddIcon from '@mui/icons-material/Add';
 
 const ClubsPage = () => {
   const [addOpen, setAddOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  // const [refreshKey, setRefreshKey] = useState(0);
 
   const { user, loading: authLoading } = useAuthState();
-  const userId = user ? user.uid : null;
-  const { clubs, loading: clubsLoading, error } = useMyClubs(userId, refreshKey);
-  const { docData: userDoc } = useUserDoc(userId);
+  const { clubs, loading: clubsLoading, error } = useMyClubs(user?.uid);
+  const { docData: userDoc } = useUserDoc(user?.uid);
 
   const handleAddClub = async (clubData) => {
-    if (!user) return alert('로그인이 필요합니다.');
+    if (!user || !userDoc) return alert('사용자 정보가 로드되지 않았습니다.');
 
     try {
       // 1. Firestore Write Batch 시작
@@ -59,18 +58,19 @@ const ClubsPage = () => {
       const myClubRef = doc(db, 'users', user.uid, 'myClubs', newClubId);
       batch.set(myClubRef, {
         clubName: clubData.name,
-        profileUrl: clubData.profileUrl || '',
+        clubProfileUrl: clubData.profileUrl || '',
         region: clubData.region,
         ownerName: userDoc.nickname,
         role: 'owner',
-        joinDate: dayjs().format('YYYY-MM-DD'),
+        joinedAt: now,
+        // joinDate: dayjs().format('YYYY-MM-DD'),
       });
 
       // 6. 모든 쓰기 작업을 한 번에 실행
       await batch.commit();
 
       setAddOpen(false); // 성공 시 다이얼로그 닫기
-      setRefreshKey(prevKey => prevKey + 1);
+      // setRefreshKey(prevKey => prevKey + 1);
     } catch (err) {
       console.error("클럽 생성 중 에러 발생:", err);
       alert("클럽 생성에 실패했습니다. 다시 시도해주세요.");
@@ -109,7 +109,8 @@ const ClubsPage = () => {
 
           {!clubsLoading && !error && clubs.length === 0 && (
             <Box textAlign="center" mt={4}>
-              <Typography>아직 가입한 클럽이 없습니다. 새로운 클럽을 찾아보세요!</Typography>
+              <Typography>아직 가입한 클럽이 없습니다.</Typography>
+              <Typography>새로운 클럽을 만들어보세요!</Typography>
             </Box>
           )}
 
@@ -136,7 +137,7 @@ const ClubsPage = () => {
             open={addOpen}
             onClose={() => setAddOpen(false)}
             onAdd={handleAddClub}
-            uid={userId}
+            uid={user.uid}
           />
         </>
       )}

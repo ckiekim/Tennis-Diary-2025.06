@@ -1,5 +1,6 @@
 // 1. HttpsError를 v2/https에서 직접 임포트합니다.
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
@@ -28,7 +29,7 @@ const getKakaoAccessToken = async (code) => {
   return response.data.access_token;
 };
 
-exports.kakaoLogin = onCall({ secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
+exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
   try {
     const { code } = request.data;
     if (!code) {
@@ -82,7 +83,7 @@ exports.kakaoLogin = onCall({ secrets: ["KAKAO_REST_API_KEY"] }, async (request)
   }
 });
 
-exports.deleteClub = onCall(async (request) => {
+exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
   // 1. 사용자 인증 확인
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 사용자만 클럽을 삭제할 수 있습니다.");
@@ -157,3 +158,65 @@ exports.deleteClub = onCall(async (request) => {
     throw new HttpsError("internal", "클럽 삭제 중 오류가 발생했습니다.");
   }
 });
+
+exports.updateMyClubsOnClubChange = onDocumentUpdated({
+    document: "clubs/{clubId}",
+    region: "asia-northeast3",
+  },
+  async (event) => {
+    // 1. 변경 전/후 데이터 가져오기
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
+    const { clubId } = event.params;
+
+    // 2. 클럽 이름, 지역, 프로필 URL 중 하나라도 변경되었는지 확인
+    if (
+      beforeData.name === afterData.name &&
+      beforeData.region === afterData.region &&
+      beforeData.profileUrl === afterData.profileUrl
+    ) {
+      console.log(`클럽 [${clubId}]의 주요 정보 변경 없음. 업데이트를 건너뜁니다.`);
+      return null; // 변경 없으면 함수 종료
+    }
+
+    console.log(`클럽 [${clubId}] 정보 변경 감지. 멤버들의 myClubs 업데이트 시작.`);
+
+    // 3. 업데이트할 필드만 담은 객체 생성
+    const updatedFields = {
+      clubName: afterData.name,
+      region: afterData.region,
+      clubProfileUrl: afterData.profileUrl,
+    };
+
+    // 4. 이 클럽에 속한 모든 멤버의 정보를 가져옵니다.
+    const membersSnapshot = await db
+      .collection(`clubs/${clubId}/members`)
+      .get();
+
+    if (membersSnapshot.empty) {
+      console.log(`클럽 [${clubId}]에 멤버가 없어 업데이트를 종료합니다.`);
+      return null;
+    }
+
+    // 5. Batch Write를 사용해 모든 멤버의 myClubs 문서를 원자적으로 업데이트
+    const batch = db.batch();
+    membersSnapshot.forEach((memberDoc) => {
+      const memberUid = memberDoc.id;
+      const myClubRef = db.doc(`users/${memberUid}/myClubs/${clubId}`);
+      batch.update(myClubRef, updatedFields);
+    });
+
+    try {
+      await batch.commit();
+      console.log(
+        `클럽 [${clubId}]의 ${membersSnapshot.size}명 멤버 정보 업데이트 성공.`
+      );
+      return { success: true };
+    } catch (error) {
+      console.error(
+        `클럽 [${clubId}] 멤버 정보 업데이트 중 오류 발생:`,
+        error
+      );
+      return { success: false, error: error.message };
+    }
+  });

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Box, Card, Chip, Typography } from '@mui/material';
+import dayjs from 'dayjs';
 
 /**
  * 내가 가입한 클럽의 정보를 표시하는 카드 컴포넌트 (MUI only)
@@ -23,7 +24,7 @@ const ClubCard = ({ club }) => {
     <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/more/clubs/${club.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
-          component="img" src={club.profileUrl || 'https://via.placeholder.com/70'} alt={club.clubName}
+          component="img" src={club.clubProfileUrl  || 'https://via.placeholder.com/70'} alt={club.clubName}
           sx={{ width: 82, height: 82, objectFit: 'cover', borderRadius: 0, display: 'block', }}
           onError={(e) => (e.target.style.display = 'none')}
         />
@@ -51,7 +52,9 @@ const ClubCard = ({ club }) => {
             클럽장: {club.ownerName}
           </Typography>
           <Typography fontSize="12px">
-            가입일: {club.joinDate}
+            가입일: {
+              (club.joinedAt && club.joinedAt.toDate) ? dayjs(club.joinedAt.toDate()).format('YYYY-MM-DD') : '처리 중...'
+            }
           </Typography>
         </Box>
       </Box>

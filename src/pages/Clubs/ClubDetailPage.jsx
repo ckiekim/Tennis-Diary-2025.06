@@ -4,16 +4,17 @@ import { Box, Button, CircularProgress, Typography, Divider, Stack, Avatar, Pape
 import dayjs from 'dayjs';
 
 import useAuthState from '../../hooks/useAuthState';
-import useDocument from '../../hooks/useDocument';
+// import useDocument from '../../hooks/useDocument';
+import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSubcollection from '../../hooks/useSubcollection'; 
 
 import MainLayout from '../../components/MainLayout';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db } from '../../api/firebaseConfig';
+import { doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions  } from '../../api/firebaseConfig';
 
 const ClubDetailPage = () => {
   const { clubId } = useParams();
@@ -21,10 +22,11 @@ const ClubDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  // const [refreshKey, setRefreshKey] = useState(0);
 
   const { user, loading: authLoading } = useAuthState();
-  const { docData: club, loading: clubLoading } = useDocument('clubs', clubId, refreshKey);
+  // const { docData: club, loading: clubLoading } = useDocument('clubs', clubId, refreshKey);
+  const { docData: club, loading: clubLoading } = useSnapshotDocument('clubs', clubId);
   
   const { documents: members, loading: membersLoading } = useSubcollection(
     `clubs/${clubId}/members`, { orderByField: 'role' }
@@ -52,7 +54,7 @@ const ClubDetailPage = () => {
 
   const handleEditClose = () => {
     setEditOpen(false);
-    setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
+    // setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
   };
 
   const handleDelete = async () => {
@@ -62,7 +64,7 @@ const ClubDetailPage = () => {
     }
     try {
       // Cloud Function을 호출합니다.
-      const functions = getFunctions();
+      // const functions = getFunctions();
       const deleteClub = httpsCallable(functions, 'deleteClub');
       await deleteClub({ clubId }); // clubId를 인자로 전달
 
@@ -74,22 +76,27 @@ const ClubDetailPage = () => {
     }
   };
 
+  const handleUpdate = async (clubId, updatedData) => {
+  try {
+    const clubRef = doc(db, 'clubs', clubId);
+    await updateDoc(clubRef, updatedData);    // ✅ 이 코드가 실행되면 서버의 트리거 함수가 자동으로 동작
+    alert('클럽 정보가 성공적으로 수정되었습니다.');
+    handleEditClose(); // 성공 후 다이얼로그 닫기 및 데이터 새로고침
+  } catch (error) {
+    console.error("클럽 정보 수정 실패:", error);
+    alert("클럽 정보 수정 중 오류가 발생했습니다.");
+  }
+};
+
   const handleInvite = async (invitedUser) => {
     try {
       // clubs/{clubId}/members/{userId} 경로에 'invited' 상태로 문서를 생성
       const memberRef = doc(db, 'clubs', clubId, 'members', invitedUser.uid);
       await setDoc(memberRef, {
-        uid: invitedUser.uid,
-        username: invitedUser.nickname,
-        photoUrl: invitedUser.photo,
-        role: 'member',
-        status: 'invited',
-        invitedAt: serverTimestamp(),
-        clubId: clubId,
-        clubName: club.name, 
-        clubProfileUrl: club.profileUrl,
-        region: club.region,           // region 필드 추가
-        ownerName: club.ownerName,
+        uid: invitedUser.uid, username: invitedUser.nickname, photoUrl: invitedUser.photo,
+        role: 'member', status: 'invited', invitedAt: serverTimestamp(),
+        clubId: clubId, clubName: club.name,  clubProfileUrl: club.profileUrl,
+        region: club.region, ownerName: club.ownerName,
       });
       alert(`${invitedUser.nickname}님을 초대했습니다.`);
       setInviteOpen(false);
@@ -167,7 +174,6 @@ const ClubDetailPage = () => {
         </Paper>
       </Box>
 
-      {/* 액션 버튼 */}
       <Stack direction="row" spacing={2} justifyContent="center" my={3}>
         {isOwner && (
           <>
@@ -178,22 +184,15 @@ const ClubDetailPage = () => {
         <Button variant="contained" onClick={() => navigate(-1)}>뒤로</Button>
       </Stack>
 
-      {/* 수정 다이얼로그 (생성 필요) */}
       {isOwner && (
         <EditClubDialog 
-          open={editOpen} 
-          onClose={handleEditClose} 
-          clubData={club}
-          clubId={clubId}
+          open={editOpen}  onClose={handleEditClose}  onUpdate={handleUpdate} clubData={club} clubId={clubId}
         />
       )}
 
-      {/* 삭제 확인 다이얼로그 */}
       {isOwner && (
         <DeleteConfirmDialog 
-          open={deleteOpen} 
-          onClose={() => setDeleteOpen(false)} 
-          onConfirm={handleDelete}
+          open={deleteOpen}  onClose={() => setDeleteOpen(false)}  onConfirm={handleDelete}
         >
           "{club.name}" 클럽을 정말 삭제하시겠습니까? <br />
           모든 관련 데이터가 삭제되며 이 작업은 되돌릴 수 없습니다.
@@ -202,9 +201,7 @@ const ClubDetailPage = () => {
 
       {isOwner && (
         <InviteMemberDialog
-          open={inviteOpen}
-          onClose={() => setInviteOpen(false)}
-          onInvite={handleInvite}
+          open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite}
         />
       )}
     </MainLayout>

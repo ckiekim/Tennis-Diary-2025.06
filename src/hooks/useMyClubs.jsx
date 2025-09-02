@@ -1,57 +1,47 @@
 import { useState, useEffect } from 'react';
 import { db } from '../api/firebaseConfig';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 
 /**
  * 사용자가 가입한 클럽 목록을 가져오는 커스텀 훅
  * @param {string | null} userId - 현재 로그인한 사용자의 ID
  */
-export const useMyClubs = (userId, refreshKey = 0) => {
-  const [clubs, setClubs] = useState([]); // 클럽 목록 상태
-  const [loading, setLoading] = useState(true); // 로딩 상태
-  const [error, setError] = useState(null); // 에러 상태
+export default function useMyClubs(uid) {
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // userId가 없으면(로그아웃 상태 등) 아무 작업도 하지 않음
-    if (!userId) {
-      setClubs([]);
+    if (!uid) {
       setLoading(false);
       return;
     }
 
-    const fetchClubs = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    const myClubsRef = collection(db, 'users', uid, 'myClubs');
+    const q = query(myClubsRef, orderBy('joinedAt', 'desc')); // 가입일 순 정렬 (예시)
 
-        // Firestore에서 데이터 가져오기
-        // 경로: users/{userId}/myClubs
-        const myClubsCollectionRef = collection(db, 'users', userId, 'myClubs');
-        
-        // (선택사항) 클럽 이름순으로 정렬하려면 query를 사용합니다.
-        const q = query(myClubsCollectionRef, orderBy('clubName'));
-
-        const querySnapshot = await getDocs(q);
-
-        // 가져온 데이터를 React에서 사용하기 좋은 배열 형태로 변환
-        const clubsData = querySnapshot.docs.map(doc => ({
-          id: doc.id, // 문서 ID를 id 필드에 추가 (clubId가 됨)
-          ...doc.data(),
+    // onSnapshot 리스너 설정
+    // 이 함수는 구독을 중지하는 unsubscribe 함수를 반환합니다.
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const clubsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
         }));
-
         setClubs(clubsData);
-
-      } catch (err) {
-        console.error("클럽 목록을 가져오는 중 에러 발생:", err);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("myClubs 구독 실패:", err);
         setError(err);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchClubs();
+    // 컴포넌트가 언마운트될 때 구독을 해제합니다. (메모리 누수 방지)
+    return () => unsubscribe();
 
-  }, [userId, refreshKey]); 
+  }, [uid]); // uid가 변경될 때만 effect를 다시 실행합니다.
 
   return { clubs, loading, error };
-};
+}
