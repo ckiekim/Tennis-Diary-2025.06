@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Box, Button, Divider, Stack, Typography, Avatar } from '@mui/material';
-import useUserDoc from '../../hooks/useUserDoc';
+import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import MainLayout from '../../components/MainLayout';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
@@ -14,8 +14,7 @@ const UserDetailPage = () => {
   const navigate = useNavigate();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const { docData: user, loading } = useUserDoc(uid, refreshKey);
+  const { docData: user, loading } = useSnapshotDocument('users', uid);
 
   if (loading) return (
     <MainLayout title="로딩 중...">
@@ -30,7 +29,7 @@ const UserDetailPage = () => {
 
   const handleEditClose = () => {
     setEditOpen(false);
-    setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
+    // setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
   };
 
   const handleDelete = async () => {
@@ -77,13 +76,13 @@ const UserDetailPage = () => {
 
         <Typography variant="body2" fontWeight="bold">마일리지</Typography>
         <Typography variant="body1" sx={{ mt: 1, ml: 4 }}>
-          {user.mileage.toLocaleString()} 포인트
+          {user.mileage? user.mileage.toLocaleString() : '0'} 포인트
         </Typography>
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="body2" fontWeight="bold">고유 ID (UID)</Typography>
         <Typography variant="body1" sx={{ mt: 1, ml: 4, wordBreak: 'break-all' }}>
-          {user.uid}
+          {uid}
         </Typography>
         <Divider sx={{ my: 1 }} />
       </Box>

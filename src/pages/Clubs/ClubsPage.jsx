@@ -5,7 +5,7 @@ import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore
 
 import useMyClubs from '../../hooks/useMyClubs';
 import useAuthState from '../../hooks/useAuthState';
-import useUserDoc from '../../hooks/useUserDoc';
+import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import ClubCard from './ClubCard';
 import MainLayout from '../../components/MainLayout'; 
 import AddClubDialog from './dialogs/AddClubDialog'; 
@@ -16,7 +16,7 @@ const ClubsPage = () => {
 
   const { user, loading: authLoading } = useAuthState();
   const { clubs, loading: clubsLoading, error } = useMyClubs(user?.uid);
-  const { docData: userDoc } = useUserDoc(user?.uid);
+  const { docData: userDoc } = useSnapshotDocument('users', user?.uid);
 
   const handleAddClub = async (clubData) => {
     if (!user || !userDoc) return alert('사용자 정보가 로드되지 않았습니다.');

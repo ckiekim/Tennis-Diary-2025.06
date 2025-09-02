@@ -100,7 +100,7 @@ const UserAdminPage = () => {
                         지역: {user.location}
                       </Typography>
                       <Typography fontSize="12px">
-                        마일리지: {user.mileage.toLocaleString()} 포인트
+                        마일리지: {user.mileage ? user.mileage.toLocaleString() : '0'} 포인트
                       </Typography>
                     </Box>
                   </Box>
