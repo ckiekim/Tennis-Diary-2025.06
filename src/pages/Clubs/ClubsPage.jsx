@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { db } from '../../api/firebaseConfig';
 import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
-// import dayjs from 'dayjs';
 
 import useMyClubs from '../../hooks/useMyClubs';
 import useAuthState from '../../hooks/useAuthState';
@@ -14,7 +13,6 @@ import AddIcon from '@mui/icons-material/Add';
 
 const ClubsPage = () => {
   const [addOpen, setAddOpen] = useState(false);
-  // const [refreshKey, setRefreshKey] = useState(0);
 
   const { user, loading: authLoading } = useAuthState();
   const { clubs, loading: clubsLoading, error } = useMyClubs(user?.uid);
@@ -63,14 +61,12 @@ const ClubsPage = () => {
         ownerName: userDoc.nickname,
         role: 'owner',
         joinedAt: now,
-        // joinDate: dayjs().format('YYYY-MM-DD'),
       });
 
       // 6. 모든 쓰기 작업을 한 번에 실행
       await batch.commit();
 
       setAddOpen(false); // 성공 시 다이얼로그 닫기
-      // setRefreshKey(prevKey => prevKey + 1);
     } catch (err) {
       console.error("클럽 생성 중 에러 발생:", err);
       alert("클럽 생성에 실패했습니다. 다시 시도해주세요.");

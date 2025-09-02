@@ -4,7 +4,6 @@ import { Box, Button, CircularProgress, Typography, Divider, Stack, Avatar, Pape
 import dayjs from 'dayjs';
 
 import useAuthState from '../../hooks/useAuthState';
-// import useDocument from '../../hooks/useDocument';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSubcollection from '../../hooks/useSubcollection'; 
 
@@ -22,10 +21,8 @@ const ClubDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
-  // const [refreshKey, setRefreshKey] = useState(0);
 
   const { user, loading: authLoading } = useAuthState();
-  // const { docData: club, loading: clubLoading } = useDocument('clubs', clubId, refreshKey);
   const { docData: club, loading: clubLoading } = useSnapshotDocument('clubs', clubId);
   
   const { documents: members, loading: membersLoading } = useSubcollection(

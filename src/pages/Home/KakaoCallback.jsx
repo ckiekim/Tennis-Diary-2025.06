@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { signInWithCustomToken } from 'firebase/auth';
-import { auth } from '../../api/firebaseConfig';
+import { auth, functions } from '../../api/firebaseConfig';
 
 const KakaoCallback = () => {
   const location = useLocation();
@@ -21,13 +21,11 @@ const KakaoCallback = () => {
 
       try {
         // 2. 인가 코드를 Cloud Function으로 보냅니다.
-        const functions = getFunctions();
         const kakaoLoginCallable = httpsCallable(functions, 'kakaoLogin');
         const result = await kakaoLoginCallable({ code: code }); // access_token 대신 code를 보냄
 
         // 4. 응답으로 받은 Firebase 커스텀 토큰으로 로그인합니다.
         const { token: firebaseToken } = result.data;
-        // const auth = getAuth();
         await signInWithCustomToken(auth, firebaseToken);
 
         navigate('/'); // 성공 시 메인 페이지로
