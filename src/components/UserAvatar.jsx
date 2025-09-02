@@ -1,26 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, Box, Divider, IconButton, Menu, MenuItem, Stack, Typography,
-  Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle 
+import { db } from '../api/firebaseConfig';
+import { writeBatch, doc, serverTimestamp, increment, deleteDoc } from 'firebase/firestore';
+import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography,
  } from '@mui/material';
 import { logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
 import useUserSettings from '../hooks/useUserSettings';
+import useInvitations from '../hooks/useInvitation';
+import InvitationActionDialog from './InvitationActionDialog';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import dayjs from 'dayjs';
 
 export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedInvitation, setSelectedInvitation] = useState(null);
+
   const { user, loading: authLoading } = useAuthState(); 
   const { settings, loading: settingsLoading } = useUserSettings();
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const { invitations } = useInvitations(user?.uid);
 
   const navigate = useNavigate();
 
   const handleMenuToggle = (event) => {
     setAnchorEl(event.currentTarget);
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setIsMenuOpen(false);
   };
 
   const handleLogout = async () => {
@@ -36,6 +50,58 @@ export default function UserAvatar() {
     setIsMenuOpen(false);
     navigate('/setting');
   }
+
+  const handleInvitationClick = (invitation) => {
+    handleMenuClose();
+    setSelectedInvitation(invitation); // 선택한 초대 정보 저장 -> 다이얼로그 열림
+  };
+
+  const handleInvitationDialogClose = () => {
+    setSelectedInvitation(null); // 선택한 초대 정보 초기화 -> 다이얼로그 닫힘
+  };
+
+  // --- 초대 수락/거절 Firestore 로직 추가 ---
+  const handleAcceptInvitation = async () => {
+    if (!selectedInvitation || !user) return;
+    try {
+      const batch = writeBatch(db);
+      const memberRef = doc(db, 'clubs', selectedInvitation.clubId, 'members', user.uid);
+      batch.update(memberRef, { status: 'member', joinedAt: serverTimestamp() });
+
+      const myClubRef = doc(db, 'users', user.uid, 'myClubs', selectedInvitation.clubId);
+      batch.set(myClubRef, {
+        clubName: selectedInvitation.clubName,
+        profileUrl: selectedInvitation.clubProfileUrl || '',
+        region: selectedInvitation.region, // 초대 데이터에 region이 있어야 함
+        ownerName: selectedInvitation.ownerName, // 초대 데이터에 ownerName이 있어야 함
+        role: 'member',
+        joinDate: dayjs().format('YYYY-MM-DD'),
+      });
+
+      const clubRef = doc(db, 'clubs', selectedInvitation.clubId);
+      batch.update(clubRef, { memberCount: increment(1) });
+
+      await batch.commit();
+      alert(`${selectedInvitation.clubName} 클럽에 가입되었습니다!`);
+    } catch (error) {
+      console.error("초대 수락 실패:", error);
+    } finally {
+      handleInvitationDialogClose();
+    }
+  };
+
+  const handleDeclineInvitation = async () => {
+    if (!selectedInvitation || !user) return;
+    try {
+      const memberRef = doc(db, 'clubs', selectedInvitation.clubId, 'members', user.uid);
+      await deleteDoc(memberRef);
+      alert(`${selectedInvitation.clubName} 클럽 초대를 거절했습니다.`);
+    } catch (error) {
+      console.error("초대 거절 실패:", error);
+    } finally {
+      handleInvitationDialogClose();
+    }
+  };
 
   /**
    * 웹-앱을 종료하는 함수
@@ -64,15 +130,22 @@ export default function UserAvatar() {
   return (
     <>
       {user && settings && (
-        <IconButton onClick={handleMenuToggle} color="inherit">
-          <Avatar src={settings.photo} alt={settings.nickname} sx={{ width: 32, height: 32 }} />
-        </IconButton>
+        <Stack direction="row" alignItems="center" spacing={0.5}>
+          <IconButton onClick={handleMenuToggle} color="inherit">
+            <Badge 
+              color="error" 
+              invisible={invitations.length === 0}
+              badgeContent={invitations.length === 0 ? '' : invitations.length}
+            />
+            <Avatar src={settings.photo} alt={settings.nickname} sx={{ width: 32, height: 32, marginLeft: 1 }} />
+          </IconButton>
+        </Stack>
       )}
 
       {isMenuOpen && (
         <Menu
           open={isMenuOpen}
-          onClose={handleMenuToggle}
+          onClose={handleMenuClose}
           anchorEl={anchorEl}
         >
           <Box sx={{ padding: '12px 16px' }}>
@@ -92,6 +165,22 @@ export default function UserAvatar() {
             </Typography>
           </Box>
           <Divider sx={{ my: 0.5 }} />
+          {invitations.length > 0 && (
+            <div>
+              {invitations.map((inv) => (
+                <MenuItem key={inv.clubId} onClick={() => handleInvitationClick(inv)}>
+                  <ListItemIcon>
+                    <MailOutlineIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={`${inv.clubName} 클럽 초대`} 
+                    primaryTypographyProps={{ variant: 'body2', fontWeight: 'bold' }}
+                  />
+                </MenuItem>
+              ))}
+              <Divider sx={{ my: 0.5 }} />
+            </div>
+          )}
           <MenuItem onClick={handleSettings}>프로필 설정</MenuItem>
           <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
           <MenuItem onClick={handleExit}>종료</MenuItem>
@@ -116,6 +205,14 @@ export default function UserAvatar() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <InvitationActionDialog
+        open={!!selectedInvitation}
+        onClose={handleInvitationDialogClose}
+        onAccept={handleAcceptInvitation}
+        onDecline={handleDeclineInvitation}
+        invitation={selectedInvitation}
+      />
     </>
   );
 }

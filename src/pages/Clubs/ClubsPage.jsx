@@ -52,6 +52,7 @@ const ClubsPage = () => {
         photoUrl: userDoc.photo,
         role: 'owner',
         joinedAt: now,
+        uid: user.uid     // for collectionGroup query
       });
 
       // 5. users/{userId}/myClubs 서브컬렉션에 클럽 정보 추가

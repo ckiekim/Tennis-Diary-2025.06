@@ -86,11 +86,17 @@ const ClubDetailPage = () => {
       // clubs/{clubId}/members/{userId} 경로에 'invited' 상태로 문서를 생성
       const memberRef = doc(db, 'clubs', clubId, 'members', invitedUser.uid);
       await setDoc(memberRef, {
+        uid: invitedUser.uid,
         username: invitedUser.nickname,
         photoUrl: invitedUser.photo,
         role: 'member',
         status: 'invited',
         invitedAt: serverTimestamp(),
+        clubId: clubId,
+        clubName: club.name, 
+        clubProfileUrl: club.profileUrl,
+        region: club.region,           // region 필드 추가
+        ownerName: club.ownerName,
       });
       alert(`${invitedUser.nickname}님을 초대했습니다.`);
       setInviteOpen(false);
