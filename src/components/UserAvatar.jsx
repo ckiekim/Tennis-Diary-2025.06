@@ -12,7 +12,6 @@ import useInvitations from '../hooks/useInvitation';
 import InvitationActionDialog from './InvitationActionDialog';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import dayjs from 'dayjs';
 
 export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,11 +70,11 @@ export default function UserAvatar() {
       const myClubRef = doc(db, 'users', user.uid, 'myClubs', selectedInvitation.clubId);
       batch.set(myClubRef, {
         clubName: selectedInvitation.clubName,
-        profileUrl: selectedInvitation.clubProfileUrl || '',
+        clubProfileUrl: selectedInvitation.clubProfileUrl || '',
         region: selectedInvitation.region, // 초대 데이터에 region이 있어야 함
         ownerName: selectedInvitation.ownerName, // 초대 데이터에 ownerName이 있어야 함
         role: 'member',
-        joinDate: dayjs().format('YYYY-MM-DD'),
+        joinedAt: serverTimestamp(),
       });
 
       const clubRef = doc(db, 'clubs', selectedInvitation.clubId);
