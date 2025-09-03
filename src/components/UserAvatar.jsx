@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../api/firebaseConfig';
-import { writeBatch, doc, serverTimestamp, increment, deleteDoc } from 'firebase/firestore';
+import { doc, writeBatch, serverTimestamp, increment, deleteDoc, updateDoc } from 'firebase/firestore';
 import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
   Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography,
  } from '@mui/material';
@@ -9,6 +9,7 @@ import { logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
 import useUserSettings from '../hooks/useUserSettings';
 import useInvitations from '../hooks/useInvitation';
+import useNotifications from '../hooks/useNotifications';
 import InvitationActionDialog from './InvitationActionDialog';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
@@ -23,7 +24,10 @@ export default function UserAvatar() {
   const { settings, loading: settingsLoading } = useUserSettings();
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const { invitations } = useInvitations(user?.uid);
+  const { notifications } = useNotifications(user?.uid);
 
+  const unreadNotifications = notifications.filter(n => !n.isRead);
+  const totalBadgeCount = invitations.length + unreadNotifications.length;
   const navigate = useNavigate();
 
   const handleMenuToggle = (event) => {
@@ -102,6 +106,23 @@ export default function UserAvatar() {
     }
   };
 
+  const handleNotificationClick = async (notification) => {
+    handleMenuClose(); // 메뉴를 즉시 닫음
+
+    try {
+      // Firestore에서 해당 알림 문서를 '읽음' 상태로 업데이트
+      const notiRef = doc(db, 'users', user.uid, 'notifications', notification.id);
+      await updateDoc(notiRef, { isRead: true });
+
+      // 알림에 포함된 링크 정보가 있다면 해당 경로로 이동
+      if (notification.link) {
+        navigate(notification.link);
+      }
+    } catch (error) {
+      console.error("알림 처리 중 오류 발생:", error);
+    }
+  };
+
   /**
    * 웹-앱을 종료하는 함수
    * 네이티브 앱의 WebView 환경에 따라 특정 인터페이스를 호출
@@ -133,8 +154,8 @@ export default function UserAvatar() {
           <IconButton onClick={handleMenuToggle} color="inherit">
             <Badge 
               color="error" 
-              invisible={invitations.length === 0}
-              badgeContent={invitations.length === 0 ? '' : invitations.length}
+              invisible={totalBadgeCount === 0}
+              badgeContent={totalBadgeCount}
             />
             <Avatar src={settings.photo} alt={settings.nickname} sx={{ width: 32, height: 32, marginLeft: 1 }} />
           </IconButton>
@@ -164,6 +185,7 @@ export default function UserAvatar() {
             </Typography>
           </Box>
           <Divider sx={{ my: 0.5 }} />
+
           {invitations.length > 0 && (
             <div>
               {invitations.map((inv) => (
@@ -180,6 +202,20 @@ export default function UserAvatar() {
               <Divider sx={{ my: 0.5 }} />
             </div>
           )}
+
+          {unreadNotifications.length > 0 && (
+            <div>
+              <Divider sx={{ my: 0.5 }} />
+              {unreadNotifications.map((noti) => (
+                <MenuItem key={noti.id} onClick={() => handleNotificationClick(noti)}>
+                  {/* ... 알림 내용 렌더링 ... */}
+                  <ListItemText primary={noti.message} />
+                </MenuItem>
+              ))}
+              <Divider sx={{ my: 0.5 }} />
+            </div>
+          )}
+
           <MenuItem onClick={handleSettings}>프로필 설정</MenuItem>
           <MenuItem onClick={handleLogout}>로그아웃</MenuItem>
           <MenuItem onClick={handleExit}>종료</MenuItem>

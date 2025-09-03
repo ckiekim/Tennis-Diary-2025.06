@@ -1,17 +1,18 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Box, Button, CircularProgress, Typography, Divider, Stack, Avatar, Paper, } from '@mui/material';
+import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Paper, Stack, Typography } from '@mui/material';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import dayjs from 'dayjs';
 
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
-import useSubcollection from '../../hooks/useSubcollection'; 
+import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
 
 import MainLayout from '../../components/MainLayout';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
-import { doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { collection, doc, increment, setDoc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions  } from '../../api/firebaseConfig';
 
@@ -21,11 +22,13 @@ const ClubDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);  // 탈퇴
+  const [kickTarget, setKickTarget] = useState(null); // 강퇴
 
   const { user, loading: authLoading } = useAuthState();
   const { docData: club, loading: clubLoading } = useSnapshotDocument('clubs', clubId);
   
-  const { documents: members, loading: membersLoading } = useSubcollection(
+  const { documents: members, loading: membersLoading } = useSnapshotSubcollection(
     `clubs/${clubId}/members`, { orderByField: 'role' }
   );
   const isLoading = authLoading || clubLoading || membersLoading;
@@ -48,10 +51,10 @@ const ClubDetailPage = () => {
   }
 
   const isOwner = user?.uid === club.owner;
+  const isMember = user ? members.some(member => member.id === user.uid) : false;
 
   const handleEditClose = () => {
     setEditOpen(false);
-    // setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
   };
 
   const handleDelete = async () => {
@@ -60,8 +63,6 @@ const ClubDetailPage = () => {
       return;
     }
     try {
-      // Cloud Function을 호출합니다.
-      // const functions = getFunctions();
       const deleteClub = httpsCallable(functions, 'deleteClub');
       await deleteClub({ clubId }); // clubId를 인자로 전달
 
@@ -100,6 +101,82 @@ const ClubDetailPage = () => {
     } catch (error) {
       console.error("초대 실패:", error);
       alert("초대 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleLeaveClub = async () => {
+    if (!user || isOwner) {
+      alert('클럽장은 클럽을 탈퇴할 수 없습니다. 클럽 삭제 기능을 이용해 주세요.');
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+
+      // 1. clubs/{clubId}/members/{userId} 에서 삭제
+      const memberRef = doc(db, 'clubs', clubId, 'members', user.uid);
+      batch.delete(memberRef);
+
+      // 2. users/{userId}/myClubs/{clubId} 에서 삭제
+      const myClubRef = doc(db, 'users', user.uid, 'myClubs', clubId);
+      batch.delete(myClubRef);
+
+      // 3. clubs/{clubId} 문서의 memberCount 1 감소
+      const clubRef = doc(db, 'clubs', clubId);
+      batch.update(clubRef, { memberCount: increment(-1) });
+
+      await batch.commit();
+      alert('클럽에서 탈퇴했습니다.');
+      navigate('/more/clubs'); // 나의 클럽 목록으로 이동
+    } catch (err) {
+      console.error('클럽 탈퇴 실패:', err);
+      alert('클럽 탈퇴 중 오류가 발생했습니다.');
+    } finally {
+      setLeaveOpen(false);
+    }
+  };
+
+  const handleKickMember = async () => {
+    if (!isOwner || !kickTarget) {
+      alert('클럽장만 멤버를 강퇴할 수 있습니다.');
+      return;
+    }
+    if (kickTarget.id === club.owner) {
+      alert('클럽장을 강퇴할 수 없습니다.');
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+
+      // 1. clubs/{clubId}/members/{kickTargetId} 에서 삭제
+      const memberRef = doc(db, 'clubs', clubId, 'members', kickTarget.id);
+      batch.delete(memberRef);
+      
+      // 2. users/{kickTargetId}/myClubs/{clubId} 에서 삭제
+      const myClubRef = doc(db, 'users', kickTarget.id, 'myClubs', clubId);
+      batch.delete(myClubRef);
+
+      // 3. clubs/{clubId} 문서의 memberCount 1 감소
+      const clubRef = doc(db, 'clubs', clubId);
+      batch.update(clubRef, { memberCount: increment(-1) });
+
+      // 4. 강퇴당한 유저에게 알림 문서 생성 ---
+      const notificationRef = doc(collection(db, 'users', kickTarget.id, 'notifications'));
+      batch.set(notificationRef, {
+          type: 'kick', // 알림 종류
+          message: `'${club.name}' 클럽에서 강퇴되었습니다.`,
+          createdAt: serverTimestamp(),
+          isRead: false,
+          // 필요하다면 관련 링크나 정보를 추가할 수 있음.
+          // link: `/clubs/${clubId}` 
+      });
+
+      await batch.commit();
+      alert(`${kickTarget.username}님을 클럽에서 제외했습니다.`);
+    } catch (err) {
+      console.error('멤버 강퇴 실패:', err);
+      alert('멤버를 강퇴하는 중 오류가 발생했습니다.');
+    } finally {
+      setKickTarget(null); // 강퇴 대상 초기화 및 다이얼로그 닫기
     }
   };
 
@@ -152,12 +229,17 @@ const ClubDetailPage = () => {
           {members.map(member => (
             <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Avatar src={member.photoUrl || ''} alt={member.username} sx={{ mr: 2 }} />
-              <Box>
+              <Box sx={{ mr: 2 }}>
                 <Typography fontSize="12">{member.username}</Typography>
                 <Typography fontSize="12" color="text.secondary">
                   {member.role === 'owner' ? '클럽장' : member.role === 'admin' ? '관리자' : '멤버'}
                 </Typography>
               </Box>
+              {isOwner && user.uid !== member.id && (
+                <IconButton size="small" onClick={() => setKickTarget(member)}>
+                  <PersonRemoveIcon fontSize='12' />
+                </IconButton>
+              )}
             </Box>
           ))}
         </Stack>
@@ -177,6 +259,9 @@ const ClubDetailPage = () => {
             <Button variant="outlined" color="primary" onClick={() => setEditOpen(true)}>수정</Button>
             <Button variant="outlined" color="error" onClick={() => setDeleteOpen(true)}>삭제</Button>
           </>
+        )}
+        {isMember && !isOwner && (
+          <Button variant="outlined" color="error" onClick={() => setLeaveOpen(true)}>탈퇴</Button>
         )}
         <Button variant="contained" onClick={() => navigate(-1)}>뒤로</Button>
       </Stack>
@@ -201,6 +286,14 @@ const ClubDetailPage = () => {
           open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite}
         />
       )}
+
+      <DeleteConfirmDialog open={leaveOpen} onClose={() => setLeaveOpen(false)} onConfirm={handleLeaveClub} title="탈퇴">
+        "{club.name}" 클럽에서 정말 탈퇴하시겠습니까?
+      </DeleteConfirmDialog>
+
+      <DeleteConfirmDialog open={!!kickTarget} onClose={() => setKickTarget(null)} onConfirm={handleKickMember} title="강퇴">
+        "{kickTarget?.username}"님을 정말로 강퇴시키겠습니까?
+      </DeleteConfirmDialog>
     </MainLayout>
   );
 };
