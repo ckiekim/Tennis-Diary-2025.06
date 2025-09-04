@@ -10,6 +10,7 @@ import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import usePostViewCount from '../../hooks/usePostViewCount';
 import usePostLike from '../../hooks/usePostLike';
 import MainLayout from '../../components/MainLayout';
+import Comments from './Comments';
 
 const PostDetailPage = () => {
   const { clubId, postId } = useParams();
@@ -47,10 +48,10 @@ const PostDetailPage = () => {
 
   return (
     <MainLayout title="게시글 상세">
-      <Box p={2}>
-        <Paper sx={{ p: 3 }}>
+      <Box p={1}>
+        <Paper sx={{ p: 2 }}>
           {/* 헤더: 제목 */}
-          <Typography variant="h5" component="h1" fontWeight="bold" gutterBottom>
+          <Typography variant="h6" component="h3" fontWeight="bold" gutterBottom>
             {post.title}
           </Typography>
 
@@ -60,14 +61,14 @@ const PostDetailPage = () => {
             <Box>
               <Typography variant="body2" fontWeight="bold">{post.authorName}</Typography>
               <Typography variant="caption" color="text.secondary">
-                {dayjs(post.createdAt?.toDate()).format('YYYY년 MM월 DD일 HH:mm')}
+                {dayjs(post.createdAt?.toDate()).format('YYYY-MM-DD HH:mm')}
               </Typography>
             </Box>
           </Stack>
           <Divider sx={{ my: 2 }} />
 
           {/* 본문 내용 */}
-          <Typography variant="body1" sx={{ minHeight: '200px', whiteSpace: 'pre-wrap', my: 3 }}>
+          <Typography variant="body2" sx={{ minHeight: '200px', whiteSpace: 'pre-wrap', my: 3 }}>
             {post.content}
           </Typography>
 
@@ -89,6 +90,8 @@ const PostDetailPage = () => {
               <Typography variant="body2">{post.likeCount || 0}</Typography>
             </Stack>
           </Stack>
+          <Divider sx={{ my: 1 }} />
+          <Comments clubId={clubId} postId={postId} />
         </Paper>
 
         {/* 하단 버튼 */}
