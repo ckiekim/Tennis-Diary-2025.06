@@ -18,12 +18,13 @@ const PostDetailPage = () => {
 
   const { user } = useAuthState();
   const { docData: post, loading: postLoading } = useSnapshotDocument(`clubs/${clubId}/posts`, postId);
+  const { docData: currentUserProfile, loading: profileLoading } = useSnapshotDocument('users', user?.uid);
   const { isLiked, loading: likeLoading, toggleLike } = usePostLike(clubId, postId, post?.authorId);
   usePostViewCount(clubId, postId, post?.authorId);   // 조회수 증가
 
   const isAuthor = user?.uid === post?.authorId;
 
-  if (postLoading) {
+  if (postLoading || profileLoading) {
     return (
       <MainLayout title="게시글 로딩 중...">
         <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -91,7 +92,7 @@ const PostDetailPage = () => {
             </Stack>
           </Stack>
           <Divider sx={{ my: 1 }} />
-          <Comments clubId={clubId} postId={postId} />
+          <Comments clubId={clubId} postId={postId} currentUserProfile={currentUserProfile} />
         </Paper>
 
         {/* 하단 버튼 */}

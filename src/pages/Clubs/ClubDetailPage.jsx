@@ -2,17 +2,21 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import CreateIcon from '@mui/icons-material/Create';
 import dayjs from 'dayjs';
 
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
+import usePaginatedSubcollection from '../../hooks/usePaginatedSubcollection';
 
 import MainLayout from '../../components/MainLayout';
 import Posts from './Posts';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
+import AddPostDialog from './dialogs/AddPostDialog';
 import { collection, doc, increment, setDoc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions  } from '../../api/firebaseConfig';
@@ -23,16 +27,22 @@ const ClubDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [addPostOpen, setAddPostOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);  // 탈퇴
   const [kickTarget, setKickTarget] = useState(null); // 강퇴
 
   const { user, loading: authLoading } = useAuthState();
+  const { docData: currentUserProfile, loading: profileLoading } = useSnapshotDocument('users', user?.uid);
   const { docData: club, loading: clubLoading } = useSnapshotDocument('clubs', clubId);
-  
   const { documents: members, loading: membersLoading } = useSnapshotSubcollection(
     `clubs/${clubId}/members`, { orderByField: 'role' }
   );
-  const isLoading = authLoading || clubLoading || membersLoading;
+  const { documents: posts, loading: postsLoading, 
+    loadingMore, hasMore, loadMore, refresh: refreshPosts } = usePaginatedSubcollection(
+    `clubs/${clubId}/posts`,
+    { orderByField: 'createdAt', direction: 'desc', limitCount: 5 }
+  );
+  const isLoading = authLoading || profileLoading || clubLoading || membersLoading || postsLoading;
 
   if (isLoading) {
     return (
@@ -181,6 +191,10 @@ const ClubDetailPage = () => {
     }
   };
 
+  const handlePostAdded = () => {
+    refreshPosts();
+  };
+
   return (
     <MainLayout title="클럽 상세">
       <Box p={2}>
@@ -189,7 +203,7 @@ const ClubDetailPage = () => {
           <Avatar src={club.profileUrl || ''} alt={club.name} sx={{ width: 80, height: 80, mr: 2 }} />
           <Box>
             <Typography variant="h5" fontWeight="bold">{club.name}</Typography>
-            <Typography variant="body1" color="text.secondary">{club.region}</Typography>
+            <Typography variant="body1" color="text.secondary">{`${club.region} (${club.memberCount} 명)`}</Typography>
           </Box>
         </Box>
 
@@ -205,12 +219,6 @@ const ClubDetailPage = () => {
         </Typography>
         <Divider sx={{ my: 1 }} />
 
-        <Typography variant="body2" fontWeight="bold">멤버 수</Typography>
-        <Typography variant="body2" sx={{ mt: 1, ml: 4 }}>
-          {club.memberCount} 명
-        </Typography>
-        <Divider sx={{ my: 1 }} />
-
         <Typography variant="body2" fontWeight="bold">클럽 생성일</Typography>
         <Typography variant="body2" sx={{ mt: 1, ml: 4 }}>
           {club.createdAt ? dayjs(club.createdAt.toDate()).format('YYYY-MM-DD') : '날짜 정보 없음'}
@@ -220,9 +228,9 @@ const ClubDetailPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
           <Typography fontSize="13" fontWeight="bold">멤버 목록</Typography>
           {isOwner && (
-            <Button variant="contained" size="small" onClick={() => setInviteOpen(true)}>
-              멤버 추가
-            </Button>
+            <IconButton size="small" onClick={() => setInviteOpen(true)} title="멤버 추가">
+              <GroupAddIcon fontSize="small" />
+            </IconButton>
           )}
         </Box>
 
@@ -246,7 +254,18 @@ const ClubDetailPage = () => {
         </Stack>
         <Divider sx={{ my: 1 }} />
 
-        <Posts clubId={clubId} />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+          <Typography fontSize="13" fontWeight="bold">클럽 게시판</Typography>
+          {isMember && ( // 멤버만 글쓰기 버튼이 보이도록
+            <IconButton size="small" onClick={() => setAddPostOpen(true)} title="새 글 작성">
+              <CreateIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+
+        <Posts 
+          clubId={clubId}  posts={posts} loading={postsLoading} loadingMore={loadingMore} hasMore={hasMore} loadMore={loadMore} 
+        />
 
       </Box>
 
@@ -283,6 +302,11 @@ const ClubDetailPage = () => {
           open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite}
         />
       )}
+
+      <AddPostDialog 
+        open={addPostOpen} onClose={() => setAddPostOpen(false)} clubId={clubId} onSuccess={handlePostAdded}
+        currentUserProfile={currentUserProfile}
+      />
 
       <DeleteConfirmDialog open={leaveOpen} onClose={() => setLeaveOpen(false)} onConfirm={handleLeaveClub} title="탈퇴">
         "{club.name}" 클럽에서 정말 탈퇴하시겠습니까?

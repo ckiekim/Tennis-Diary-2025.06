@@ -14,7 +14,7 @@ const usePaginatedSubcollection = (collectionPath, options) => {
   const [error, setError] = useState(null);
 
   // 첫 페이지 데이터를 불러오는 함수
-  const fetchInitialData = useCallback(async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -72,11 +72,11 @@ const usePaginatedSubcollection = (collectionPath, options) => {
   // collectionPath가 변경되면 첫 데이터를 다시 불러오도록 함
   useState(() => {
     if (collectionPath) {
-      fetchInitialData();
+      refresh();
     }
-  }, [collectionPath, fetchInitialData]);
+  }, [collectionPath, refresh]);
 
-  return { documents, loading, loadingMore, hasMore, loadMore, error };
+  return { documents, loading, loadingMore, hasMore, loadMore, error, refresh };
 };
 
 export default usePaginatedSubcollection;

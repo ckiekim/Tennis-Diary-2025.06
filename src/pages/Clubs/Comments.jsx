@@ -5,24 +5,22 @@ import dayjs from 'dayjs';
 
 import { db } from '../../api/firebaseConfig';
 import useAuthState from '../../hooks/useAuthState';
-import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
 
-const Comments = memo(({ clubId, postId }) => {
+const Comments = memo(({ clubId, postId, currentUserProfile }) => {
   const { user: auth } = useAuthState();
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const commentsPath = `clubs/${clubId}/posts/${postId}/comments`;
-  const { documents: comments, loading } = useSnapshotSubcollection(
+  const { documents: comments, loading: commentsLoading } = useSnapshotSubcollection(
     commentsPath,
     { orderByField: 'createdAt', direction: 'asc' } // 오래된 순으로 정렬
   );
-  const { docData: user, loading: userLoading } = useSnapshotDocument('users', auth?.uid);
 
   const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!auth || newComment.trim() === '') {
+    if (!auth || !currentUserProfile || newComment.trim() === '') {
       return;
     }
 
@@ -33,10 +31,8 @@ const Comments = memo(({ clubId, postId }) => {
       // 1. 새로운 댓글 문서 생성
       const commentRef = doc(collection(db, commentsPath)); // 자동 ID 생성
       batch.set(commentRef, {
-        content: newComment,
-        authorId: auth.uid,
-        authorName: user.nickname,
-        authorPhotoUrl: user.photo,
+        content: newComment, authorId: auth.uid,
+        authorName: currentUserProfile.nickname, authorPhotoUrl: currentUserProfile.photo,
         createdAt: new Date(), // serverTimestamp는 batch에서 직접 사용 불가
       });
 
@@ -62,7 +58,7 @@ const Comments = memo(({ clubId, postId }) => {
       
       {/* 댓글 목록 */}
       <Stack spacing={2} sx={{ mb: 3 }}>
-        {loading && <CircularProgress sx={{ mx: 'auto' }} />}
+        {commentsLoading && <CircularProgress sx={{ mx: 'auto' }} />}
         {comments.map((comment, index) => (
           <Box key={comment.id}>
             <Stack direction="row" spacing={2}>
@@ -83,7 +79,7 @@ const Comments = memo(({ clubId, postId }) => {
       </Stack>
 
       {/* 댓글 작성 폼 */}
-      {user && (
+      {auth && (
         <Box component="form" onSubmit={handleAddComment}>
           <TextField
             fullWidth
