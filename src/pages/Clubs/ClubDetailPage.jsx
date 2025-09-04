@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Paper, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import dayjs from 'dayjs';
 
@@ -9,6 +9,7 @@ import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
 
 import MainLayout from '../../components/MainLayout';
+import Posts from './Posts';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
@@ -230,8 +231,8 @@ const ClubDetailPage = () => {
             <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Avatar src={member.photoUrl || ''} alt={member.username} sx={{ mr: 2 }} />
               <Box sx={{ mr: 2 }}>
-                <Typography fontSize="12">{member.username}</Typography>
-                <Typography fontSize="12" color="text.secondary">
+                <Typography variant="body2">{member.username}</Typography>
+                <Typography variant="caption" color="text.secondary">
                   {member.role === 'owner' ? '클럽장' : member.role === 'admin' ? '관리자' : '멤버'}
                 </Typography>
               </Box>
@@ -245,12 +246,8 @@ const ClubDetailPage = () => {
         </Stack>
         <Divider sx={{ my: 1 }} />
 
-        {/* 클럽 일정 (구현 필요) */}
-        <Typography fontSize="13" fontWeight="bold" mt={1}>클럽 일정</Typography>
-        <Paper variant="outlined" sx={{ mt: 1 }}>
-          {/* TODO: schedules 배열을 map으로 렌더링 */}
-          <Typography sx={{ p: 2 }}>클럽 일정이 없습니다. (구현 필요)</Typography>
-        </Paper>
+        <Posts clubId={clubId} />
+
       </Box>
 
       <Stack direction="row" spacing={2} justifyContent="center" my={3}>
