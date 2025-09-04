@@ -26,6 +26,7 @@ import PwaInstallGuidePage from './pages/More/PwaInstallGuidePage';
 import AdvertisementPage from './pages/More/AdvertisementPage';
 import ClubsPage from './pages/Clubs/ClubsPage';
 import ClubDetailPage from './pages/Clubs/ClubDetailPage';
+import PostDetailPage from './pages/Clubs/PostDetailPage';
 
 const App = () => {
   dayjs.locale('ko');
@@ -54,6 +55,7 @@ const App = () => {
           <Route path="/more/installGuide" element={<PwaInstallGuidePage />} />
           <Route path="/more/clubs" element={<ClubsPage />} />
           <Route path="/more/clubs/:clubId" element={<ClubDetailPage />} />
+          <Route path="/more/clubs/:clubId/posts/:postId" element={<PostDetailPage />} />
           <Route path="/setting" element={<UserSettingPage />} />
         </Route>
 

@@ -1,13 +1,12 @@
 import { memo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, CircularProgress, Divider, List, ListItemButton, ListItemText, Paper, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom'; // [수정] Link 컴포넌트 임포트
+import { Box, Button, CircularProgress, Divider, Link as MuiLink, List, ListItem, ListItemText, Paper, Typography } from '@mui/material'; // [수정] ListItemButton 대신 ListItem 사용, ListItemText는 그대로
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'; 
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'; 
 import dayjs from 'dayjs';
 import usePaginatedSubcollection from '../../hooks/usePaginatedSubcollection';
 
-// memo를 사용하여 clubId가 변경되지 않는 한 불필요한 리렌더링을 방지합니다.
 const Posts = memo(({ clubId }) => {
-  const navigate = useNavigate();
-
   const {
     documents: posts,
     loading: postsLoading,
@@ -39,17 +38,57 @@ const Posts = memo(({ clubId }) => {
           <List dense sx={{ p: 0 }}>
             {posts.map((post, index) => (
               <div key={post.id}>
-                <ListItemButton onClick={() => navigate(`/clubs/${clubId}/posts/${post.id}`)}>
+                <ListItem
+                  alignItems="flex-start" // 텍스트가 여러 줄일 때 정렬
+                  sx={{ py: 1, px: 1 }} // 패딩 조절
+                >
                   <ListItemText
-                    primary={post.title} 
-                    secondary={`${post.authorName} · ${dayjs(post.createdAt?.toDate()).format('YY-MM-DD HH:mm')}`}
-                    primaryTypographyProps={{ variant: 'body2' }}
-                    secondaryTypographyProps={{ variant: 'caption' }}
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                        {/* 제목과 댓글 수 */}
+                        <MuiLink
+                          component={RouterLink}
+                          to={`/more/clubs/${clubId}/posts/${post.id}`}
+                          underline="hover"
+                          color="primary" 
+                          sx={{ fontWeight: 'bold' }}
+                        >
+                          <Typography variant="body2">
+                            {post.title}
+                            {post.commentCount > 0 ? ` [${post.commentCount}]` : ''}
+                          </Typography>
+                        </MuiLink>
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography
+                          component="span"
+                          variant="caption" // 더 작은 폰트
+                          color="text.secondary"
+                        >
+                          {`${post.authorName} · ${dayjs(post.createdAt?.toDate()).format('YY-MM-DD HH:mm')}`}
+                        </Typography>
+                        {/* 조회수와 좋아요수 */}
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'flex-end',
+                          flexShrink: 0, // 공간이 부족해도 줄어들지 않음
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', color: 'text.secondary' }}>
+                            <VisibilityOutlinedIcon sx={{ fontSize: '0.9rem', mr: 0.3 }} />
+                            {post.viewCount || 0}
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', color: 'text.secondary', ml: 1 }}>
+                            <FavoriteBorderOutlinedIcon sx={{ fontSize: '0.9rem', mr: 0.3 }} />
+                            {post.likeCount || 0}
+                          </Box>
+                        </Box>
+                      </Box>
+                    }
                   />
-                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                    댓글 {post.commentCount || 0}
-                  </Typography>
-                </ListItemButton>
+                </ListItem>
                 {index < posts.length - 1 && <Divider component="li" />}
               </div>
             ))}
