@@ -7,7 +7,7 @@ export default function GoodsCard({ item }) {
   const day = formatDay(item.date);
 
   const handleCardClick = () => {
-    navigate(`/goods/${item.id}`);
+    navigate(`/tools/goods/${item.id}`);
   };
 
   return (

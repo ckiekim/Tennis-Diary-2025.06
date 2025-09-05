@@ -34,7 +34,7 @@ const Posts = memo(({clubId, posts, loading, loadingMore, hasMore, loadMore }) =
                       {/* 제목과 댓글 수 */}
                       <MuiLink
                         component={RouterLink}
-                        to={`/more/clubs/${clubId}/posts/${post.id}`}
+                        to={`/clubs/${clubId}/posts/${post.id}`}
                         underline="hover"
                         color="primary" 
                         sx={{ fontWeight: 'bold' }}

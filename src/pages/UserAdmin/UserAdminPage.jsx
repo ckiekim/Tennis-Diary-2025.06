@@ -79,7 +79,7 @@ const UserAdminPage = () => {
               const photoSrc = isValidPhoto ? user.photo : '/img/no-image.jpeg';
 
               return (
-                <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/admin/user/${user.uid}`)}>
+                <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/tools/user/${user.uid}`)}>
                   <Box sx={{ display:'flex', alignItems:'center' }}>
                     <Box
                       component="img" src={photoSrc} alt={user.nickname}

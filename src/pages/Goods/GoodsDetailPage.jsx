@@ -65,7 +65,7 @@ const GoodsDetailPage = () => {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { mileage: increment(-10) }); // 용품 등록시 10점 가정
       setDeleteOpen(false);
-      navigate('/goods'); // 삭제 후 목록 페이지로 이동
+      navigate('/tools/goods'); // 삭제 후 목록 페이지로 이동
     } catch (err) {
       console.error('삭제 실패:', err);
       alert('삭제 중 문제가 발생했습니다.');

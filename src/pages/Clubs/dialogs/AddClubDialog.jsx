@@ -60,30 +60,16 @@ export default function AddClubDialog({ open, onClose, onAdd, uid }) {
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField 
-            name="name" 
-            label="클럽 이름 (필수)" 
-            value={form.name} 
-            onChange={handleChange} 
-            fullWidth 
-            required
+            name="name" label="클럽 이름 (필수)" value={form.name} 
+            onChange={handleChange}  fullWidth  required
           />
           <TextField 
-            name="region" 
-            label="주요 활동 지역 (필수)" 
-            value={form.region} 
-            onChange={handleChange} 
-            fullWidth 
-            required
-            placeholder="예: 용인시 기흥구"
+            name="region" label="주요 활동 지역 (필수)" value={form.region} 
+            onChange={handleChange} fullWidth required placeholder="예: 용인시 수지구"
           />
           <TextField 
-            name="description" 
-            label="클럽 소개" 
-            value={form.description} 
-            onChange={handleChange} 
-            multiline 
-            rows={3} 
-            fullWidth 
+            name="description" label="클럽 소개" value={form.description} 
+            onChange={handleChange} multiline rows={3} fullWidth 
             placeholder="클럽의 활동 방식, 분위기 등을 자유롭게 소개해주세요."
           />
           <Stack direction="column" spacing={1} alignItems="center">
@@ -94,10 +80,8 @@ export default function AddClubDialog({ open, onClose, onAdd, uid }) {
             {form.profileUrl && (
               <Box sx={{ mt: 2, textAlign: 'center' }}>
                 <Avatar 
-                  src={form.profileUrl} 
-                  alt="클럽 대표 사진 미리보기" 
-                  sx={{ width: 120, height: 120 }}
-                  variant="rounded"
+                  src={form.profileUrl}  alt="클럽 대표 사진 미리보기" 
+                  sx={{ width: 120, height: 120 }} variant="rounded"
                 />
               </Box>
             )}

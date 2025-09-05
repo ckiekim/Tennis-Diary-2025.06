@@ -78,7 +78,7 @@ const ClubDetailPage = () => {
       await deleteClub({ clubId }); // clubId를 인자로 전달
 
       setDeleteOpen(false);
-      navigate('/more/clubs'); // 나의 클럽 목록으로 이동
+      navigate('/clubs'); // 나의 클럽 목록으로 이동
     } catch (err) {
       console.error('클럽 삭제 실패:', err);
       alert(err.message || '클럽 삭제 중 문제가 발생했습니다.');
@@ -137,7 +137,7 @@ const ClubDetailPage = () => {
 
       await batch.commit();
       alert('클럽에서 탈퇴했습니다.');
-      navigate('/more/clubs'); // 나의 클럽 목록으로 이동
+      navigate('/clubs'); // 나의 클럽 목록으로 이동
     } catch (err) {
       console.error('클럽 탈퇴 실패:', err);
       alert('클럽 탈퇴 중 오류가 발생했습니다.');
@@ -177,8 +177,6 @@ const ClubDetailPage = () => {
           message: `'${club.name}' 클럽에서 강퇴되었습니다.`,
           createdAt: serverTimestamp(),
           isRead: false,
-          // 필요하다면 관련 링크나 정보를 추가할 수 있음.
-          // link: `/clubs/${clubId}` 
       });
 
       await batch.commit();

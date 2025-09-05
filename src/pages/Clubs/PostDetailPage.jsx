@@ -59,7 +59,7 @@ const PostDetailPage = () => {
       await batch.commit();
 
       // 7. 모든 작업이 성공하면 목록 페이지로 이동합니다.
-      navigate(`/more/clubs/${clubId}`);
+      navigate(`/clubs/${clubId}`);
 
     } catch (error) {
       console.error('Error deleting post and comments: ', error);
@@ -158,7 +158,7 @@ const PostDetailPage = () => {
             </Stack>
           )}
           <Button variant="contained" onClick={() => navigate(-1)}>
-            목록으로
+            뒤로
           </Button>
         </Box>
       </Box>

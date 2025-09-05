@@ -21,7 +21,7 @@ const ClubCard = ({ club }) => {
   };
 
   return (
-    <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/more/clubs/${club.id}`)}>
+    <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/clubs/${club.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
           component="img" src={club.clubProfileUrl  || 'https://via.placeholder.com/70'} alt={club.clubName}

@@ -40,7 +40,7 @@ const UserDetailPage = () => {
       await deleteDoc(doc(db, 'users', uid));
       setDeleteOpen(false);
       alert('사용자가 삭제되었습니다.');
-      navigate('/admin/users'); // 사용자 목록 페이지로 이동
+      navigate('/tools/users'); // 사용자 목록 페이지로 이동
     } catch (err) {
       console.error('삭제 실패:', err);
       alert('삭제 중 문제가 발생했습니다.');

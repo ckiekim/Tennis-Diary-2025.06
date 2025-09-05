@@ -8,7 +8,6 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import SettingsIcon from '@mui/icons-material/Settings';
 import RestoreIcon from '@mui/icons-material/Restore';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
@@ -19,10 +18,11 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GavelIcon from '@mui/icons-material/Gavel';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import GroupsIcon from '@mui/icons-material/Groups';
+import WidgetsIcon from '@mui/icons-material/Widgets';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
-  const [anchorElAdmin, setAnchorElAdmin] = useState(null);
+  const [anchorElTools, setAnchorElTools] = useState(null);
   const [anchorElMore, setAnchorElMore] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
@@ -40,10 +40,10 @@ const BottomNav = () => {
   }, []);
 
   const getValueFromPath = (pathname) => {
-    if (pathname.startsWith('/result')) return 'result';
     if (pathname.startsWith('/schedule')) return 'schedule';
-    if (pathname.startsWith('/goods')) return 'goods';
-    if (pathname.startsWith('/admin')) return 'admin';
+    if (pathname.startsWith('/result')) return 'result';
+    if (pathname.startsWith('/clubs')) return 'clubs';
+    if (pathname.startsWith('/tools')) return 'tools';
     if (pathname.startsWith('/more')) return 'more';
     return 'schedule';
   };
@@ -52,8 +52,8 @@ const BottomNav = () => {
   const handleNavClick  = (event, newValue) => {
     if (newValue === 'result') {
       setAnchorElResult(event.currentTarget);
-    } else if (newValue === 'admin') {
-      setAnchorElAdmin(event.currentTarget);
+    } else if (newValue === 'tools') {
+      setAnchorElTools(event.currentTarget);
     } else if (newValue === 'more') {
       setAnchorElMore(event.currentTarget);
     } else {
@@ -61,8 +61,8 @@ const BottomNav = () => {
         case 'schedule':
           navigate('/schedule');
           break;
-        case 'goods':
-          navigate('/goods');
+        case 'clubs':
+          navigate('/clubs');
           break;
         default:
           navigate('/');
@@ -75,8 +75,8 @@ const BottomNav = () => {
     navigate(path);
   };
 
-  const handleAdminMenuClick = (path) => {
-    setAnchorElAdmin(null);
+  const handleToolsMenuClick = (path) => {
+    setAnchorElTools(null);
     navigate(path);
   };
 
@@ -94,10 +94,8 @@ const BottomNav = () => {
         <BottomNavigation value={value} onChange={handleNavClick} showLabels>
           <BottomNavigationAction label="일정" value="schedule" icon={<CalendarMonthIcon />} sx={{ minWidth: 60 }} />
           <BottomNavigationAction label="결과" value="result" icon={<AssignmentIcon />} sx={{ minWidth: 60 }} />
-          <BottomNavigationAction label="용품" value="goods" icon={<CardGiftcardIcon />} sx={{ minWidth: 60 }} />
-          {isAdmin &&
-            <BottomNavigationAction label="관리" value="admin" icon={<SettingsIcon />} sx={{ minWidth: 60 }} />
-          }
+          <BottomNavigationAction label="클럽" value="clubs" icon={<GroupsIcon />} sx={{ minWidth: 60 }} />
+          <BottomNavigationAction label="관리" value="tools" icon={<WidgetsIcon />} sx={{ minWidth: 60 }} />
           <BottomNavigationAction label="더보기" value="more" icon={<MoreHorizIcon />} sx={{ minWidth: 60 }} />
         </BottomNavigation>
       </Paper>
@@ -123,26 +121,31 @@ const BottomNav = () => {
       </Menu>
 
       {/* 관리 드롭다운 */}
-      {isAdmin &&
-        <Menu
-          anchorEl={anchorElAdmin}
-          open={Boolean(anchorElAdmin)}
-          onClose={() => setAnchorElAdmin(null)}
-        >
-          <MenuItem onClick={() => handleAdminMenuClick('/admin/courts')}>
+      <Menu
+        anchorEl={anchorElTools}
+        open={Boolean(anchorElTools)}
+        onClose={() => setAnchorElTools(null)}
+      >
+        <MenuItem onClick={() => handleToolsMenuClick('/tools/goods')}>
+          <CardGiftcardIcon fontSize="small" sx={{ mr: 1 }} />
+          용품
+        </MenuItem>
+        <MenuItem onClick={() => handleToolsMenuClick('/tools/advertise')}>
+          <StyleIcon fontSize="small" sx={{ mr: 1 }} />
+          홍보
+        </MenuItem>
+        {isAdmin && [
+          <Divider key="admin-divider" sx={{ my: 0.5 }} />,
+          <MenuItem key="courts-menu" onClick={() => handleToolsMenuClick('/tools/courts')}>
             <SportsTennisIcon fontSize="small" sx={{ mr: 1 }} />
             코트관리
-          </MenuItem>
-          <MenuItem onClick={() => handleAdminMenuClick('/admin/users')}>
+          </MenuItem>,
+          <MenuItem key="users-menu" onClick={() => handleToolsMenuClick('/tools/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
             사용자관리
           </MenuItem>
-          <MenuItem onClick={() => handleAdminMenuClick('/admin/advertise')}>
-            <StyleIcon fontSize="small" sx={{ mr: 1 }} />
-            홍보
-          </MenuItem>
-        </Menu>
-      }
+        ]}
+      </Menu>
 
       {/* 더보기 드롭다운 */}
       <Menu
@@ -150,11 +153,6 @@ const BottomNav = () => {
         open={Boolean(anchorElMore)}
         onClose={() => setAnchorElMore(null)}
       >
-        <MenuItem onClick={() => handleMoreMenuClick('/more/clubs')}>
-          <GroupsIcon fontSize="small" sx={{ mr: 1 }} />
-          클럽
-        </MenuItem>
-        <Divider sx={{ my: 0.5 }} /> 
         <MenuItem onClick={() => handleMoreMenuClick('/more/mileageInfo')}>
           <MonetizationOnIcon fontSize="small" sx={{ mr: 1 }} />
           마일리지 안내

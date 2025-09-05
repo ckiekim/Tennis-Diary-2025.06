@@ -47,24 +47,24 @@ const App = () => {
           <Route path="/result/stat" element={<ResultStatPage />} />
           <Route path="/result/tournament" element={<ResultTournamentPage />} />
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
-          <Route path="/goods" element={<GoodsPage />} />
-          <Route path="/goods/:id" element={<GoodsDetailPage />} />
+          <Route path="/tools/goods" element={<GoodsPage />} />
+          <Route path="/tools/goods/:id" element={<GoodsDetailPage />} />
+          <Route path="/tools/advertise" element={<AdvertisementPage />} />
           <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/more/agreement" element={<AgreementPage />} />
           <Route path="/more/installGuide" element={<PwaInstallGuidePage />} />
-          <Route path="/more/clubs" element={<ClubsPage />} />
-          <Route path="/more/clubs/:clubId" element={<ClubDetailPage />} />
-          <Route path="/more/clubs/:clubId/posts/:postId" element={<PostDetailPage />} />
+          <Route path="/clubs" element={<ClubsPage />} />
+          <Route path="/clubs/:clubId" element={<ClubDetailPage />} />
+          <Route path="/clubs/:clubId/posts/:postId" element={<PostDetailPage />} />
           <Route path="/setting" element={<UserSettingPage />} />
         </Route>
 
         {/* 관리자만 접근 가능한 페이지 */}
         <Route element={<AdminGuard />}>
-          <Route path="/admin/courts" element={<CourtAdminPage />} />
-          <Route path="/admin/users" element={<UserAdminPage />} />
-          <Route path="/admin/user/:uid" element={<UserDetailPage />} />
-          <Route path="/admin/advertise" element={<AdvertisementPage />} />
+          <Route path="/tools/courts" element={<CourtAdminPage />} />
+          <Route path="/tools/users" element={<UserAdminPage />} />
+          <Route path="/tools/user/:uid" element={<UserDetailPage />} />
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}
