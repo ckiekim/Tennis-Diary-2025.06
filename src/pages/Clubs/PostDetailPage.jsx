@@ -13,6 +13,7 @@ import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import usePostViewCount from '../../hooks/usePostViewCount';
 import usePostLike from '../../hooks/usePostLike';
 import MainLayout from '../../components/MainLayout';
+import EditPostDialog from './dialogs/EditPostDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import Comments from './Comments';
 
@@ -20,7 +21,8 @@ const PostDetailPage = () => {
   const { clubId, postId } = useParams();
   const navigate = useNavigate();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { user } = useAuthState();
   const { docData: post, loading: postLoading } = useSnapshotDocument(`clubs/${clubId}/posts`, postId);
@@ -31,7 +33,7 @@ const PostDetailPage = () => {
   const isAuthor = user?.uid === post?.authorId;
 
   const handleConfirmDelete = async () => {
-    setDialogOpen(false);
+    setDeleteDialogOpen(false);
     
     try {
       // 1. 삭제할 게시글과 댓글 컬렉션의 참조를 만듭니다.
@@ -143,13 +145,13 @@ const PostDetailPage = () => {
             <Stack direction="row" spacing={1} mr={1}>
               <Button 
                 variant="outlined" color="primary" 
-                onClick={() => alert('수정 기능은 준비 중입니다.')}
+                onClick={() => setEditDialogOpen(true)}
               >
                 수정
               </Button>
               <Button 
                 variant="outlined" color="error"
-                onClick={() => setDialogOpen(true)} // 삭제 버튼 클릭 시 다이얼로그를 엶
+                onClick={() => setDeleteDialogOpen(true)} // 삭제 버튼 클릭 시 다이얼로그를 엶
               >
                 삭제
               </Button>
@@ -161,9 +163,17 @@ const PostDetailPage = () => {
         </Box>
       </Box>
 
+      {post && ( // post 데이터가 로드된 후에 다이얼로그를 렌더링
+        <EditPostDialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          clubId={clubId}
+          post={{ ...post, id: postId }}
+        />
+      )}
       <DeleteConfirmDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
       >
         정말로 이 게시글을 삭제하시겠습니까? <br />
