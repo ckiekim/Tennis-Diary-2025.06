@@ -82,23 +82,17 @@ const Comments = memo(({ clubId, postId, currentUserProfile }) => {
       {auth && (
         <Box component="form" onSubmit={handleAddComment}>
           <TextField
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            placeholder="댓글을 남겨주세요."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            disabled={isSubmitting}
+            fullWidth multiline rows={3} variant="outlined" placeholder="댓글을 남겨주세요."
+            value={newComment} onChange={(e) => setNewComment(e.target.value)} disabled={isSubmitting}
           />
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ mt: 1 }}
-            disabled={newComment.trim() === '' || isSubmitting}
-          >
-            {isSubmitting ? '등록 중...' : '댓글 등록'}
-          </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              type="submit" variant="contained" sx={{ mt: 1 }}
+              disabled={newComment.trim() === '' || isSubmitting}
+            >
+              {isSubmitting ? '등록 중...' : '댓글 등록'}
+            </Button>
+          </Box>
         </Box>
       )}
     </Box>

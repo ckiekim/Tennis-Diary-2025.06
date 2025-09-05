@@ -1,20 +1,26 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Paper, Stack, Typography } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import dayjs from 'dayjs';
+import { doc, collection, query, getDocs, writeBatch } from 'firebase/firestore';
+import { db } from '../../api/firebaseConfig';
 
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import usePostViewCount from '../../hooks/usePostViewCount';
 import usePostLike from '../../hooks/usePostLike';
 import MainLayout from '../../components/MainLayout';
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import Comments from './Comments';
 
 const PostDetailPage = () => {
   const { clubId, postId } = useParams();
   const navigate = useNavigate();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { user } = useAuthState();
   const { docData: post, loading: postLoading } = useSnapshotDocument(`clubs/${clubId}/posts`, postId);
@@ -23,6 +29,41 @@ const PostDetailPage = () => {
   usePostViewCount(clubId, postId, post?.authorId);   // 조회수 증가
 
   const isAuthor = user?.uid === post?.authorId;
+
+  const handleConfirmDelete = async () => {
+    setDialogOpen(false);
+    
+    try {
+      // 1. 삭제할 게시글과 댓글 컬렉션의 참조를 만듭니다.
+      const postRef = doc(db, 'clubs', clubId, 'posts', postId);
+      const commentsRef = collection(postRef, 'comments');
+
+      // 2. 게시글에 달린 모든 댓글 문서를 가져옵니다.
+      const commentsQuery = query(commentsRef);
+      const commentsSnapshot = await getDocs(commentsQuery);
+
+      // 3. Batch Write(일괄 쓰기) 작업을 시작합니다.
+      const batch = writeBatch(db);
+
+      // 4. 가져온 모든 댓글 문서를 batch에 추가하여 삭제하도록 설정합니다.
+      commentsSnapshot.forEach((commentDoc) => {
+        batch.delete(commentDoc.ref);
+      });
+
+      // 5. 마지막으로 게시글 문서도 batch에 추가하여 삭제하도록 설정합니다.
+      batch.delete(postRef);
+
+      // 6. Batch에 담긴 모든 삭제 작업을 한 번에 실행합니다.
+      await batch.commit();
+
+      // 7. 모든 작업이 성공하면 목록 페이지로 이동합니다.
+      navigate(`/more/clubs/${clubId}`);
+
+    } catch (error) {
+      console.error('Error deleting post and comments: ', error);
+      alert('게시글과 댓글 삭제 중 오류가 발생했습니다.');
+    }
+  };
 
   if (postLoading || profileLoading) {
     return (
@@ -39,8 +80,9 @@ const PostDetailPage = () => {
       <MainLayout title="오류">
         <Paper sx={{ p: 2, m: 2, textAlign: 'center' }}>
           <Typography>게시글을 찾을 수 없습니다.</Typography>
+          
           <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate(-1)}>
-            목록으로 돌아가기
+            목록으로
           </Button>
         </Paper>
       </MainLayout>
@@ -97,11 +139,36 @@ const PostDetailPage = () => {
 
         {/* 하단 버튼 */}
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+          {isAuthor && (
+            <Stack direction="row" spacing={1} mr={1}>
+              <Button 
+                variant="outlined" color="primary" 
+                onClick={() => alert('수정 기능은 준비 중입니다.')}
+              >
+                수정
+              </Button>
+              <Button 
+                variant="outlined" color="error"
+                onClick={() => setDialogOpen(true)} // 삭제 버튼 클릭 시 다이얼로그를 엶
+              >
+                삭제
+              </Button>
+            </Stack>
+          )}
           <Button variant="contained" onClick={() => navigate(-1)}>
             목록으로
           </Button>
         </Box>
       </Box>
+
+      <DeleteConfirmDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+      >
+        정말로 이 게시글을 삭제하시겠습니까? <br />
+        삭제된 데이터는 복구할 수 없습니다.
+      </DeleteConfirmDialog>
     </MainLayout>
   );
 };

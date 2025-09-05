@@ -73,6 +73,7 @@ const Posts = memo(({clubId, posts, loading, loadingMore, hasMore, loadMore }) =
                       </Box>
                     </Box>
                   }
+                  secondaryTypographyProps={{ component: 'div' }}
                 />
               </ListItem>
               {index < posts.length - 1 && <Divider component="li" />}
