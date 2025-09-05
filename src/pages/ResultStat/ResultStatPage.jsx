@@ -24,26 +24,28 @@ const ResultStatPage = () => {
       snapshot.forEach(doc => {
         const { result, date } = doc.data();
         if (!result || !date) return;
-        const parsed = parseResult(result);
-        
-        const { eventType, win, draw, loss } = parsed;
+        const parsedResults = parseResult(result);
 
-        // 종목별 통계
-        if (!eventData[eventType]) {
-          eventData[eventType] = { win: 0, draw: 0, loss: 0 };
-        }
-        eventData[eventType].win += win;
-        eventData[eventType].draw += draw;
-        eventData[eventType].loss += loss;
+        parsedResults.forEach(parsed => {
+          const { eventType, win, draw, loss } = parsed;
 
-        // 월별 통계
-        const monthKey = date.split('-').slice(0, 2).join('-'); // YYYY-MM
-        if (!monthData[monthKey]) {
-          monthData[monthKey] = { win: 0, draw: 0, loss: 0 };
-        }
-        monthData[monthKey].win += win;
-        monthData[monthKey].draw += draw;
-        monthData[monthKey].loss += loss;
+          // 종목별 통계
+          if (!eventData[eventType]) {
+            eventData[eventType] = { win: 0, draw: 0, loss: 0 };
+          }
+          eventData[eventType].win += win;
+          eventData[eventType].draw += draw;
+          eventData[eventType].loss += loss;
+
+          // 월별 통계
+          const monthKey = date.split('-').slice(0, 2).join('-'); // YYYY-MM
+          if (!monthData[monthKey]) {
+            monthData[monthKey] = { win: 0, draw: 0, loss: 0 };
+          }
+          monthData[monthKey].win += win;
+          monthData[monthKey].draw += draw;
+          monthData[monthKey].loss += loss;
+        });
       });
 
       // 승률 계산
