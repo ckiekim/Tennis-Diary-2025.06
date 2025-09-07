@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Stack, Typography } from '@mui/material';
+import { Avatar, Box, Button, CircularProgress, Divider, IconButton, Popover, Stack, Typography } from '@mui/material';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import CreateIcon from '@mui/icons-material/Create';
@@ -30,6 +30,8 @@ const ClubDetailPage = () => {
   const [addPostOpen, setAddPostOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);  // 탈퇴
   const [kickTarget, setKickTarget] = useState(null); // 강퇴
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   const { user, loading: authLoading } = useAuthState();
   const { docData: currentUserProfile, loading: profileLoading } = useSnapshotDocument('users', user?.uid);
@@ -43,6 +45,16 @@ const ClubDetailPage = () => {
     { orderByField: 'createdAt', direction: 'desc', limitCount: 5 }
   );
   const isLoading = authLoading || profileLoading || clubLoading || membersLoading || postsLoading;
+
+  const handleMemberClick = (event, member) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedMember(member);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+    setSelectedMember(null);
+  };
 
   if (isLoading) {
     return (
@@ -193,6 +205,8 @@ const ClubDetailPage = () => {
     refreshPosts();
   };
 
+  const openPopover = Boolean(anchorEl);
+
   return (
     <MainLayout title="클럽 상세">
       <Box p={2}>
@@ -232,24 +246,42 @@ const ClubDetailPage = () => {
           )}
         </Box>
 
-        <Stack spacing={1} sx={{ mt: 1, ml: 4 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, ml: 4 }}>
           {members.map(member => (
-            <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar src={member.photoUrl || ''} alt={member.username} sx={{ mr: 2 }} />
-              <Box sx={{ mr: 2 }}>
-                <Typography variant="body2">{member.username}</Typography>
+            <IconButton key={member.id} onClick={(e) => handleMemberClick(e, member)} sx={{ p: 0 }}>
+              <Avatar src={member.photoUrl || ''} alt={member.username} sx={{ width: 36, height: 36 }} />
+            </IconButton>
+          ))}
+        </Box>
+        <Popover
+          open={openPopover} anchorEl={anchorEl} onClose={handlePopoverClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left', }}
+        >
+          {selectedMember && (
+            <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar src={selectedMember.photoUrl || ''} alt={selectedMember.username} sx={{ width: 52, height: 52 }} />
+              <Box>
+                <Typography variant="body2" fontWeight="bold">{selectedMember.username}</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {member.role === 'owner' ? '클럽장' : member.role === 'admin' ? '관리자' : '멤버'}
+                  {selectedMember.role === 'owner' ? '클럽장' : selectedMember.role === 'admin' ? '관리자' : '멤버'}
                 </Typography>
               </Box>
-              {isOwner && user.uid !== member.id && (
-                <IconButton size="small" onClick={() => setKickTarget(member)}>
-                  <PersonRemoveIcon fontSize='12' />
+              {isOwner && user.uid !== selectedMember.id && (
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setKickTarget(selectedMember);
+                    handlePopoverClose(); // 강퇴 버튼 클릭 시 Popover 닫기
+                  }}
+                  title="강퇴"
+                >
+                  <PersonRemoveIcon fontSize="small" />
                 </IconButton>
               )}
             </Box>
-          ))}
-        </Stack>
+          )}
+        </Popover>
         <Divider sx={{ my: 1 }} />
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>

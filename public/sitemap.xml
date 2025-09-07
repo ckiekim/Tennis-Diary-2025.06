@@ -3,66 +3,86 @@
 
     <url>
         <loc>https://www.tennis-diary.kr/</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>https://www.tennis-diary.kr/schedule</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    <url>
+        <loc>https://www.tennis-diary.kr/clubs</loc>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
 
     <url>
         <loc>https://www.tennis-diary.kr/result/game</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>daily</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://www.tennis-diary.kr/result/stat</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://www.tennis-diary.kr/result/tournament</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
 
     <url>
-        <loc>https://www.tennis-diary.kr/goods</loc>
-        <lastmod>2025-08-26</lastmod>
+        <loc>https://www.tennis-diary.kr/tools/goods</loc>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://www.tennis-diary.kr/tools/advertise</loc>
+        <lastmod>2025-09-06</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+
+    <url>
+        <loc>https://www.tennis-diary.kr/setting</loc>
+        <lastmod>2025-09-06</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
     </url>
 
     <url>
         <loc>https://www.tennis-diary.kr/more/mileageInfo</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
         <loc>https://www.tennis-diary.kr/more/appInfo</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
         <loc>https://www.tennis-diary.kr/more/agreement</loc>
-        <lastmod>2025-08-26</lastmod>
+        <lastmod>2025-09-06</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>https://www.tennis-diary.kr/setting</loc>
-        <lastmod>2025-08-26</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.6</priority>
+        <loc>https://www.tennis-diary.kr/more/installGuide</loc>
+        <lastmod>2025-09-06</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
     </url>
 
 </urlset>
