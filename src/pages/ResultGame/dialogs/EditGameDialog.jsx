@@ -14,6 +14,7 @@ import { handleNumericInputChange } from '../../../utils/handleInput';
 import { stringToResults, resultsToString } from '../../../utils/resultConverter';
 import { gameTypes } from '../../../constants/typeGames';
 import { v4 as uuidv4 } from 'uuid';
+import AlertDialog from '../../../components/AlertDialog';
 
 export default function EditGameDialog({ open, onClose, result, uid }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
@@ -21,6 +22,8 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     setForm({ ...result });
@@ -91,110 +94,118 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
       onClose();
     } catch (err) {
       console.error('업데이트 실패:', err);
-      alert('업데이트 중 오류 발생');
+      setAlertMessage('업데이트 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
-      <DialogTitle>게임 상세 수정</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} mt={0.5}>
-          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-            일시: {`${result.date} (${formatDay(result.date)}) ${result.time}`}
-          </Typography>
-          <TextField
-            label="장소" select fullWidth value={form?.place || ''} size='small'
-            onChange={(e) => setForm({ ...form, place: e.target.value })}>
-            {courts.map((court) => (
-              <MenuItem key={court.id} value={court.name}>
-                {court.name} ({court.surface})
-              </MenuItem>
-            ))}
-          </TextField>
-          <Stack spacing={1}>
-            {results.map((resultItem) => (
-              <Box key={resultItem.id} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                <Stack spacing={2}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>종목</InputLabel>
-                    <Select
-                      label="종목" size="small"
-                      value={resultItem.type} 
-                      onChange={(e) => handleResultChange(resultItem.id, 'type', e.target.value)}
-                    >
-                      {gameTypes.map(type => <MenuItem key={type} value={type}>{type}</MenuItem>)}
-                    </Select>
-                  </FormControl>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <TextField label="승" type="number" size="small" value={resultItem.win} onChange={(e) => handleResultChange(resultItem.id, 'win', e.target.value)} sx={{ flex: 1 }} />
-                    <TextField label="무" type="number" size="small" value={resultItem.draw} onChange={(e) => handleResultChange(resultItem.id, 'draw', e.target.value)} sx={{ flex: 1 }} />
-                    <TextField label="패" type="number" size="small" value={resultItem.loss} onChange={(e) => handleResultChange(resultItem.id, 'loss', e.target.value)} sx={{ flex: 1 }} />
-                    {results.length > 1 && (
-                      <IconButton onClick={() => handleRemoveResult(resultItem.id)} color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    )}
-                  </Stack>
-                </Stack>
-              </Box>
-            ))}
-            <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handleAddResult}>
-              종목 추가
-            </Button>
-          </Stack>
-          <TextField
-            label="소스" fullWidth value={form?.source || ''} size='small'
-            onChange={(e) => setForm({ ...form, source: e.target.value })}
-          />
-          <TextField
-            label="비용" fullWidth type="number" value={form.price || ''} size='small'
-            onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
-          />
-          <TextField
-            label="메모" fullWidth value={form?.memo || ''} size='small'
-            onChange={(e) => setForm({ ...form, memo: e.target.value })}
-          />
-
-          <Button variant="outlined" component="label" onClick={(e) => e.stopPropagation()}>
-            📷 사진 업로드
-            <input hidden multiple accept="image/*" type="file" onChange={handleFileChange} />
-          </Button>
-
-          {/* 미리보기 삭제 가능한 사진 리스트 */}
-          {form.photoList && form.photoList.length > 0 && (
-            <ImageList cols={3} gap={8}>
-              {form.photoList.map((url, index) => (
-                <ImageListItem key={index}>
-                  <img src={url} alt={`preview-${index}`} loading="lazy" />
-                  <IconButton
-                    size="small"
-                    color="error"
-                    onClick={() => handleImageDelete(index)}
-                    sx={{ position: 'absolute', top: 2, right: 2 }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </ImageListItem>
-              ))}
-            </ImageList>
-          )}
-
-          {newFiles.length > 0 && (
-            <Typography variant="caption" color="text.secondary">
-              새 이미지 {newFiles.length}개 선택됨
+    <>
+    
+      <Dialog open={open} onClose={onClose} fullWidth>
+        <DialogTitle>게임 상세 수정</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={0.5}>
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+              일시: {`${result.date} (${formatDay(result.date)}) ${result.time}`}
             </Typography>
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={deleting}>취소</Button>
-        <Button variant="contained" onClick={handleUpdate} disabled={deleting}>
-          {deleting ? '저장 중...' : '저장'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+            <TextField
+              label="장소" select fullWidth value={form?.place || ''} size='small'
+              onChange={(e) => setForm({ ...form, place: e.target.value })}>
+              {courts.map((court) => (
+                <MenuItem key={court.id} value={court.name}>
+                  {court.name} ({court.surface})
+                </MenuItem>
+              ))}
+            </TextField>
+            <Stack spacing={1}>
+              {results.map((resultItem) => (
+                <Box key={resultItem.id} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: '8px' }}>
+                  <Stack spacing={2}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>종목</InputLabel>
+                      <Select
+                        label="종목" size="small"
+                        value={resultItem.type} 
+                        onChange={(e) => handleResultChange(resultItem.id, 'type', e.target.value)}
+                      >
+                        {gameTypes.map(type => <MenuItem key={type} value={type}>{type}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <TextField label="승" type="number" size="small" value={resultItem.win} onChange={(e) => handleResultChange(resultItem.id, 'win', e.target.value)} sx={{ flex: 1 }} />
+                      <TextField label="무" type="number" size="small" value={resultItem.draw} onChange={(e) => handleResultChange(resultItem.id, 'draw', e.target.value)} sx={{ flex: 1 }} />
+                      <TextField label="패" type="number" size="small" value={resultItem.loss} onChange={(e) => handleResultChange(resultItem.id, 'loss', e.target.value)} sx={{ flex: 1 }} />
+                      {results.length > 1 && (
+                        <IconButton onClick={() => handleRemoveResult(resultItem.id)} color="error">
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
+                    </Stack>
+                  </Stack>
+                </Box>
+              ))}
+              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handleAddResult}>
+                종목 추가
+              </Button>
+            </Stack>
+            <TextField
+              label="소스" fullWidth value={form?.source || ''} size='small'
+              onChange={(e) => setForm({ ...form, source: e.target.value })}
+            />
+            <TextField
+              label="비용" fullWidth type="number" value={form.price || ''} size='small'
+              onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
+            />
+            <TextField
+              label="메모" fullWidth value={form?.memo || ''} size='small'
+              onChange={(e) => setForm({ ...form, memo: e.target.value })}
+            />
+
+            <Button variant="outlined" component="label" onClick={(e) => e.stopPropagation()}>
+              📷 사진 업로드
+              <input hidden multiple accept="image/*" type="file" onChange={handleFileChange} />
+            </Button>
+
+            {/* 미리보기 삭제 가능한 사진 리스트 */}
+            {form.photoList && form.photoList.length > 0 && (
+              <ImageList cols={3} gap={8}>
+                {form.photoList.map((url, index) => (
+                  <ImageListItem key={index}>
+                    <img src={url} alt={`preview-${index}`} loading="lazy" />
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleImageDelete(index)}
+                      sx={{ position: 'absolute', top: 2, right: 2 }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
+
+            {newFiles.length > 0 && (
+              <Typography variant="caption" color="text.secondary">
+                새 이미지 {newFiles.length}개 선택됨
+              </Typography>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} disabled={deleting}>취소</Button>
+          <Button variant="contained" onClick={handleUpdate} disabled={deleting}>
+            {deleting ? '저장 중...' : '저장'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
+    </>
   );
 }

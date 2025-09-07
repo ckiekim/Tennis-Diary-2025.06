@@ -9,17 +9,20 @@ import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import ClubCard from './ClubCard';
 import MainLayout from '../../components/MainLayout'; 
 import AddClubDialog from './dialogs/AddClubDialog'; 
+import AlertDialog from '../../components/AlertDialog';
 import AddIcon from '@mui/icons-material/Add';
 
 const ClubsPage = () => {
   const [addOpen, setAddOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const { user, loading: authLoading } = useAuthState();
   const { clubs, loading: clubsLoading, error } = useMyClubs(user?.uid);
   const { docData: userDoc } = useSnapshotDocument('users', user?.uid);
 
   const handleAddClub = async (clubData) => {
-    if (!user || !userDoc) return alert('사용자 정보가 로드되지 않았습니다.');
+    if (!user || !userDoc) return;
 
     try {
       // 1. Firestore Write Batch 시작
@@ -69,7 +72,8 @@ const ClubsPage = () => {
       setAddOpen(false); // 성공 시 다이얼로그 닫기
     } catch (err) {
       console.error("클럽 생성 중 에러 발생:", err);
-      alert("클럽 생성에 실패했습니다. 다시 시도해주세요.");
+      setAlertMessage('클럽 생성에 실패했습니다. 다시 시도해주세요.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -130,11 +134,12 @@ const ClubsPage = () => {
           </Fab>
 
           <AddClubDialog
-            open={addOpen}
-            onClose={() => setAddOpen(false)}
-            onAdd={handleAddClub}
-            uid={user.uid}
+            open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAddClub} uid={user.uid}
           />
+
+          <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+            {alertMessage}
+          </AlertDialog>
         </>
       )}
     </MainLayout>

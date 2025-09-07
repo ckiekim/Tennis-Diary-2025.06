@@ -17,6 +17,7 @@ import AddScheduleDialog from './dialogs/AddScheduleDialog';
 import EditScheduleDialog from './dialogs/EditScheduleDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import ResultDialog from './dialogs/ResultDialog';
+import AlertDialog from '../../components/AlertDialog';
 
 import AddIcon from '@mui/icons-material/Add';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -25,6 +26,9 @@ const ScheduleList = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
   const [uid, setUid] = useState('');
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
   const eventDateMap = useEventDateMap(refreshKey);
   const schedules = useScheduleByDate(selectedDate, refreshKey);
   const { user } = useAuthState();
@@ -52,24 +56,27 @@ const ScheduleList = () => {
     
     if (form.type === '정모') {
       if (!form.club || !form.place) {
-        // console.log(form);
-        alert('정모 항목을 모두 입력해주세요.');
+        setAlertMessage('정모 항목을 모두 입력해주세요.');
+        setIsAlertOpen(true);
         return;
       }
     } else if (form.type === '대회') {
       if (!form.name || !form.category) {
-        alert('대회 항목을 모두 입력해주세요.');
+        setAlertMessage('대회 항목을 모두 입력해주세요.');
+        setIsAlertOpen(true);
         return;
       }
     } else {
       // console.log(form);
       if (!form.time || !form.place) {
-        alert('시간과 장소를 입력해주세요.');
+        setAlertMessage('시간과 장소를 입력해주세요.');
+        setIsAlertOpen(true);
         return;
       }
     }
     if (!user?.uid) {
-      alert("사용자 인증 정보를 가져오는 중입니다. 잠시 후 다시 시도해주세요.");
+      setAlertMessage('사용자 인증 정보를 가져오는 중입니다. 잠시 후 다시 시도해주세요.');
+      setIsAlertOpen(true);
       return;
     }
 
@@ -102,7 +109,8 @@ const ScheduleList = () => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
     
     if (!form.place || !endDate) {
-      alert('장소와 종료일을 모두 입력해주세요.');
+      setAlertMessage('장소와 종료일을 모두 입력해주세요.');
+      setIsAlertOpen(true);
       return;
     }
 
@@ -284,14 +292,12 @@ const ScheduleList = () => {
         <AddIcon />
       </Fab>
 
-      {/* 일정 추가 다이얼로그 */}
       <AddScheduleDialog 
         courts={courts} open={addOpen} form={form} setOpen={setAddOpen} setForm={setForm} 
         selectedDate={selectedDate}
         onAddSchedule={handleAddSchedule} onAddRecurringSchedule={handleAddRecurringSchedule}
       />
 
-      {/* 일정 수정 다이얼로그 */}
       <EditScheduleDialog 
         courts={courts} open={editOpen} selectedSchedule={selectedSchedule} 
         setOpen={setEditOpen} setSelectedSchedule={setSelectedSchedule} onUpdate={handleUpdate} 
@@ -310,11 +316,13 @@ const ScheduleList = () => {
         )}
       </DeleteConfirmDialog>
 
-      {/* 결과 입력 다이얼로그 */}
       <ResultDialog 
         open={resultOpen} target={resultTarget} setOpen={setResultOpen} onResult={handleResult} uid={uid}
       />
 
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </Container>
   );
 };

@@ -66,7 +66,6 @@ const PostDetailPage = () => {
 
     } catch (error) {
       console.error('Error deleting post and comments: ', error);
-      // alert('게시글과 댓글 삭제 중 오류가 발생했습니다.');
       setAlertMessage('게시글과 댓글 삭제 중 오류가 발생했습니다.');
       setIsAlertOpen(true);
     }

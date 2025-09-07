@@ -7,6 +7,7 @@ import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditGameDialog from './dialogs/EditGameDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import AlertDialog from '../../components/AlertDialog';
 import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
@@ -19,6 +20,9 @@ const GameDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
   const { docData: result, loading } = useDocument('events', id, refreshKey);
   const { user } = useAuthState();
 
@@ -42,7 +46,8 @@ const GameDetailPage = () => {
 
   const handleDelete = async () => {
     if (!result || !user?.uid) {
-      alert('사용자 정보가 올바르지 않습니다.');
+      setAlertMessage('사용자 정보가 올바르지 않습니다.');
+      setIsAlertOpen(true);
       return;
     }
     try {
@@ -57,7 +62,8 @@ const GameDetailPage = () => {
       navigate(-1);
     } catch (err) {
       console.error('삭제 실패:', err);
-      alert('삭제 중 문제가 발생했습니다.');
+      setAlertMessage('삭제 중 문제가 발생했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -147,14 +153,16 @@ const GameDetailPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* 수정 다이얼로그 */}
       <EditGameDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />
 
-      {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{result?.date} {result?.time}" 일정 및 결과를 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
       </DeleteConfirmDialog>
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </MainLayout>
   );
 };

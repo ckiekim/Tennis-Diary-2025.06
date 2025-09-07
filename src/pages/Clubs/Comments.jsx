@@ -6,11 +6,14 @@ import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
+import AlertDialog from '../../components/AlertDialog';
 
 const Comments = memo(({ clubId, postId, currentUserProfile }) => {
   const { user: auth } = useAuthState();
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   
   const commentsPath = `clubs/${clubId}/posts/${postId}/comments`;
   const { documents: comments, loading: commentsLoading } = useSnapshotSubcollection(
@@ -44,58 +47,65 @@ const Comments = memo(({ clubId, postId, currentUserProfile }) => {
       setNewComment(''); // 입력창 초기화
     } catch (error) {
       console.error("댓글 작성 실패:", error);
-      alert("댓글 작성 중 오류가 발생했습니다.");
+      setAlertMessage('댓글 작성 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="body1" fontWeight="bold" gutterBottom>
-        댓글 {comments.length}개
-      </Typography>
-      
-      {/* 댓글 목록 */}
-      <Stack spacing={2} sx={{ mb: 3 }}>
-        {commentsLoading && <CircularProgress sx={{ mx: 'auto' }} />}
-        {comments.map((comment, index) => (
-          <Box key={comment.id}>
-            <Stack direction="row" spacing={2}>
-              <Avatar src={comment.authorPhotoUrl || ''} alt={comment.authorName} sx={{ width: 32, height: 32 }} />
-              <Box>
-                <Typography variant="body2" fontWeight="bold">
-                  {comment.authorName}
-                  <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                    {dayjs(comment.createdAt?.toDate()).format('YY-MM-DD HH:mm')}
+    <>
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="body1" fontWeight="bold" gutterBottom>
+          댓글 {comments.length}개
+        </Typography>
+        
+        {/* 댓글 목록 */}
+        <Stack spacing={2} sx={{ mb: 3 }}>
+          {commentsLoading && <CircularProgress sx={{ mx: 'auto' }} />}
+          {comments.map((comment, index) => (
+            <Box key={comment.id}>
+              <Stack direction="row" spacing={2}>
+                <Avatar src={comment.authorPhotoUrl || ''} alt={comment.authorName} sx={{ width: 32, height: 32 }} />
+                <Box>
+                  <Typography variant="body2" fontWeight="bold">
+                    {comment.authorName}
+                    <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                      {dayjs(comment.createdAt?.toDate()).format('YY-MM-DD HH:mm')}
+                    </Typography>
                   </Typography>
-                </Typography>
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
-              </Box>
-            </Stack>
-            {index < comments.length - 1 && <Divider sx={{ mt: 2 }} />}
-          </Box>
-        ))}
-      </Stack>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
+                </Box>
+              </Stack>
+              {index < comments.length - 1 && <Divider sx={{ mt: 2 }} />}
+            </Box>
+          ))}
+        </Stack>
 
-      {/* 댓글 작성 폼 */}
-      {auth && (
-        <Box component="form" onSubmit={handleAddComment}>
-          <TextField
-            fullWidth multiline rows={3} variant="outlined" placeholder="댓글을 남겨주세요."
-            value={newComment} onChange={(e) => setNewComment(e.target.value)} disabled={isSubmitting}
-          />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              type="submit" variant="contained" sx={{ mt: 1 }}
-              disabled={newComment.trim() === '' || isSubmitting}
-            >
-              {isSubmitting ? '등록 중...' : '댓글 등록'}
-            </Button>
+        {/* 댓글 작성 폼 */}
+        {auth && (
+          <Box component="form" onSubmit={handleAddComment}>
+            <TextField
+              fullWidth multiline rows={3} variant="outlined" placeholder="댓글을 남겨주세요."
+              value={newComment} onChange={(e) => setNewComment(e.target.value)} disabled={isSubmitting}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                type="submit" variant="contained" sx={{ mt: 1 }}
+                disabled={newComment.trim() === '' || isSubmitting}
+              >
+                {isSubmitting ? '등록 중...' : '댓글 등록'}
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      )}
-    </Box>
+        )}
+      </Box>
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
+    </>
   );
 });
 

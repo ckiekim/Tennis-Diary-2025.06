@@ -1,12 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Typography } from '@mui/material';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../../api/firebaseConfig';
+import AlertDialog from '../../components/AlertDialog';
 import { FaComment } from 'react-icons/fa';
 import DownloadIcon from '@mui/icons-material/Download';
 
 export default function LoginPage() {
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  
   const navigate = useNavigate();
 
   // Google 로그인 성공 시 호출될 콜백 함수
@@ -23,7 +27,8 @@ export default function LoginPage() {
       navigate('/');
     } catch (error) {
       console.error('Firebase credential 로그인 실패:', error);
-      alert('로그인에 실패했습니다.');
+      setAlertMessage('로그인에 실패했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -43,7 +48,8 @@ export default function LoginPage() {
 
   const handleKakaoLogin = () => {
     if (!window.Kakao) {
-      alert("카카오 SDK를 불러오지 못했습니다.");
+      setAlertMessage('카카오 SDK를 불러오지 못했습니다.');
+      setIsAlertOpen(true);
       return;
     }
 
@@ -86,6 +92,10 @@ export default function LoginPage() {
           사용설명서 다운로드
         </Button>
       </Box>
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </Container>
   );
 }

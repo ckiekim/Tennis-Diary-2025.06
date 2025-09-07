@@ -3,10 +3,13 @@ import {
   Box, Button, Checkbox, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, MenuItem, TextField, Typography
 } from '@mui/material';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
+import AlertDialog from '../../../components/AlertDialog';
 
 const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
   const [form, setForm] = useState(court);
   const [uploading, setUploading] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     setForm(court);
@@ -32,6 +35,8 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
       setForm((prev) => ({ ...prev, photo: photoUrl }));
     } catch (error) {
       console.error('파일 업로드/ 실패:', error);
+      setAlertMessage('사진을 변경하는 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     } finally {
       setUploading(false);
     }
@@ -39,7 +44,8 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
 
   const handleSubmit = () => {
     if (!form.name || !form.location || !form.surface) {
-      alert('이름, 위치, 서페이스는 필수 항목입니다.');
+      setAlertMessage('이름, 위치, 서페이스는 필수 항목입니다.');
+      setIsAlertOpen(true);
       return;
     }
     onUpdate(form);
@@ -49,57 +55,63 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
   if (!form) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>테니스 코트 수정</DialogTitle>
-      <DialogContent>
-        <TextField
-          fullWidth margin="dense" label="이름" name="name" value={form.name || ''}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth margin="dense" label="위치" name="location" value={form.location || ''}
-          onChange={handleChange}
-        />
-        <TextField
-          select fullWidth margin="dense" label="서페이스" name="surface" value={form.surface || ''}
-          onChange={handleChange}
-        >
-          <MenuItem value="하드">하드</MenuItem>
-          <MenuItem value="인조잔디">인조잔디</MenuItem>
-          <MenuItem value="클레이">클레이</MenuItem>
-        </TextField>
-        <FormControlLabel
-          control={<Checkbox checked={form.is_indoor || false} onChange={handleCheckboxChange} />}
-          label="실내 코트"
-        />
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <DialogTitle>테니스 코트 수정</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth margin="dense" label="이름" name="name" value={form.name || ''}
+            onChange={handleChange}
+          />
+          <TextField
+            fullWidth margin="dense" label="위치" name="location" value={form.location || ''}
+            onChange={handleChange}
+          />
+          <TextField
+            select fullWidth margin="dense" label="서페이스" name="surface" value={form.surface || ''}
+            onChange={handleChange}
+          >
+            <MenuItem value="하드">하드</MenuItem>
+            <MenuItem value="인조잔디">인조잔디</MenuItem>
+            <MenuItem value="클레이">클레이</MenuItem>
+          </TextField>
+          <FormControlLabel
+            control={<Checkbox checked={form.is_indoor || false} onChange={handleCheckboxChange} />}
+            label="실내 코트"
+          />
 
-        {/* 이미지 업로드 */}
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-          {uploading ? (
-            <>
-              <CircularProgress size={24} />
-              <Typography variant="body2" sx={{ ml: 1 }}>업로드 중...</Typography>
-            </>
-          ) : (
-            <Button component="label" variant="outlined" disabled={uploading}>
-              사진 선택
-              <input type="file" hidden onChange={handleFileChange} />
-            </Button>
-          )}
-        </Box>
-
-        {/* 이미지 미리보기 */}
-        {form.photo && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <img src={form.photo} alt="미리보기" style={{ width: '50%' }} />
+          {/* 이미지 업로드 */}
+          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+            {uploading ? (
+              <>
+                <CircularProgress size={24} />
+                <Typography variant="body2" sx={{ ml: 1 }}>업로드 중...</Typography>
+              </>
+            ) : (
+              <Button component="label" variant="outlined" disabled={uploading}>
+                사진 선택
+                <input type="file" hidden onChange={handleFileChange} />
+              </Button>
+            )}
           </Box>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>취소</Button>
-        <Button onClick={handleSubmit} variant="contained">저장</Button>
-      </DialogActions>
-    </Dialog>
+
+          {/* 이미지 미리보기 */}
+          {form.photo && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img src={form.photo} alt="미리보기" style={{ width: '50%' }} />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>취소</Button>
+          <Button onClick={handleSubmit} variant="contained">저장</Button>
+        </DialogActions>
+      </Dialog>
+      
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
+    </>
   );
 };
 

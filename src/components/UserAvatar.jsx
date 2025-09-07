@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../api/firebaseConfig';
 import { doc, writeBatch, serverTimestamp, increment, deleteDoc, updateDoc } from 'firebase/firestore';
-import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-  Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography,
+import { 
+  Avatar, Badge, Box, Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Typography,
  } from '@mui/material';
 import { logout } from '../api/authService';
 import useAuthState from '../hooks/useAuthState';
@@ -11,14 +11,16 @@ import useUserSettings from '../hooks/useUserSettings';
 import useInvitations from '../hooks/useInvitation';
 import useNotifications from '../hooks/useNotifications';
 import InvitationActionDialog from './InvitationActionDialog';
+import AlertDialog from './AlertDialog';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 export default function UserAvatar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedInvitation, setSelectedInvitation] = useState(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const { user, loading: authLoading } = useAuthState(); 
   const { settings, loading: settingsLoading } = useUserSettings();
@@ -45,7 +47,8 @@ export default function UserAvatar() {
     try {
       await logout();
     } catch (error) {
-      alert('로그아웃에 실패했습니다.');
+      setAlertMessage('로그아웃에 실패했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -85,7 +88,8 @@ export default function UserAvatar() {
       batch.update(clubRef, { memberCount: increment(1) });
 
       await batch.commit();
-      alert(`${selectedInvitation.clubName} 클럽에 가입되었습니다!`);
+      setAlertMessage(`${selectedInvitation.clubName} 클럽에 가입되었습니다!`);
+      setIsAlertOpen(true);
     } catch (error) {
       console.error("초대 수락 실패:", error);
     } finally {
@@ -98,7 +102,8 @@ export default function UserAvatar() {
     try {
       const memberRef = doc(db, 'clubs', selectedInvitation.clubId, 'members', user.uid);
       await deleteDoc(memberRef);
-      alert(`${selectedInvitation.clubName} 클럽 초대를 거절했습니다.`);
+      setAlertMessage(`${selectedInvitation.clubName} 클럽 초대를 거절했습니다.`);
+      setIsAlertOpen(true);
     } catch (error) {
       console.error("초대 거절 실패:", error);
     } finally {
@@ -134,15 +139,12 @@ export default function UserAvatar() {
     } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.closeApp) {
       window.webkit.messageHandlers.closeApp.postMessage('close');
     } else {
-      if (isMobile)
-        setIsExitDialogOpen(true);
-      else
-        alert('브라우저의 보안 정책에 따라 스크립트로 창을 닫을 수 없습니다. \n브라우저의 탭 닫기 버튼을 이용해 주세요.');
+      const msg = isMobile ? 
+        "브라우저의 보안 정책으로 인해 앱을 직접 닫을 수 없습니다. \n스마트폰의 '최근 실행 앱' 목록(작업 관리자)에서 직접 앱을 종료해 주세요." :
+        '브라우저의 보안 정책에 따라 스크립트로 창을 닫을 수 없습니다. \n브라우저의 탭 닫기 버튼을 이용해 주세요.' ; 
+      setAlertMessage(msg);
+      setIsAlertOpen(true);
     }
-  };
-
-  const handleExitDialogClose = () => {
-    setIsExitDialogOpen(false);
   };
 
   if (authLoading || settingsLoading) return null;
@@ -222,25 +224,6 @@ export default function UserAvatar() {
         </Menu>
       )}
 
-      <Dialog
-        open={isExitDialogOpen}
-        onClose={handleExitDialogClose}
-      >
-        <DialogTitle>앱 종료 안내</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            브라우저의 보안 정책으로 인해 앱을 직접 닫을 수 없습니다.
-            <br /><br />
-            스마트폰의 '최근 실행 앱' 목록(작업 관리자)에서 직접 앱을 종료해 주세요.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleExitDialogClose} autoFocus>
-            확인
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <InvitationActionDialog
         open={!!selectedInvitation}
         onClose={handleInvitationDialogClose}
@@ -248,6 +231,10 @@ export default function UserAvatar() {
         onDecline={handleDeclineInvitation}
         invitation={selectedInvitation}
       />
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </>
   );
 }

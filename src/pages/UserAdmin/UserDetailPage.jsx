@@ -6,14 +6,17 @@ import MainLayout from '../../components/MainLayout';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage.js';
-import EditUserDialog from './dialogs/EditUserDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog.jsx';
+import AlertDialog from '../../components/AlertDialog.jsx';
 
 const UserDetailPage = () => {
   const { uid } = useParams();
   const navigate = useNavigate();
-  const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isDeleteSuccess, setIsDeleteSuccess] = useState(false);
+
   const { docData: user, loading } = useSnapshotDocument('users', uid);
 
   if (loading) return (
@@ -27,11 +30,6 @@ const UserDetailPage = () => {
     </MainLayout>
   );
 
-  const handleEditClose = () => {
-    setEditOpen(false);
-    // setRefreshKey((prev) => prev + 1); // 수정 후 데이터 새로고침
-  };
-
   const handleDelete = async () => {
     try {
       if (user.photo) {
@@ -39,11 +37,21 @@ const UserDetailPage = () => {
       }
       await deleteDoc(doc(db, 'users', uid));
       setDeleteOpen(false);
-      alert('사용자가 삭제되었습니다.');
-      navigate('/tools/users'); // 사용자 목록 페이지로 이동
+      setIsDeleteSuccess(true);
+      setAlertMessage('사용자가 삭제되었습니다.');
+      setIsAlertOpen(true);
     } catch (err) {
       console.error('삭제 실패:', err);
-      alert('삭제 중 문제가 발생했습니다.');
+      setIsDeleteSuccess(false);
+      setAlertMessage('삭제 중 문제가 발생했습니다.');
+      setIsAlertOpen(true);
+    }
+  };
+
+  const handleAlertClose = () => {
+    setIsAlertOpen(false);
+    if (isDeleteSuccess) {
+      navigate('/tools/users'); // 성공 알림창을 닫은 후 페이지 이동
     }
   };
 
@@ -88,16 +96,19 @@ const UserDetailPage = () => {
       </Box>
 
       <Stack direction="row" spacing={2} justifyContent="center" my={3}>
-        <Button variant="outlined" color="primary" onClick={() => setEditOpen(true)}>수정</Button>
+        {/* <Button variant="outlined" color="primary" onClick={() => setEditOpen(true)}>수정</Button> */}
         <Button variant="outlined" color="error" onClick={() => setDeleteOpen(true)}>삭제</Button>
         <Button variant="contained" onClick={() => navigate(-1)}>목록으로</Button>
       </Stack>
       
-      <EditUserDialog open={editOpen} onClose={handleEditClose} user={user} />
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{user.nickname}" 사용자를 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
       </DeleteConfirmDialog>
+
+      <AlertDialog open={isAlertOpen} onClose={handleAlertClose}>
+        {alertMessage}
+      </AlertDialog>
     </MainLayout>
   );
 };

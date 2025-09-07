@@ -5,8 +5,9 @@ import useAuthState from '../../hooks/useAuthState';
 import useDocument from '../../hooks/useDocument';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
-import EditGoodsDialog from './dialogs/EditGoodsDialog'; // 수정 다이얼로그
+import EditGoodsDialog from './dialogs/EditGoodsDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import AlertDialog from '../../components/AlertDialog';
 import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage';
@@ -18,6 +19,9 @@ const GoodsDetailPage = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
   const { docData: item, loading } = useDocument('goods', id, refreshKey);
   const { user } = useAuthState();
 
@@ -48,13 +52,15 @@ const GoodsDetailPage = () => {
       setRefreshKey((prev) => prev + 1); // 데이터 새로고침
     } catch (error) {
       console.error("업데이트 실패:", error);
-      alert("용품 정보 업데이트에 실패했습니다.");
+      setAlertMessage('용품 정보 업데이트에 실패했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
   const handleDelete = async () => {
     if (!item || !user?.uid) {
-      alert('사용자 정보가 올바르지 않습니다.');
+      setAlertMessage('사용자 정보가 올바르지 않습니다.');
+      setIsAlertOpen(true);
       return;
     }
     try {
@@ -68,7 +74,8 @@ const GoodsDetailPage = () => {
       navigate('/tools/goods'); // 삭제 후 목록 페이지로 이동
     } catch (err) {
       console.error('삭제 실패:', err);
-      alert('삭제 중 문제가 발생했습니다.');
+      setAlertMessage('삭제 중 문제가 발생했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -123,21 +130,24 @@ const GoodsDetailPage = () => {
         <Button variant="contained" onClick={() => navigate(-1)}>뒤로</Button>
       </Stack>
 
-      {/* 확대 이미지 다이얼로그 */}
       <Dialog open={imageOpen} onClose={handleCloseImage} fullWidth maxWidth="md">
         <DialogContent sx={{ p: 0 }}>
           <img src={item.photo} alt="확대 이미지" style={{ width: '100%', height: 'auto' }} />
         </DialogContent>
       </Dialog>
 
-      {/* 수정 다이얼로그 (EditGoodsDialog가 있다고 가정) */}
-      {editOpen && <EditGoodsDialog open={editOpen} onClose={handleEditClose} item={item} onSave={handleUpdate} uid={user.uid} />}
+      {editOpen && <EditGoodsDialog 
+        open={editOpen} onClose={handleEditClose} item={item} onSave={handleUpdate} uid={user.uid} 
+      />}
 
-      {/* 삭제 확인 다이얼로그 */}
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{item?.name}" 용품 정보를 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
       </DeleteConfirmDialog>
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </MainLayout>
   );
 };
