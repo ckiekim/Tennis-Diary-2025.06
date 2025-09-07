@@ -15,6 +15,7 @@ import MainLayout from '../../components/MainLayout';
 import Posts from './Posts';
 import EditClubDialog from './dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import AlertDialog from '../../components/AlertDialog';
 import InviteMemberDialog from './dialogs/InviteMemberDialog';
 import AddPostDialog from './dialogs/AddPostDialog';
 import { collection, doc, increment, setDoc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
@@ -32,6 +33,8 @@ const ClubDetailPage = () => {
   const [kickTarget, setKickTarget] = useState(null); // 강퇴
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const { user, loading: authLoading } = useAuthState();
   const { docData: currentUserProfile, loading: profileLoading } = useSnapshotDocument('users', user?.uid);
@@ -82,7 +85,9 @@ const ClubDetailPage = () => {
 
   const handleDelete = async () => {
     if (!isOwner) {
-      alert('클럽장만 삭제할 수 있습니다.');
+      // alert('클럽장만 삭제할 수 있습니다.');
+      setAlertMessage('클럽장만 삭제할 수 있습니다.');
+      setIsAlertOpen(true);
       return;
     }
     try {
@@ -93,7 +98,9 @@ const ClubDetailPage = () => {
       navigate('/clubs'); // 나의 클럽 목록으로 이동
     } catch (err) {
       console.error('클럽 삭제 실패:', err);
-      alert(err.message || '클럽 삭제 중 문제가 발생했습니다.');
+      // alert(err.message || '클럽 삭제 중 문제가 발생했습니다.');
+      setAlertMessage(err.message || '클럽 삭제 중 문제가 발생했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -101,11 +108,15 @@ const ClubDetailPage = () => {
   try {
     const clubRef = doc(db, 'clubs', clubId);
     await updateDoc(clubRef, updatedData);    // ✅ 이 코드가 실행되면 서버의 트리거 함수가 자동으로 동작
-    alert('클럽 정보가 성공적으로 수정되었습니다.');
+    // alert('클럽 정보가 성공적으로 수정되었습니다.');
+    setAlertMessage('클럽 정보가 성공적으로 수정되었습니다.');
+    setIsAlertOpen(true);
     handleEditClose(); // 성공 후 다이얼로그 닫기 및 데이터 새로고침
   } catch (error) {
     console.error("클럽 정보 수정 실패:", error);
-    alert("클럽 정보 수정 중 오류가 발생했습니다.");
+    // alert("클럽 정보 수정 중 오류가 발생했습니다.");
+    setAlertMessage('클럽 정보 수정 중 오류가 발생했습니다.');
+    setIsAlertOpen(true);
   }
 };
 
@@ -119,17 +130,23 @@ const ClubDetailPage = () => {
         clubId: clubId, clubName: club.name,  clubProfileUrl: club.profileUrl,
         region: club.region, ownerName: club.ownerName,
       });
-      alert(`${invitedUser.nickname}님을 초대했습니다.`);
+      // alert(`${invitedUser.nickname}님을 초대했습니다.`);
+      setAlertMessage(`${invitedUser.nickname}님을 초대했습니다.`);
+      setIsAlertOpen(true);
       setInviteOpen(false);
     } catch (error) {
-      console.error("초대 실패:", error);
-      alert("초대 중 오류가 발생했습니다.");
+      console.error('초대 실패:', error);
+      // alert('초대 중 오류가 발생했습니다.');
+      setAlertMessage('초대 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
   const handleLeaveClub = async () => {
     if (!user || isOwner) {
-      alert('클럽장은 클럽을 탈퇴할 수 없습니다. 클럽 삭제 기능을 이용해 주세요.');
+      // alert('클럽장은 클럽을 탈퇴할 수 없습니다. 클럽 삭제 기능을 이용해 주세요.');
+      setAlertMessage('클럽장은 클럽을 탈퇴할 수 없습니다. 클럽 삭제 기능을 이용해 주세요.');
+      setIsAlertOpen(true);
       return;
     }
     try {
@@ -148,11 +165,15 @@ const ClubDetailPage = () => {
       batch.update(clubRef, { memberCount: increment(-1) });
 
       await batch.commit();
-      alert('클럽에서 탈퇴했습니다.');
+      // alert('클럽에서 탈퇴했습니다.');
+      setAlertMessage('클럽에서 탈퇴했습니다.');
+      setIsAlertOpen(true);
       navigate('/clubs'); // 나의 클럽 목록으로 이동
     } catch (err) {
       console.error('클럽 탈퇴 실패:', err);
-      alert('클럽 탈퇴 중 오류가 발생했습니다.');
+      // alert('클럽 탈퇴 중 오류가 발생했습니다.');
+      setAlertMessage('클럽 탈퇴 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     } finally {
       setLeaveOpen(false);
     }
@@ -160,11 +181,15 @@ const ClubDetailPage = () => {
 
   const handleKickMember = async () => {
     if (!isOwner || !kickTarget) {
-      alert('클럽장만 멤버를 강퇴할 수 있습니다.');
+      // alert('클럽장만 멤버를 강퇴할 수 있습니다.');
+      setAlertMessage('클럽장만 멤버를 강퇴할 수 있습니다.');
+      setIsAlertOpen(true);
       return;
     }
     if (kickTarget.id === club.owner) {
-      alert('클럽장을 강퇴할 수 없습니다.');
+      // alert('클럽장을 강퇴할 수 없습니다.');
+      setAlertMessage('클럽장을 강퇴할 수 없습니다.');
+      setIsAlertOpen(true);
       return;
     }
     try {
@@ -192,10 +217,14 @@ const ClubDetailPage = () => {
       });
 
       await batch.commit();
-      alert(`${kickTarget.username}님을 클럽에서 제외했습니다.`);
+      // alert(`${kickTarget.username}님을 클럽에서 제외했습니다.`);
+      setAlertMessage(`${kickTarget.username}님을 클럽에서 제외했습니다.`);
+      setIsAlertOpen(true);
     } catch (err) {
       console.error('멤버 강퇴 실패:', err);
-      alert('멤버를 강퇴하는 중 오류가 발생했습니다.');
+      // alert('멤버를 강퇴하는 중 오류가 발생했습니다.');
+      setAlertMessage('멤버를 강퇴하는 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     } finally {
       setKickTarget(null); // 강퇴 대상 초기화 및 다이얼로그 닫기
     }
@@ -309,7 +338,7 @@ const ClubDetailPage = () => {
         {isMember && !isOwner && (
           <Button variant="outlined" color="error" onClick={() => setLeaveOpen(true)}>탈퇴</Button>
         )}
-        <Button variant="contained" onClick={() => navigate(-1)}>뒤로</Button>
+        <Button variant="contained" onClick={() => navigate('/clubs')}>뒤로</Button>
       </Stack>
 
       {isOwner && (
@@ -345,6 +374,10 @@ const ClubDetailPage = () => {
       <DeleteConfirmDialog open={!!kickTarget} onClose={() => setKickTarget(null)} onConfirm={handleKickMember} title="강퇴">
         "{kickTarget?.username}"님을 정말로 강퇴시키겠습니까?
       </DeleteConfirmDialog>
+
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </MainLayout>
   );
 };

@@ -15,6 +15,7 @@ import usePostLike from '../../hooks/usePostLike';
 import MainLayout from '../../components/MainLayout';
 import EditPostDialog from './dialogs/EditPostDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import AlertDialog from '../../components/AlertDialog';
 import Comments from './Comments';
 
 const PostDetailPage = () => {
@@ -23,6 +24,8 @@ const PostDetailPage = () => {
 
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const { user } = useAuthState();
   const { docData: post, loading: postLoading } = useSnapshotDocument(`clubs/${clubId}/posts`, postId);
@@ -63,7 +66,9 @@ const PostDetailPage = () => {
 
     } catch (error) {
       console.error('Error deleting post and comments: ', error);
-      alert('게시글과 댓글 삭제 중 오류가 발생했습니다.');
+      // alert('게시글과 댓글 삭제 중 오류가 발생했습니다.');
+      setAlertMessage('게시글과 댓글 삭제 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
     }
   };
 
@@ -179,6 +184,9 @@ const PostDetailPage = () => {
         정말로 이 게시글을 삭제하시겠습니까? <br />
         삭제된 데이터는 복구할 수 없습니다.
       </DeleteConfirmDialog>
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
+        {alertMessage}
+      </AlertDialog>
     </MainLayout>
   );
 };

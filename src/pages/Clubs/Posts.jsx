@@ -26,11 +26,11 @@ const Posts = memo(({clubId, posts, loading, loadingMore, hasMore, loadMore }) =
             <div key={post.id}>
               <ListItem
                 alignItems="flex-start" // 텍스트가 여러 줄일 때 정렬
-                sx={{ py: 1, px: 1 }} // 패딩 조절
+                sx={{ py: 0, px: 1 }} // 패딩 조절
               >
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
                       {/* 제목과 댓글 수 */}
                       <MuiLink
                         component={RouterLink}
@@ -89,7 +89,7 @@ const Posts = memo(({clubId, posts, loading, loadingMore, hasMore, loadMore }) =
         </Box>
       )}
       {hasMore && !loadingMore && (
-        <Button fullWidth onClick={loadMore} sx={{ mt: 1 }}>
+        <Button fullWidth onClick={loadMore} sx={{ mt: 0.2 }}>
           더보기
         </Button>
       )}
