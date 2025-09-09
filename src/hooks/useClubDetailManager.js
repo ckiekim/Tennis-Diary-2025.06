@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc, writeBatch, setDoc, serverTimestamp, increment, collection, addDoc, deleteDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../api/firebaseConfig';
+import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
 
-// clubId와 club, user 정보를 인자로 받습니다.
-export const useClubDetailManager = (clubId, club, user) => {
+export const useClubDetailManager = (clubId, user) => {
   const navigate = useNavigate();
+  const { docData: club } = useSnapshotDocument('clubs', clubId);
 
   // 1. 모든 상태(State) 관리
   const [editOpen, setEditOpen] = useState(false);
@@ -24,7 +25,20 @@ export const useClubDetailManager = (clubId, club, user) => {
   const [editScheduleOpen, setEditScheduleOpen] = useState(false);
   const [deleteScheduleOpen, setDeleteScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [scheduleForm, setScheduleForm] = useState({ type: '정모', place: '' });
+  const [scheduleForm, setScheduleForm] = useState({ 
+    type: '정모', place: '', club: '',
+    date: dayjs().format('YYYY-MM-DD') // 오늘 날짜를 기본값으로 설정 
+  });
+  console.log('[useClubDetailManager] 훅 렌더링. 현재 form.date:', scheduleForm.date);
+
+  useEffect(() => {
+    if (club) {
+      setScheduleForm(prevForm => ({
+        ...prevForm,
+        club: club.name
+      }));
+    }
+  }, [club]);
 
   // 2. 모든 핸들러 함수
   const handleAlert = (message) => {
@@ -120,7 +134,6 @@ export const useClubDetailManager = (clubId, club, user) => {
   };
 
   const handleAddSchedule = async () => {
-    // ... (기존 handleAddSchedule 로직과 동일, handleAlert 사용)
     if (!scheduleForm.time || !scheduleForm.place) return handleAlert('시간과 장소를 입력해주세요.');
     const dataToSubmit = {
       ...scheduleForm,
@@ -132,7 +145,7 @@ export const useClubDetailManager = (clubId, club, user) => {
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddScheduleOpen(false);
-    setScheduleForm({ type: '정모', place: '' });
+    setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleUpdateSchedule = async () => {
@@ -201,7 +214,7 @@ export const useClubDetailManager = (clubId, club, user) => {
     await batch.commit();
 
     setAddScheduleOpen(false);
-    setScheduleForm({ type: '정모', place: '' });
+    setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleDeleteSchedule = async () => {

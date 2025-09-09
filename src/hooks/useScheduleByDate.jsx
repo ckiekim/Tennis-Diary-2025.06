@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
-import { auth, db } from '../api/firebaseConfig';
-// import { collection, getDocs, query, where } from 'firebase/firestore';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { db } from '../api/firebaseConfig';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import useAuthState from './useAuthState';
 import useMyClubs from './useMyClubs';
-import dayjs from 'dayjs';
 
 const useScheduleByDate = (selectedDate, refreshKey = 0) => {
   const [schedules, setSchedules] = useState([]);
@@ -13,9 +11,8 @@ const useScheduleByDate = (selectedDate, refreshKey = 0) => {
   const { clubs: myClubs, loading: clubsLoading } = useMyClubs(user?.uid);
 
   useEffect(() => {
-    // const user = auth.currentUser;
     if (!user || clubsLoading) {
-      // setSchedules([]);
+      setSchedules([]);
       return;
     }
 
@@ -25,19 +22,6 @@ const useScheduleByDate = (selectedDate, refreshKey = 0) => {
       where('date', '==', selectedDate.format('YYYY-MM-DD')),
       where('uid', '==', user.uid)
     );
-    // const q = query(
-    //   collection(db, 'events'),
-    //   where('date', '==', selectedDate.format('YYYY-MM-DD')),
-    //   where('club.id', 'in', myClubIds), // 내가 속한 클럽의 모든 일정
-    //   orderBy('createdAt', 'desc')
-    // );
-    // const clubSchedulesQuery = myClubIds.length > 0 
-    //   ? query(
-    //       collection(db, 'events'),
-    //       where('date', '==', selectedDate.format('YYYY-MM-DD')),
-    //       where('club.id', 'in', myClubIds)
-    //     )
-    //   : null;
 
     const unsubscribeMySchedules = onSnapshot(mySchedulesQuery, mySnapshot => {
       const mySchedules = mySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -73,26 +57,6 @@ const useScheduleByDate = (selectedDate, refreshKey = 0) => {
     // 컴포넌트 언마운트 시 개인 일정 리스너 구독 취소
     return () => unsubscribeMySchedules();
 
-    // const fetchSchedules = async () => {
-    //   if (!selectedDate) return;
-
-    //   const formattedDate = dayjs(selectedDate).format('YYYY-MM-DD');
-    //   const q = query(
-    //     collection(db, 'events'),
-    //     where('uid', '==', user.uid),
-    //     where('date', '==', formattedDate)
-    //   );
-    //   const querySnapshot = await getDocs(q);
-
-    //   const result = [];
-    //   querySnapshot.forEach((doc) => {
-    //     result.push({ id: doc.id, ...doc.data() });
-    //   });
-
-    //   setSchedules(result);
-    // };
-
-    // fetchSchedules();
   }, [selectedDate, refreshKey, user, myClubs, clubsLoading]);
 
   return schedules;

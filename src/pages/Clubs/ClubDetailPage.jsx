@@ -1,25 +1,21 @@
+import { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 
-// 1. 데이터 페칭 훅
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
 import usePaginatedSubcollection from '../../hooks/usePaginatedSubcollection';
 import useClubSchedules from '../../hooks/useClubSchedules';
 import useCourtList from '../../hooks/useCourtList';
-
-// 2. 로직/상태 관리 훅
 import { useClubDetailManager } from '../../hooks/useClubDetailManager';
 
-// 3. 분리된 UI 컴포넌트
 import MainLayout from '../../components/MainLayout';
 import ClubHeader from './components/ClubHeader';
 import ClubMemberList from './components/ClubMemberList';
 import ClubScheduleSection from './components/ClubScheduleSection';
 import ClubPostSection from './components/ClubPostSection';
-// ... 다른 분리된 컴포넌트들 임포트
 import ClubDialogs from './components/ClubDialogs'; 
 import AlertDialog from '../../components/AlertDialog';
 
@@ -38,9 +34,8 @@ const ClubDetailPage = () => {
   const { schedules: clubSchedules, loading: schedulesLoading } = useClubSchedules(clubId);
   const { docData: currentUserProfile } = useSnapshotDocument('users', user?.uid);
   const courts = useCourtList();
-
-  // --- 로직 및 상태 관리 ---
-  const manager = useClubDetailManager(clubId, club, user);
+  
+  const manager = useClubDetailManager(clubId, user);
 
   // --- 로딩 및 권한 관리 ---
   const isLoading = authLoading || clubLoading || membersLoading || postsLoading || schedulesLoading;
@@ -60,7 +55,7 @@ const ClubDetailPage = () => {
       </MainLayout>
     );
   }
-
+  
   const isOwner = user?.uid === club.owner;
   const isMember = user ? members.some(member => member.id === user.uid) : false;
 

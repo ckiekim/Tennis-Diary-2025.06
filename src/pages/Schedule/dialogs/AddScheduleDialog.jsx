@@ -6,6 +6,7 @@ import {
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
+import dayjs from 'dayjs';
 
 const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
@@ -30,17 +31,14 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
   });
 
   useEffect(() => {
-    // 다이얼로그가 열리고, selectedDate 값이 있을 때
     if (open && selectedDate) {
+      setForm(prevForm => ({ ...prevForm, date: selectedDate.format('YYYY-MM-DD') }));
       const dayOfWeekIndex = selectedDate.day();  // 일요일=0, 월요일=1 ... 토요일=6을 반환
       const selectedDay = weekDaysKorMap[dayOfWeekIndex];
       // 반복 옵션의 첫 번째 요일(day1)을 선택된 요일로 업데이트
-      setRecurringOptions(prevOptions => ({
-        ...prevOptions,
-        day1: selectedDay,
-      }));
+      setRecurringOptions(prevOptions => ({ ...prevOptions, day1: selectedDay, }));
     }
-  }, [open, selectedDate]);
+  }, [open, selectedDate, setForm]);
 
   useEffect(() => {
     if (isJeongmo && isRecurring) {
@@ -163,7 +161,14 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
           ) : isTournament ? (
             <Stack spacing={2}>
               <TextField label="대회명" fullWidth size="small" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              {/* <TextField label="일자" type="date" fullWidth value={form.date || ''} onChange={(e) => setForm({ ...form, date: e.target.value })} InputLabelProps={{ shrink: true }} /> */}
+              <TextField 
+                label="날짜" type="date" fullWidth size="small" value={form.date || ''} 
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setForm(prevForm => ({ ...prevForm, date: newDate }));  // setForm이 항상 최신 상태(prevForm)를 참조하도록
+                }}
+                InputLabelProps={{ shrink: true }} 
+              />
               <Autocomplete
                 options={courts.map(c => c.name)}
                 value={form.place || ''}
@@ -203,7 +208,14 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             </Stack>
           ) : (
             <>
-              
+              <TextField 
+                label="날짜" type="date" fullWidth size="small" value={form.date || ''} 
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setForm(prevForm => ({ ...prevForm, date: newDate }));  // setForm이 항상 최신 상태(prevForm)를 참조하도록
+                }}
+                InputLabelProps={{ shrink: true }} 
+              />
               {(isGame || ((isLesson || isJeongmo) && !isRecurring)) && (
                 <TextField label="시간 (예: 13:00~15:00)" fullWidth size="small" value={form.time} 
                   onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
