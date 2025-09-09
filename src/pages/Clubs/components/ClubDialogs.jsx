@@ -1,0 +1,84 @@
+import EditClubDialog from '../dialogs/EditClubDialog';
+import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
+import InviteMemberDialog from '../dialogs/InviteMemberDialog';
+import AddPostDialog from '../dialogs/AddPostDialog';
+import AddScheduleDialog from '../../Schedule/dialogs/AddScheduleDialog';
+import EditScheduleDialog from '../../Schedule/dialogs/EditScheduleDialog';
+import dayjs from 'dayjs';
+
+const ClubDialogs = ({ manager, club, clubId, isMember, isOwner, currentUserProfile, onPostAdded, courts }) => {
+  return (
+    <>
+      {isOwner && (
+        <>
+          <EditClubDialog 
+            open={manager.editOpen}  onClose={() => manager.setEditOpen(false)}
+            onUpdate={manager.handleUpdateClub} clubData={club} clubId={clubId}
+          />
+          <DeleteConfirmDialog 
+            open={manager.deleteOpen} onClose={() => manager.setDeleteOpen(false)}
+            onConfirm={manager.handleDeleteClub}
+          >
+            "{club.name}" 클럽을 정말 삭제하시겠습니까? <br />
+            모든 관련 데이터가 삭제되며 이 작업은 되돌릴 수 없습니다.
+          </DeleteConfirmDialog>
+          <InviteMemberDialog
+            open={manager.inviteOpen} onClose={() => manager.setInviteOpen(false)}
+            onInvite={manager.handleInviteMember}
+          />
+        </>
+      )}
+      <AddPostDialog 
+        open={manager.addPostOpen} onClose={() => manager.setAddPostOpen(false)}
+        clubId={clubId} onSuccess={onPostAdded} currentUserProfile={currentUserProfile}
+      />
+      <DeleteConfirmDialog open={manager.leaveOpen} onClose={() => manager.setLeaveOpen(false)} onConfirm={manager.handleLeaveClub} title="탈퇴">
+        "{club.name}" 클럽에서 정말 탈퇴하시겠습니까?
+      </DeleteConfirmDialog>
+      <DeleteConfirmDialog open={!!manager.kickTarget} onClose={() => manager.setKickTarget(null)} onConfirm={manager.handleKickMember} title="강퇴">
+        "{manager.kickTarget?.username}"님을 정말로 강퇴시키겠습니까?
+      </DeleteConfirmDialog>
+      
+      {isMember && ( // 멤버만 일정 추가 가능
+        <AddScheduleDialog
+          courts={courts}
+          open={manager.addScheduleOpen}
+          // 클럽페이지에서는 '정모'로 타입 고정, 날짜 선택 가능하도록 설정
+          form={{ 
+            ...manager.scheduleForm, 
+            type: '정모', 
+            // club: { id: clubId, name: club.name } 
+            club: club.name
+          }}
+          setOpen={manager.setAddScheduleOpen}
+          setForm={manager.setScheduleForm}
+          selectedDate={dayjs()} // 오늘을 기본값으로 전달
+          onAddSchedule={manager.handleAddSchedule}
+          onAddRecurringSchedule={manager.handleAddRecurringSchedule}
+        />
+      )}
+
+      <EditScheduleDialog
+        courts={courts}
+        open={manager.editScheduleOpen}
+        selectedSchedule={manager.selectedSchedule}
+        setOpen={manager.setEditScheduleOpen}
+        setSelectedSchedule={manager.setSelectedSchedule}
+        onUpdate={manager.handleUpdateSchedule}
+      />
+
+      <DeleteConfirmDialog
+        open={manager.deleteScheduleOpen}
+        onClose={() => manager.setDeleteScheduleOpen(false)}
+        onConfirm={manager.handleDeleteSchedule}
+        title="일정 삭제"
+      >
+        {manager.selectedSchedule && 
+          `"${dayjs(manager.selectedSchedule.date).format('YYYY-MM-DD')} ${manager.selectedSchedule.type}" 일정을 정말 삭제하시겠습니까?`
+        }
+      </DeleteConfirmDialog>
+    </>
+  );
+};
+
+export default ClubDialogs;

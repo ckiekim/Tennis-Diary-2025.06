@@ -37,7 +37,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🧑‍🤝‍🧑</Box>
-            <Typography variant="body2">{schedule.club}</Typography>
+            <Typography variant="body2">{schedule.club.name}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>⏰</Box>

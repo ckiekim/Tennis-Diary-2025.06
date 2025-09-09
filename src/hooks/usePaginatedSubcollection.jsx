@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { db } from '../api/firebaseConfig';
 import { collection, query, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
 import { PAGE_SIZE } from '../constants/admin';
 
-const usePaginatedSubcollection = (collectionPath, options) => {
+const usePaginatedSubcollection = (collectionPath, options = {}) => {
   const { orderByField = 'createdAt', direction = 'desc', limitCount = PAGE_SIZE } = options;
 
   const [documents, setDocuments] = useState([]);
@@ -13,7 +13,6 @@ const usePaginatedSubcollection = (collectionPath, options) => {
   const [lastVisible, setLastVisible] = useState(null); // 마지막으로 불러온 문서 (페이지 기준점)
   const [error, setError] = useState(null);
 
-  // 첫 페이지 데이터를 불러오는 함수
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -70,11 +69,60 @@ const usePaginatedSubcollection = (collectionPath, options) => {
   }, [lastVisible, hasMore, loadingMore, collectionPath, orderByField, direction, limitCount]);
 
   // collectionPath가 변경되면 첫 데이터를 다시 불러오도록 함
-  useState(() => {
-    if (collectionPath) {
-      refresh();
+  // useState(() => {
+  //   if (collectionPath) {
+  //     refresh();
+  //   }
+  // }, [collectionPath, refresh]);
+  useEffect(() => {
+    // collectionPath가 유효하지 않으면 아무것도 하지 않음
+    if (!collectionPath) {
+      setLoading(false);
+      return;
     }
-  }, [collectionPath, refresh]);
+    
+    // cleanup 함수를 위한 플래그
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const first = query(
+          collection(db, collectionPath),
+          orderBy(orderByField, direction),
+          limit(limitCount)
+        );
+        const docSnapshots = await getDocs(first);
+
+        // 비동기 작업 완료 후, 컴포넌트가 마운트된 상태일 때만 상태 업데이트 실행
+        if (isMounted) {
+          const docs = docSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const lastDoc = docSnapshots.docs[docSnapshots.docs.length - 1];
+
+          setDocuments(docs);
+          setLastVisible(lastDoc);
+          setHasMore(docs.length === limitCount);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error("Error fetching initial data:", err);
+          setError(err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    // cleanup 함수: 컴포넌트가 언마운트되면 isMounted를 false로 설정
+    return () => {
+      isMounted = false;
+    };
+  }, [collectionPath, orderByField, direction, limitCount]); // 의존성 배열 간소화
 
   return { documents, loading, loadingMore, hasMore, loadMore, error, refresh };
 };
