@@ -1,0 +1,3 @@
+# migration/requirements.txt
+firebase-admin
+google-cloud-firestore

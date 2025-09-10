@@ -30,3 +30,4 @@ yarn-error.log*
 .firebase/hosting.*
 firebase-debug.log
 storage.rules
+serviceAccountKey.json
