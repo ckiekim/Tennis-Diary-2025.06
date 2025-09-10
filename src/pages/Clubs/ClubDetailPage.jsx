@@ -98,6 +98,7 @@ const ClubDetailPage = () => {
           }}
           onDeleteSchedule={(schedule) => {
             manager.setSelectedSchedule(schedule);
+            manager.setDeleteAllRecurring(false);
             manager.setDeleteScheduleOpen(true);
           }}
         />

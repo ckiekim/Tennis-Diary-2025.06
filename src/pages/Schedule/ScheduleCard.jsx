@@ -20,9 +20,11 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
         <IconButton size="small" onClick={() => onEdit(schedule)}>
           <EditIcon fontSize="small" />
         </IconButton>
-        <IconButton size="small" onClick={() => onDelete(schedule)}>
-          <DeleteIcon fontSize="small" />
-        </IconButton>
+        { onDelete && (
+          <IconButton size="small" onClick={() => onDelete(schedule)}>
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        ) }
         { !isLesson && (
           <IconButton size="small" onClick={() => onResult(schedule)}>
             <NotesIcon fontSize="small" />

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, updateDoc, writeBatch, setDoc, serverTimestamp, increment, collection, addDoc, deleteDoc } from 'firebase/firestore';
+import { 
+  addDoc, collection, deleteDoc, doc, getDocs, increment, query, serverTimestamp, setDoc, updateDoc, where, writeBatch 
+} from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../api/firebaseConfig';
 import useSnapshotDocument from './useSnapshotDocument';
@@ -25,6 +27,7 @@ export const useClubDetailManager = (clubId, user) => {
   const [editScheduleOpen, setEditScheduleOpen] = useState(false);
   const [deleteScheduleOpen, setDeleteScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
 
   // 2. 모든 핸들러 함수
   const handleAlert = (message) => {
@@ -119,7 +122,6 @@ export const useClubDetailManager = (clubId, user) => {
     }
   };
 
-  // const handleAddSchedule = async () => {
   const handleAddSchedule = async (scheduleForm) => {
     if (!scheduleForm.time || !scheduleForm.place) return handleAlert('시간과 장소를 입력해주세요.');
     const dataToSubmit = {
@@ -132,7 +134,6 @@ export const useClubDetailManager = (clubId, user) => {
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddScheduleOpen(false);
-    // setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleUpdateSchedule = async () => {
@@ -146,7 +147,6 @@ export const useClubDetailManager = (clubId, user) => {
     setEditScheduleOpen(false);
   };
 
-  // const handleAddRecurringSchedule = async (recurringOptions) => {
   const handleAddRecurringSchedule = async (recurringOptions, scheduleForm) => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
     
@@ -202,15 +202,52 @@ export const useClubDetailManager = (clubId, user) => {
     await batch.commit();
 
     setAddScheduleOpen(false);
-    // setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleDeleteSchedule = async () => {
-    // ... (기존 handleDeleteScheduleConfirm 로직과 동일)
     if (!selectedSchedule?.id || !user?.uid) return;
-    await deleteDoc(doc(db, 'events', selectedSchedule.id));
-    await updateDoc(doc(db, 'users', user.uid), { mileage: increment(-(5 + (selectedSchedule.result ? 5 : 0))) });
-    setDeleteScheduleOpen(false);
+
+    try {
+      if (deleteAllRecurring && selectedSchedule.recurringId) {
+        const q = query(collection(db, 'events'), where('recurringId', '==', selectedSchedule.recurringId));
+        const querySnapshot = await getDocs(q);
+        
+        const batch = writeBatch(db);
+        let totalPointsToDeduct = 0;
+
+        // 찾은 모든 문서를 batch에 추가하고, 차감할 마일리지를 계산합니다.
+        querySnapshot.forEach((document) => {
+          const eventData = document.data();
+          batch.delete(document.ref);
+          totalPointsToDeduct += 5; // 생성 포인트
+          if (eventData.result) {
+            totalPointsToDeduct += 5; // 결과 등록 포인트
+          }
+        });
+
+        // 계산된 총 마일리지를 차감합니다.
+        if (totalPointsToDeduct > 0) {
+          const userRef = doc(db, 'users', user.uid);
+          batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
+        }
+
+        await batch.commit();
+        handleAlert('반복 일정이 모두 삭제되었습니다.');
+
+      } else {
+        // 단일 일정 삭제 (기존 로직)
+        await deleteDoc(doc(db, 'events', selectedSchedule.id));
+        const pointsToDeduct = 5 + (selectedSchedule.result ? 5 : 0);
+        await updateDoc(doc(db, 'users', user.uid), { mileage: increment(-pointsToDeduct) });
+        handleAlert('일정이 삭제되었습니다.');
+      }
+    } catch (error) {
+      console.error("일정 삭제 실패:", error);
+      handleAlert('일정 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setDeleteScheduleOpen(false); // 다이얼로그 닫기
+      setDeleteAllRecurring(false); // 체크박스 상태 초기화
+    }
   };
 
   // 3. UI에서 사용할 값과 함수들을 객체로 반환
@@ -218,13 +255,13 @@ export const useClubDetailManager = (clubId, user) => {
     // States
     editOpen, deleteOpen, inviteOpen, addPostOpen, leaveOpen, kickTarget,
     anchorEl, selectedMember, isAlertOpen, alertMessage, addScheduleOpen,
-    editScheduleOpen, deleteScheduleOpen, selectedSchedule, // scheduleForm,
+    editScheduleOpen, deleteScheduleOpen, selectedSchedule, 
     
     // State Setters & Handlers
     setEditOpen, setDeleteOpen, setInviteOpen, setAddPostOpen, setLeaveOpen,
     setKickTarget, setAnchorEl, setSelectedMember, setIsAlertOpen,
     setAddScheduleOpen, setEditScheduleOpen, setDeleteScheduleOpen,
-    setSelectedSchedule, // setScheduleForm,
+    setSelectedSchedule, setDeleteAllRecurring,
 
     // Action Handlers
     handleUpdateClub, handleDeleteClub, 

@@ -1,3 +1,4 @@
+import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import EditClubDialog from '../dialogs/EditClubDialog';
 import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
 import InviteMemberDialog from '../dialogs/InviteMemberDialog';
@@ -69,11 +70,23 @@ const ClubDialogs = ({
         open={manager.deleteScheduleOpen}
         onClose={() => manager.setDeleteScheduleOpen(false)}
         onConfirm={manager.handleDeleteSchedule}
-        title="일정 삭제"
       >
         {manager.selectedSchedule && 
           `"${dayjs(manager.selectedSchedule.date).format('YYYY-MM-DD')} ${manager.selectedSchedule.type}" 일정을 정말 삭제하시겠습니까?`
         }
+        {manager.selectedSchedule?.isRecurring && (
+          <Box sx={{ mt: 2, textAlign: 'left' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={manager.deleteAllRecurring}
+                  onChange={(e) => manager.setDeleteAllRecurring(e.target.checked)}
+                />
+              }
+              label="이 반복 일정 전체를 삭제합니다."
+            />
+          </Box>
+        )}
       </DeleteConfirmDialog>
     </>
   );

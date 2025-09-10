@@ -284,8 +284,12 @@ const ScheduleList = () => {
           </Typography>
         ) : (
           <Box mt={1}>
-            {schedules.map(schedule => 
-              <ScheduleCard key={schedule.id} schedule={schedule} onEdit={handleEdit} onDelete={handleDelete} onResult={handleResultDialog} />)}
+            {schedules.map(schedule => ( 
+              <ScheduleCard 
+                key={schedule.id} schedule={schedule} onEdit={handleEdit} onResult={handleResultDialog} 
+                onDelete={user?.uid === schedule.uid ? handleDelete : undefined} 
+              />
+            ))}
           </Box>
         )}
       </Box>
