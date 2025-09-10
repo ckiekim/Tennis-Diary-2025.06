@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { db } from '../api/firebaseConfig';
+import { db } from '../../api/firebaseConfig';
 import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore';
-import { PAGE_SIZE } from '../constants/admin'; 
+import { PAGE_SIZE } from '../../constants/admin'; 
 
 export default function usePaginatedGames(uid, refreshKey = 0) {
   const [list, setList] = useState([]);

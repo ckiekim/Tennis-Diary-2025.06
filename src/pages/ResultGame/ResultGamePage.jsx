@@ -1,13 +1,13 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { Box, CircularProgress, Stack, Typography } from '@mui/material';
-import usePaginatedGames from '../../hooks/usePaginatedGames';
+import usePaginatedEventsWithResults from '../../hooks/usePaginatedEventsWithResults';
 import useAuthState from '../../hooks/useAuthState';
 import MainLayout from '../../components/MainLayout';
 import GameCard from './GameCard';
 
 const ResultGamePage = () => {
   const { user } = useAuthState();
-  const { results, loading, hasMore, fetchMore } = usePaginatedGames(user?.uid);
+  const { results, loading, hasMore, fetchMore } = usePaginatedEventsWithResults(user?.uid);
 
   const observerRef = useRef();
 

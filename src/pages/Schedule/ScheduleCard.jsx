@@ -85,12 +85,6 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           <Typography variant="body2">{schedule.source}</Typography>
         </Box>
       )}
-      {schedule.result && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🎾</Box>
-          <Typography variant="body2">{schedule.result}</Typography>
-        </Box>
-      )}
       {schedule.price && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>💰</Box>
