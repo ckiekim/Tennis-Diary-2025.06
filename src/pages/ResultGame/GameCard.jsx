@@ -32,7 +32,7 @@ export default function GameCard({ item }) {
           }
           {item.club && 
             <Typography fontSize="12px">
-              정모: {item.club}
+              정모: {item.club?.name || item.club}
             </Typography>
           }
         </Box>

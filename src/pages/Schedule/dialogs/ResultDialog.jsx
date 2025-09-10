@@ -19,6 +19,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
   const [uploading, setUploading] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const isGame = target?.type === '게임' || target?.type === '정모';
 
   useEffect(() => {
     if (open) {
@@ -57,7 +58,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
     setUploading(true);
     try {
       // 데이터 유효성 검사 (빈 값이 있는지 확인)
-      if (target.type === '게임') {
+      if (isGame) {
         const isInvalid = results.some(r => !r.type || r.win === '' || r.draw === '' || r.loss === '');
         if (isInvalid) {
           setAlertMessage('모든 종목과 승/무/패 값을 입력해주세요.');
@@ -76,7 +77,7 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
         urls.push(url);
       }
 
-      const resultStr = target.type === '게임' ? resultsToString(results) : results[0].type;
+      const resultStr = isGame ? resultsToString(results) : results[0].type;
       await onResult(target.id, { type: target.type, result: resultStr, memo, photoList: urls });
       handleClose();
     } catch (err) {
@@ -87,8 +88,6 @@ export default function ResultDialog({open, target, setOpen, onResult, uid}) {
       setUploading(false);
     }
   };
-
-  const isGame = target?.type === '게임';
 
   return (
     <>
