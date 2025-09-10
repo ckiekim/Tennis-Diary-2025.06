@@ -286,7 +286,8 @@ const ScheduleList = () => {
           <Box mt={1}>
             {schedules.map(schedule => ( 
               <ScheduleCard 
-                key={schedule.id} schedule={schedule} onEdit={handleEdit} onResult={handleResultDialog} 
+                key={schedule.id} schedule={schedule} onResult={handleResultDialog} 
+                onEdit={user?.uid === schedule.uid ? handleEdit : undefined} 
                 onDelete={user?.uid === schedule.uid ? handleDelete : undefined} 
               />
             ))}

@@ -17,19 +17,21 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
     >
       {/* 아이콘 버튼 영역 */}
       <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 0.25 }}>
-        <IconButton size="small" onClick={() => onEdit(schedule)}>
-          <EditIcon fontSize="small" />
-        </IconButton>
+        { onEdit && (
+          <IconButton size="small" onClick={() => onEdit(schedule)}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        )}
         { onDelete && (
           <IconButton size="small" onClick={() => onDelete(schedule)}>
             <DeleteIcon fontSize="small" />
           </IconButton>
-        ) }
+        )}
         { !isLesson && (
           <IconButton size="small" onClick={() => onResult(schedule)}>
             <NotesIcon fontSize="small" />
           </IconButton>
-        ) }
+        )}
       </Box>
 
       <Typography variant="subtitle2" fontWeight="bold">
@@ -76,7 +78,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
             <Typography variant="body2">{schedule.place} 테니스코트</Typography>
           </Box>
         </>
-      ) }
+      )}
       {schedule.source && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📝</Box>

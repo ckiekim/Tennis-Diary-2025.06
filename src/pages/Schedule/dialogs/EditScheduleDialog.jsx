@@ -2,7 +2,9 @@ import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 
-export default function EditScheduleDialog({courts, open, selectedSchedule, setOpen, setSelectedSchedule, onUpdate}) {
+export default function EditScheduleDialog({
+  courts, open, selectedSchedule, setOpen, setSelectedSchedule, onUpdate, isClubSchedule = false
+}) {
   if (!selectedSchedule) return null;
 
   const isJeongmo = selectedSchedule.type === "정모";
@@ -26,6 +28,7 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
           <TextField
             label="종류" select fullWidth size="small" value={selectedSchedule?.type || ''}
             onChange={(e) => setSelectedSchedule({ ...selectedSchedule, type: e.target.value })}
+            disabled={isClubSchedule}
           >
             <MenuItem value="레슨">레슨</MenuItem>
             <MenuItem value="게임">게임</MenuItem>
@@ -86,8 +89,10 @@ export default function EditScheduleDialog({courts, open, selectedSchedule, setO
             <>
               {isJeongmo && (
                 <TextField 
-                  label="정모 이름" fullWidth size="small" value={selectedSchedule.club || ''}
+                  label="정모 이름" fullWidth size="small" 
+                  value={selectedSchedule.club?.name || selectedSchedule.club || ''}
                   onChange={(e) => setSelectedSchedule({...selectedSchedule, club: e.target.value})}
+                  disabled={isClubSchedule}
                 />
               )}
               <TextField

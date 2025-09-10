@@ -64,6 +64,7 @@ const ClubDialogs = ({
         setOpen={manager.setEditScheduleOpen}
         setSelectedSchedule={manager.setSelectedSchedule}
         onUpdate={manager.handleUpdateSchedule}
+        isClubSchedule={isClubSchedule}
       />
 
       <DeleteConfirmDialog
