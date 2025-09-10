@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, CircularProgress, Divider, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
@@ -22,6 +22,7 @@ import AlertDialog from '../../components/AlertDialog';
 const ClubDetailPage = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
+  const [scheduleForm, setScheduleForm] = useState(null);
 
   // --- 데이터 페칭 ---
   const { user, loading: authLoading } = useAuthState();
@@ -36,6 +37,18 @@ const ClubDetailPage = () => {
   const courts = useCourtList();
   
   const manager = useClubDetailManager(clubId, user);
+
+  const handleOpenAddSchedule = () => {
+    if (club) {
+      setScheduleForm({
+        type: '정모',
+        place: '',
+        club: club.name, // 클럽 이름 미리 채우기
+        date: dayjs().format('YYYY-MM-DD'), // 오늘 날짜로 초기화
+      });
+      manager.setAddScheduleOpen(true); // 매니저를 통해 다이얼로그 열기 상태만 변경
+    }
+  };
 
   // --- 로딩 및 권한 관리 ---
   const isLoading = authLoading || clubLoading || membersLoading || postsLoading || schedulesLoading;
@@ -78,7 +91,7 @@ const ClubDetailPage = () => {
           isOwner={isOwner}
           isMember={isMember}
           user={user}
-          onAddScheduleClick={() => manager.setAddScheduleOpen(true)}
+          onAddScheduleClick={handleOpenAddSchedule}
           onEditSchedule={(schedule) => {
             manager.setSelectedSchedule({ ...schedule, date: dayjs(schedule.date) });
             manager.setEditScheduleOpen(true);
@@ -113,9 +126,10 @@ const ClubDetailPage = () => {
 
       {/* 모든 다이얼로그 관리 컴포넌트 */}
       <ClubDialogs 
-        manager={manager}
-        club={club} clubId={clubId} isMember={isMember} isOwner={isOwner}
+        manager={manager} club={club} clubId={clubId} isMember={isMember} isOwner={isOwner}
+        scheduleForm={scheduleForm} setScheduleForm={setScheduleForm}
         currentUserProfile={currentUserProfile} onPostAdded={refreshPosts} courts={courts}
+        isClubSchedule={true}
       />
 
       <AlertDialog open={manager.isAlertOpen} onClose={() => manager.setIsAlertOpen(false)}>

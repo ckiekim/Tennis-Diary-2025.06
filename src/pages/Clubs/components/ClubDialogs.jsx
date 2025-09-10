@@ -6,7 +6,10 @@ import AddScheduleDialog from '../../Schedule/dialogs/AddScheduleDialog';
 import EditScheduleDialog from '../../Schedule/dialogs/EditScheduleDialog';
 import dayjs from 'dayjs';
 
-const ClubDialogs = ({ manager, club, clubId, isMember, isOwner, currentUserProfile, onPostAdded, courts }) => {
+const ClubDialogs = ({ 
+  manager, club, clubId, scheduleForm, setScheduleForm, isMember, isOwner, 
+  currentUserProfile, onPostAdded, courts, isClubSchedule
+}) => {
   return (
     <>
       {isOwner && (
@@ -43,18 +46,13 @@ const ClubDialogs = ({ manager, club, clubId, isMember, isOwner, currentUserProf
         <AddScheduleDialog
           courts={courts}
           open={manager.addScheduleOpen}
-          // 클럽페이지에서는 '정모'로 타입 고정, 날짜 선택 가능하도록 설정
-          form={{ 
-            ...manager.scheduleForm, 
-            type: '정모', 
-            // club: { id: clubId, name: club.name } 
-            club: club.name
-          }}
+          form={scheduleForm}
           setOpen={manager.setAddScheduleOpen}
-          setForm={manager.setScheduleForm}
+          setForm={setScheduleForm}
           selectedDate={dayjs()} // 오늘을 기본값으로 전달
-          onAddSchedule={manager.handleAddSchedule}
-          onAddRecurringSchedule={manager.handleAddRecurringSchedule}
+          onAddSchedule={(form) => manager.handleAddSchedule(form)}
+          onAddRecurringSchedule={(recurringOptions, form) => manager.handleAddRecurringSchedule(recurringOptions, form)}
+          isClubSchedule={isClubSchedule}
         />
       )}
 

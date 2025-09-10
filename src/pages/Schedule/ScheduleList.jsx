@@ -254,6 +254,16 @@ const ScheduleList = () => {
       navigate('/result/game');
   }
 
+  const handleOpenAddDialog = () => {
+    // 다이얼로그를 열기 전에, 현재 선택된 날짜로 form 상태를 미리 설정합니다.
+    setForm(prev => ({ 
+      ...prev, 
+      type: '게임', // 기본값 설정
+      date: selectedDate.format('YYYY-MM-DD') 
+    }));
+    setAddOpen(true);
+  };
+
   return (
     <Container maxWidth="sm">
       {/* 📅 한글 달력 */}
@@ -287,7 +297,7 @@ const ScheduleList = () => {
           position: 'fixed', bottom: 80, right: 24, backgroundColor: 'black', color: 'white', zIndex: 20,
           '&:hover': { backgroundColor: '#333', },
         }}
-        onClick={() => setAddOpen(true)}
+        onClick={handleOpenAddDialog}
       >
         <AddIcon />
       </Fab>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, updateDoc, writeBatch, setDoc, serverTimestamp, increment, collection, addDoc, deleteDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -25,20 +25,6 @@ export const useClubDetailManager = (clubId, user) => {
   const [editScheduleOpen, setEditScheduleOpen] = useState(false);
   const [deleteScheduleOpen, setDeleteScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [scheduleForm, setScheduleForm] = useState({ 
-    type: '정모', place: '', club: '',
-    date: dayjs().format('YYYY-MM-DD') // 오늘 날짜를 기본값으로 설정 
-  });
-  console.log('[useClubDetailManager] 훅 렌더링. 현재 form.date:', scheduleForm.date);
-
-  useEffect(() => {
-    if (club) {
-      setScheduleForm(prevForm => ({
-        ...prevForm,
-        club: club.name
-      }));
-    }
-  }, [club]);
 
   // 2. 모든 핸들러 함수
   const handleAlert = (message) => {
@@ -133,7 +119,8 @@ export const useClubDetailManager = (clubId, user) => {
     }
   };
 
-  const handleAddSchedule = async () => {
+  // const handleAddSchedule = async () => {
+  const handleAddSchedule = async (scheduleForm) => {
     if (!scheduleForm.time || !scheduleForm.place) return handleAlert('시간과 장소를 입력해주세요.');
     const dataToSubmit = {
       ...scheduleForm,
@@ -145,7 +132,7 @@ export const useClubDetailManager = (clubId, user) => {
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddScheduleOpen(false);
-    setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
+    // setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleUpdateSchedule = async () => {
@@ -159,7 +146,8 @@ export const useClubDetailManager = (clubId, user) => {
     setEditScheduleOpen(false);
   };
 
-  const handleAddRecurringSchedule = async (recurringOptions) => {
+  // const handleAddRecurringSchedule = async (recurringOptions) => {
+  const handleAddRecurringSchedule = async (recurringOptions, scheduleForm) => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
     
     if (!scheduleForm.place || !endDate) {
@@ -214,7 +202,7 @@ export const useClubDetailManager = (clubId, user) => {
     await batch.commit();
 
     setAddScheduleOpen(false);
-    setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
+    // setScheduleForm({ type: '정모', place: '', date: dayjs().format('YYYY-MM-DD') });
   };
 
   const handleDeleteSchedule = async () => {
@@ -230,13 +218,13 @@ export const useClubDetailManager = (clubId, user) => {
     // States
     editOpen, deleteOpen, inviteOpen, addPostOpen, leaveOpen, kickTarget,
     anchorEl, selectedMember, isAlertOpen, alertMessage, addScheduleOpen,
-    editScheduleOpen, deleteScheduleOpen, selectedSchedule, scheduleForm,
+    editScheduleOpen, deleteScheduleOpen, selectedSchedule, // scheduleForm,
     
     // State Setters & Handlers
     setEditOpen, setDeleteOpen, setInviteOpen, setAddPostOpen, setLeaveOpen,
     setKickTarget, setAnchorEl, setSelectedMember, setIsAlertOpen,
     setAddScheduleOpen, setEditScheduleOpen, setDeleteScheduleOpen,
-    setSelectedSchedule, setScheduleForm,
+    setSelectedSchedule, // setScheduleForm,
 
     // Action Handlers
     handleUpdateClub, handleDeleteClub, 

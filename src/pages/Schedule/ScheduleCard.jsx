@@ -5,10 +5,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 
 export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
-  // const isStringReplace = schedule.type === "스트링 교체";
   const isLesson = schedule.type === "레슨";
   const isTournament = schedule.type === "대회";
   const isJeongmo = schedule.type === "정모";
+  const isRecurring = schedule?.isRecurring;
 
   return (
     <Box
@@ -92,7 +92,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>💰</Box>
           <Typography variant="body2">
             {schedule.price.toLocaleString()}
-            {isLesson ? '원/월' : '원'}
+            {(isLesson && isRecurring) ? '원/월' : '원'}
           </Typography>
         </Box>
       )}

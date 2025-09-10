@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
   FormGroup, FormControlLabel, Grid, MenuItem, Stack, Switch, TextField, Typography 
@@ -6,19 +6,16 @@ import {
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
-import dayjs from 'dayjs';
+// import dayjs from 'dayjs';
 
 const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
-const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
+// const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
 
-export default function AddScheduleDialog({courts, open, form, setOpen, setForm, selectedDate, onAddSchedule, onAddRecurringSchedule}) {
-  const isJeongmo = form.type === "정모";
-  const isLesson = form.type === "레슨";
-  const isTournament = form.type === "대회";
-  const isGame = form.type === "게임";
+export default function AddScheduleDialog({
+  courts, open, form, setOpen, setForm, onAddSchedule, onAddRecurringSchedule, isClubSchedule = false
+}) {
+  
   const sourceList = useSourceList();
-
-  // 반복 일정 입력을 위한 State 추가
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringOptions, setRecurringOptions] = useState({
     frequency: 1, // 1: 주 1회, 2: 주 2회
@@ -30,15 +27,21 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
     endDate: '',
   });
 
-  useEffect(() => {
-    if (open && selectedDate) {
-      setForm(prevForm => ({ ...prevForm, date: selectedDate.format('YYYY-MM-DD') }));
-      const dayOfWeekIndex = selectedDate.day();  // 일요일=0, 월요일=1 ... 토요일=6을 반환
-      const selectedDay = weekDaysKorMap[dayOfWeekIndex];
-      // 반복 옵션의 첫 번째 요일(day1)을 선택된 요일로 업데이트
-      setRecurringOptions(prevOptions => ({ ...prevOptions, day1: selectedDay, }));
-    }
-  }, [open, selectedDate, setForm]);
+  const isJeongmo = useMemo(() => form?.type === "정모", [form?.type]);
+  const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
+  const isTournament = useMemo(() => form?.type === "대회", [form?.type]);
+  const isGame = useMemo(() => form?.type === "게임", [form?.type]);
+
+  // useEffect(() => {
+  //   if (open && selectedDate) {
+  //     setForm(prevForm => ({ ...prevForm, date: selectedDate.format('YYYY-MM-DD') }));
+  //     const dayOfWeekIndex = selectedDate.day();  // 일요일=0, 월요일=1 ... 토요일=6을 반환
+  //     const selectedDay = weekDaysKorMap[dayOfWeekIndex];
+  //     // 반복 옵션의 첫 번째 요일(day1)을 선택된 요일로 업데이트
+  //     setRecurringOptions(prevOptions => ({ ...prevOptions, day1: selectedDay, }));
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [open, selectedDate]);
 
   useEffect(() => {
     if (isJeongmo && isRecurring) {
@@ -50,6 +53,10 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
     }
   }, [isJeongmo, isRecurring]);
 
+  if (!form) {
+    return null;
+  }
+
   // 다이얼로그가 닫힐 때 모든 상태 초기화
   const handleClose = () => {
     setOpen(false);
@@ -59,9 +66,9 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
   // 저장 버튼 클릭 시 단일/반복에 따라 다른 함수 호출
   const handleSave = () => {
     if ((isLesson || isJeongmo) && isRecurring) {
-      onAddRecurringSchedule(recurringOptions);
+      onAddRecurringSchedule(recurringOptions, form);
     } else {
-      onAddSchedule();
+      onAddSchedule(form);
     }
   };
 
@@ -81,7 +88,9 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
         <Stack spacing={2} mt={1}>
           <TextField
             label="종류" select fullWidth size="small" value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}>
+            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            disabled={isClubSchedule}
+          >
             <MenuItem value="게임">게임</MenuItem>
             <MenuItem value="레슨">레슨</MenuItem>
             <MenuItem value="대회">대회</MenuItem>
@@ -248,8 +257,10 @@ export default function AddScheduleDialog({courts, open, form, setOpen, setForm,
             </>
           ) }
           {isJeongmo && (
-            <TextField label="정모 이름" fullWidth size="small" value={form.club || ''} 
+            <TextField 
+              label="정모 이름" fullWidth size="small" value={form.club || ''} 
               onChange={(e) => setForm({ ...form, club: e.target.value })} 
+              disabled={isClubSchedule}
             />
           )}
         </Stack>
