@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../api/firebaseConfig';
-import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore';
+import { collection, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
+import useAuthState from './useAuthState';
 import { PAGE_SIZE } from '../constants/admin';
 
 export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
@@ -9,6 +10,7 @@ export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
   const [hasMore, setHasMore] = useState(true);
   const [lastVisible, setLastVisible] = useState(null);
   const [courtMap, setCourtMap] = useState({});
+  const { user } = useAuthState();
 
   // 컴포넌트 마운트 해제 후 상태 업데이트를 방지하기 위한 참조
   const isMounted = useRef(true);
@@ -50,8 +52,23 @@ export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
         limit(PAGE_SIZE)
       );
 
-      if (!isInitial && lastVisible) {
-        eventsQuery = query(eventsQuery, startAfter(lastVisible));
+      if (isInitial) {
+        eventsQuery = query(
+          collection(db, 'events'),
+          where('uid', '==', uid),
+          where('type', 'in', ['게임', '정모']),
+          orderBy('date', 'desc'),
+          limit(PAGE_SIZE)
+        );
+      } else if (lastVisible) {
+         eventsQuery = query(
+          collection(db, 'events'),
+          where('uid', '==', uid),
+          where('type', 'in', ['게임', '정모']),
+          orderBy('date', 'desc'),
+          startAfter(lastVisible),
+          limit(PAGE_SIZE)
+        );
       }
 
       const eventSnapshots = await getDocs(eventsQuery);
@@ -66,8 +83,8 @@ export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
       // 2. 가져온 각 'event'에 대해 'event_results' 하위 컬렉션 조회를 준비합니다.
       const resultPromises = eventSnapshots.docs.map(eventDoc => {
         const resultsRef = collection(db, 'events', eventDoc.id, 'event_results');
-        const q = query(resultsRef, limit(1)); // 결과는 하나만 가져옵니다.
-        return getDocs(q);
+        // const q = query(resultsRef, limit(1)); // 결과는 하나만 가져옵니다.
+        return getDocs(resultsRef);
       });
 
       // 3. 모든 'event_results' 조회를 병렬로 실행합니다.
@@ -77,15 +94,40 @@ export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
       const newItems = [];
       eventSnapshots.docs.forEach((eventDoc, index) => {
         const resultSnapshot = resultSnapshots[index];
-        // 결과 데이터가 있는 event만 목록에 추가합니다.
-        if (!resultSnapshot.empty) {
-          const eventData = { id: eventDoc.id, ...eventDoc.data() };
-          const resultData = resultSnapshot.docs[0].data();
-          // photoList의 첫 사진을 대표 사진으로 사용. 없으면 코트 사진
-          const photo = resultData.photoList?.[0] || courtMap[eventData.place] || null;
+        const eventData = { id: eventDoc.id, ...eventDoc.data() };
 
-          newItems.push({ ...eventData, ...resultData, photo });
+        // 결과가 없어도 목록에는 표시되어야 하므로 if문 밖으로 이동
+        let photo = courtMap[eventData.place] || null;
+        const resultCount = resultSnapshot.size; // 결과 문서의 개수를 셉니다.
+        let currentUserHasSubmittedResult = false;
+
+        let resultString = null;
+        if (!resultSnapshot.empty) {
+          // 대표 사진은 첫 번째 결과의 첫 번째 사진으로 설정
+          const firstResultData = resultSnapshot.docs[0].data();
+          if (firstResultData.photoList?.[0]) {
+            photo = firstResultData.photoList[0];
+          }
+          // 결과가 정확히 1개일 때만 resultString에 값을 할당
+          if (resultSnapshot.size === 1) {
+            resultString = firstResultData.result;
+          }
+          // 현재 유저가 결과를 제출했는지 확인
+          for (const doc of resultSnapshot.docs) {
+            if (doc.data().uid === user.uid) {
+              currentUserHasSubmittedResult = true;
+              break;
+            }
+          }
         }
+        
+        newItems.push({ 
+          ...eventData, 
+          photo, 
+          resultCount, // 결과 개수
+          result: resultString,
+          currentUserHasSubmittedResult // 내가 결과를 냈는지 여부
+        });
       });
       
       if (isMounted.current) {

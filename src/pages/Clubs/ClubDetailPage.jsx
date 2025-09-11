@@ -10,6 +10,8 @@ import usePaginatedSubcollection from '../../hooks/usePaginatedSubcollection';
 import useClubSchedules from '../../hooks/useClubSchedules';
 import useCourtList from '../../hooks/useCourtList';
 import { useClubDetailManager } from '../../hooks/useClubDetailManager';
+import { db } from '../../api/firebaseConfig';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 import MainLayout from '../../components/MainLayout';
 import ClubHeader from './components/ClubHeader';
@@ -18,11 +20,14 @@ import ClubScheduleSection from './components/ClubScheduleSection';
 import ClubPostSection from './components/ClubPostSection';
 import ClubDialogs from './components/ClubDialogs'; 
 import AlertDialog from '../../components/AlertDialog';
+import ResultDialog from '../Schedule/dialogs/ResultDialog';
 
 const ClubDetailPage = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
   const [scheduleForm, setScheduleForm] = useState(null);
+  const [resultOpen, setResultOpen] = useState(false);
+  const [resultTarget, setResultTarget] = useState(null);
 
   // --- 데이터 페칭 ---
   const { user, loading: authLoading } = useAuthState();
@@ -48,6 +53,35 @@ const ClubDetailPage = () => {
       });
       manager.setAddScheduleOpen(true); // 매니저를 통해 다이얼로그 열기 상태만 변경
     }
+  };
+
+  const handleOpenResultDialog = (schedule) => {
+    setResultTarget(schedule);
+    setResultOpen(true);
+  };
+
+  // 3. 결과를 DB에 저장하는 핸들러 (ScheduleList.jsx의 로직과 동일)
+  const handleResultSubmit = async (id, { type, result, memo, photoList }) => {
+    if (!id || !user?.uid) return;
+
+    const resultsCollectionRef = collection(db, 'events', id, 'event_results');
+
+    const dataToSave = {
+      result, memo, 
+      uid: user.uid, // 결과를 입력한 사람의 uid
+      eventId: id,
+      createdAt: serverTimestamp(),
+      photoList,
+    };
+
+    await addDoc(resultsCollectionRef, dataToSave);
+
+    // 개인 마일리지 정책 등은 여기에 추가할 수 있습니다.
+    // 예: const userRef = doc(db, 'users', user.uid);
+    // await updateDoc(userRef, { mileage: increment(5) });
+
+    setResultOpen(false);
+    // TODO: useClubSchedules 훅을 새로고침하는 로직이 필요할 수 있습니다.
   };
 
   // --- 로딩 및 권한 관리 ---
@@ -101,6 +135,7 @@ const ClubDetailPage = () => {
             manager.setDeleteAllRecurring(false);
             manager.setDeleteScheduleOpen(true);
           }}
+          onResultClick={handleOpenResultDialog}
         />
         <Divider sx={{ my: 1 }} />
         <ClubPostSection
@@ -131,6 +166,13 @@ const ClubDetailPage = () => {
         scheduleForm={scheduleForm} setScheduleForm={setScheduleForm}
         currentUserProfile={currentUserProfile} onPostAdded={refreshPosts} courts={courts}
         isClubSchedule={true}
+      />
+      <ResultDialog 
+        open={resultOpen} 
+        target={resultTarget} 
+        setOpen={setResultOpen} 
+        onResult={handleResultSubmit} 
+        uid={user?.uid}
       />
 
       <AlertDialog open={manager.isAlertOpen} onClose={() => manager.setIsAlertOpen(false)}>

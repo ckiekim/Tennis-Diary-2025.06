@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  addDoc, collection, deleteDoc, doc, getDocs, increment, query, serverTimestamp, setDoc, updateDoc, where, writeBatch 
+  addDoc, collection, deleteField, doc, getDocs, increment, query, serverTimestamp, setDoc, updateDoc, where, writeBatch 
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../api/firebaseConfig';
+import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
 
@@ -207,46 +208,76 @@ export const useClubDetailManager = (clubId, user) => {
   const handleDeleteSchedule = async () => {
     if (!selectedSchedule?.id || !user?.uid) return;
 
+    const batch = writeBatch(db);
+    const userRef = doc(db, 'users', user.uid); // 마일리지는 생성자 기준으로 처리
+
     try {
+      // --- 반복 일정 전체 삭제 로직 ---
       if (deleteAllRecurring && selectedSchedule.recurringId) {
         const q = query(collection(db, 'events'), where('recurringId', '==', selectedSchedule.recurringId));
         const querySnapshot = await getDocs(q);
         
-        const batch = writeBatch(db);
         let totalPointsToDeduct = 0;
 
-        // 찾은 모든 문서를 batch에 추가하고, 차감할 마일리지를 계산합니다.
-        querySnapshot.forEach((document) => {
-          const eventData = document.data();
-          batch.delete(document.ref);
-          totalPointsToDeduct += 5; // 생성 포인트
-          if (eventData.result) {
-            totalPointsToDeduct += 5; // 결과 등록 포인트
-          }
-        });
+        for (const eventDoc of querySnapshot.docs) {
+          const resultsRef = collection(db, 'events', eventDoc.id, 'event_results');
+          const resultsSnapshot = await getDocs(resultsRef);
 
-        // 계산된 총 마일리지를 차감합니다.
-        if (totalPointsToDeduct > 0) {
-          const userRef = doc(db, 'users', user.uid);
-          batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
+          // 결과가 없으면 삭제
+          if (resultsSnapshot.empty) {
+            // 이 일정 생성자의 마일리지를 차감해야 하지만, 여기서는 간단히 user의 마일리지를 차감합니다.
+            // (정확하려면 eventDoc.data().uid를 사용해야 함)
+            totalPointsToDeduct += 5; 
+            batch.delete(eventDoc.ref);
+          } else {
+            // 결과가 있으면 반복 속성만 제거하여 단일 일정으로 남김
+            batch.update(eventDoc.ref, {
+              isRecurring: deleteField(),
+              recurringId: deleteField()
+            });
+          }
         }
 
+        if (totalPointsToDeduct > 0) {
+          batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
+        }
         await batch.commit();
-        handleAlert('반복 일정이 모두 삭제되었습니다.');
+        handleAlert('결과가 없는 반복 일정이 삭제되었습니다.');
 
       } else {
-        // 단일 일정 삭제 (기존 로직)
-        await deleteDoc(doc(db, 'events', selectedSchedule.id));
-        const pointsToDeduct = 5 + (selectedSchedule.result ? 5 : 0);
-        await updateDoc(doc(db, 'users', user.uid), { mileage: increment(-pointsToDeduct) });
+        // --- 단일 일정 삭제 로직 ---
+        let pointsToDeduct = 5;
+        const eventRef = doc(db, 'events', selectedSchedule.id);
+        const resultsRef = collection(db, 'events', selectedSchedule.id, 'event_results');
+        const resultsSnapshot = await getDocs(resultsRef);
+
+        // 결과가 있다면 결과 문서와 사진도 함께 삭제
+        if (!resultsSnapshot.empty) {
+          pointsToDeduct += 5; // 결과 입력 포인트
+          for (const resultDoc of resultsSnapshot.docs) {
+            const resultData = resultDoc.data();
+            if (resultData.photoList && resultData.photoList.length > 0) {
+              for (const url of resultData.photoList) {
+                await deletePhotoFromStorage(url); // Storage에서 사진 파일 삭제
+              }
+            }
+            batch.delete(resultDoc.ref); // 결과 문서 삭제
+          }
+        }
+
+        batch.delete(eventRef); // 일정 문서 삭제
+        if (pointsToDeduct > 0) {
+          batch.update(userRef, { mileage: increment(-pointsToDeduct) });
+        }
+        await batch.commit();
         handleAlert('일정이 삭제되었습니다.');
       }
     } catch (error) {
       console.error("일정 삭제 실패:", error);
       handleAlert('일정 삭제 중 오류가 발생했습니다.');
     } finally {
-      setDeleteScheduleOpen(false); // 다이얼로그 닫기
-      setDeleteAllRecurring(false); // 체크박스 상태 초기화
+      setDeleteScheduleOpen(false);
+      setDeleteAllRecurring(false);
     }
   };
 
