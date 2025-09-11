@@ -1,69 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../../api/firebaseConfig';
-import { Box, Typography, Divider } from '@mui/material';
+import React from 'react';
+import { Box, CircularProgress, Divider, Typography } from '@mui/material';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 import useAuthState from '../../hooks/useAuthState';
 import MainLayout from '../../components/MainLayout';
-import parseResult from '../../utils/parseResult';
+import useResultStats from '../../hooks/useResultStats';
 
 const ResultStatPage = () => {
-  const [eventStats, setEventStats] = useState({});
-  const [monthStats, setMonthStats] = useState({});
   const { user } = useAuthState();
+  const { eventStats, monthStats, loading } = useResultStats(user?.uid);
 
-  useEffect(() => {
-    if (!user) return;
-    
-    const fetchData = async () => {
-      const q = query(collection(db, 'events'), where('type', '==', '게임'), where('uid', '==', user.uid));
-      const snapshot = await getDocs(q);
-      const eventData = {};
-      const monthData = {};
-
-      snapshot.forEach(doc => {
-        const { result, date } = doc.data();
-        if (!result || !date) return;
-        const parsedResults = parseResult(result);
-
-        parsedResults.forEach(parsed => {
-          const { eventType, win, draw, loss } = parsed;
-
-          // 종목별 통계
-          if (!eventData[eventType]) {
-            eventData[eventType] = { win: 0, draw: 0, loss: 0 };
-          }
-          eventData[eventType].win += win;
-          eventData[eventType].draw += draw;
-          eventData[eventType].loss += loss;
-
-          // 월별 통계
-          const monthKey = date.split('-').slice(0, 2).join('-'); // YYYY-MM
-          if (!monthData[monthKey]) {
-            monthData[monthKey] = { win: 0, draw: 0, loss: 0 };
-          }
-          monthData[monthKey].win += win;
-          monthData[monthKey].draw += draw;
-          monthData[monthKey].loss += loss;
-        });
-      });
-
-      // 승률 계산
-      const processedMonthData = {};
-      for (const [month, { win, draw, loss }] of Object.entries(monthData)) {
-        const total = win + draw + loss;
-        processedMonthData[month] = {
-          win, draw, loss,
-          winRate: total > 0 ? (win / total) * 100 : 0,
-        };
-      }
-
-      setEventStats(eventData);
-      setMonthStats(processedMonthData);
-    };
-
-    fetchData();
-  }, [user]);
+  if (loading) {
+    return (
+      <MainLayout title='게임 통계'>
+        <Box p={2} display="flex" justifyContent="center" alignItems="center" height="50vh">
+          <CircularProgress />
+          <Typography ml={2}>통계 데이터를 불러오는 중입니다...</Typography>
+        </Box>
+      </MainLayout>
+    );
+  }
 
   // 그래프용 데이터 변환
   const eventChartData = Object.entries(eventStats).map(([event, stats]) => ({
