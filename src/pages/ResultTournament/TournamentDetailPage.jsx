@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Divider, ImageList, ImageListItem, Stack, Typography } from '@mui/material';
 import useAuthState from '../../hooks/useAuthState';
 import useDocument from '../../hooks/useDocument';
+import useSubcollection from '../../hooks/useSubcollection';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditTournamentDialog from './dialogs/EditTournamentDialog';
@@ -23,11 +24,16 @@ const TournamentDetailPage = () => {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
-  const { docData: result, loading } = useDocument('events', id, refreshKey);
+  const { docData: eventData, loading: eventLoading } = useDocument('events', id, refreshKey);
   const { user } = useAuthState();
 
-  if (loading) return <Typography>로딩 중...</Typography>;
-  if (!result) return <Typography>데이터가 없습니다.</Typography>;
+  const resultsPath = id ? `events/${id}/event_results` : null;
+  const { documents: eventResults, loading: resultLoading } = useSubcollection(
+    resultsPath, { orderByField: 'createdAt', orderByDirection: 'desc' }, refreshKey
+  );
+  const resultData = eventResults?.[0];
+  const loading = eventLoading || resultLoading;
+  const combinedData = eventData && resultData ? { ...eventData, ...resultData } : eventData;
 
   const handleOpenImage = (url) => {
     setSelectedImage(url);
@@ -45,21 +51,28 @@ const TournamentDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!result || !user?.uid) {
+    if (!combinedData || !user?.uid) {
       setAlertMessage('사용자 정보가 올바르지 않습니다.');
       setIsAlertOpen(true);
       return;
     }
     try {
-      const photoList = result.photoList || [];
+      // 사진 삭제 (resultData에 photoList가 있음)
+      const photoList = resultData?.photoList || [];
       for (const url of photoList) {
         await deletePhotoFromStorage(url);
       }
+      // event_results 문서 삭제
+      if (resultData?.id) {
+        await deleteDoc(doc(db, 'events', id, 'event_results', resultData.id));
+      }
+      // events 문서 삭제
       await deleteDoc(doc(db, 'events', id));
+      // 마일리지 차감
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { mileage: increment(-10) });
       setDeleteOpen(false);
-      navigate('/result/tournament'); // 대회 목록 페이지로 이동
+      navigate('/result/tournament');
     } catch (err) {
       console.error('삭제 실패:', err);
       setAlertMessage('삭제 중 문제가 발생했습니다.');
@@ -67,46 +80,49 @@ const TournamentDetailPage = () => {
     }
   };
 
+  if (loading) return <Typography>로딩 중...</Typography>;
+  if (!combinedData) return <Typography>데이터가 없습니다.</Typography>;
+
   return (
     <MainLayout title='대회 상세'>
       <Box p={2}>
         <Typography variant="body2" fontWeight="bold">대회명</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {result.name}
+          {combinedData.name}
         </Typography>
         <Divider sx={{ my: 1 }} />
         
         <Typography variant="body2" fontWeight="bold">일시</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {`${result.date} (${formatDay(result.date)})`}
+          {`${combinedData.date} (${formatDay(combinedData.date)})`}
         </Typography>
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="body2" fontWeight="bold">장소</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {result.place} 테니스코트
+          {combinedData.place} 테니스코트
         </Typography>
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="body2" fontWeight="bold">참가 정보</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {`종목: ${result.category}`}
-          {result.partner && ` / 파트너: ${result.partner}`}
-          {result.organizer && ` / 주관: ${result.organizer}(${result.division})`}
+          {`종목: ${combinedData.category}`}
+          {combinedData.partner && ` / 파트너: ${combinedData.partner}`}
+          {combinedData.organizer && ` / 주관: ${combinedData.organizer}(${combinedData.division})`}
         </Typography>
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="body2" fontWeight="bold">결과</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {result.result || '결과 미입력'}
+          {combinedData.result || '결과 미입력'}
         </Typography>
         <Divider sx={{ my: 1 }} />
 
-        {result.price && (
+        {combinedData.price && (
           <>
             <Typography variant="body2" fontWeight="bold">참가비</Typography>
             <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-              {result.price.toLocaleString()}원
+              {combinedData.price.toLocaleString()}원
             </Typography>
             <Divider sx={{ my: 1 }} />
           </>
@@ -114,14 +130,14 @@ const TournamentDetailPage = () => {
 
         <Typography variant="body2" fontWeight="bold">메모</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {result.memo || '메모 없음'}
+          {combinedData.memo || '메모 없음'}
         </Typography>
         <Divider sx={{ my: 1 }} />
 
         <Typography variant="body2" fontWeight="bold">사진</Typography>
-        {result.photoList?.length > 0 ? (
+        {combinedData.photoList?.length > 0 ? (
           <ImageList cols={3} gap={8} sx={{ mt: 1, ml: 4 }}>
-            {result.photoList.map((url, index) => (
+            {combinedData.photoList.map((url, index) => (
               <ImageListItem key={index} onClick={() => handleOpenImage(url)} sx={{ cursor: 'pointer' }}>
                 <img src={url} alt={`photo-${index}`} loading="lazy" />
               </ImageListItem>
@@ -145,11 +161,10 @@ const TournamentDetailPage = () => {
         </DialogContent>
       </Dialog>
       
-      {editOpen && <EditTournamentDialog open={editOpen} onClose={handleEditClose} result={result} uid={user.uid} />}
+      {editOpen && <EditTournamentDialog open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} />}
 
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
-        "{result?.date}, {result?.name}" 대회 결과를 삭제하시겠습니까? <br />
-        이 작업은 되돌릴 수 없습니다.
+        "{combinedData?.date}, {combinedData?.name}" 대회 결과를 삭제하시겠습니까? 
       </DeleteConfirmDialog>
 
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
