@@ -33,7 +33,7 @@ const TournamentDetailPage = () => {
   );
   const resultData = eventResults?.[0];
   const loading = eventLoading || resultLoading;
-  const combinedData = eventData && resultData ? { ...eventData, ...resultData } : eventData;
+  const combinedData = eventData && resultData ? { ...eventData, ...resultData, id: eventData.id } : eventData;
 
   const handleOpenImage = (url) => {
     setSelectedImage(url);
@@ -161,7 +161,9 @@ const TournamentDetailPage = () => {
         </DialogContent>
       </Dialog>
       
-      {editOpen && <EditTournamentDialog open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} />}
+      {editOpen && <EditTournamentDialog 
+        open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} resultData={resultData}
+      />}
 
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{combinedData?.date}, {combinedData?.name}" 대회 결과를 삭제하시겠습니까? 

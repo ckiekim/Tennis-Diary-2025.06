@@ -16,18 +16,18 @@ import { gameTypes } from '../../../constants/typeGames';
 import { v4 as uuidv4 } from 'uuid';
 import AlertDialog from '../../../components/AlertDialog';
 
-export default function EditGameDialog({ open, onClose, result, uid }) {
+export default function EditGameDialog({ open, onClose, result, uid, resultData }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
   const [results, setResults] = useState([]);
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
-  const [deleting, setDeleting] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     setForm({ ...result });
-    setResults(stringToResults(result.result));
+    setResults(result.result ? stringToResults(result.result) : [{ id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
     setNewFiles([]);
   }, [open, result]);
 
@@ -56,40 +56,41 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
   };
 
   const handleUpdate = async () => {
-    setDeleting(true);
+    setUpdating(true);
     try {
-      // 🔍 기존 이미지 중에서 제거된 항목만 찾기
+      // 사진 관리 로직
       const originalUrls = result.photoList || [];
       const currentUrls = form.photoList || [];
-
       const removedUrls = originalUrls.filter((url) => !currentUrls.includes(url));
-
-      // 1. 삭제할 이미지만 Storage에서 제거
       for (const url of removedUrls) {
         await deletePhotoFromStorage(url);
       }
-
-      // 2. 새 사진 업로드
       const newPhotoUrls = [];
       for (const file of newFiles) {
         const url = await uploadImageToFirebase(file, `${uid}/results`);
         newPhotoUrls.push(url);
       }
-
-      // 3. 유지할 기존 이미지 + 새 이미지 결합
       const finalPhotoList = [...currentUrls, ...newPhotoUrls];
-
-      // 4. Firestore 업데이트
-      const docRef = doc(db, 'events', result.id);
-      const resultString = resultsToString(results);
-      await updateDoc(docRef, {
+      
+      // 업데이트 로직 분리
+      // Part 1: events 문서 업데이트
+      const eventDocRef = doc(db, 'events', result.id);
+      await updateDoc(eventDocRef, {
         place: form.place,
-        result: resultString,
         source: form.source,
-        price: Number(form.price),
-        memo: form.memo,
-        photoList: finalPhotoList,
+        price: Number(form.price) || 0,
       });
+
+      // Part 2: event_results 문서 업데이트 (결과가 있는 경우에만)
+      if (resultData?.id) {
+        const resultDocRef = doc(db, 'events', result.id, 'event_results', resultData.id);
+        const resultString = resultsToString(results);
+        await updateDoc(resultDocRef, {
+          result: resultString,
+          memo: form.memo,
+          photoList: finalPhotoList,
+        });
+      }
 
       onClose();
     } catch (err) {
@@ -97,13 +98,12 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
       setAlertMessage('업데이트 중 오류가 발생했습니다.');
       setIsAlertOpen(true);
     } finally {
-      setDeleting(false);
+      setUpdating(false);
     }
   };
 
   return (
     <>
-    
       <Dialog open={open} onClose={onClose} fullWidth>
         <DialogTitle>게임 상세 수정</DialogTitle>
         <DialogContent>
@@ -196,9 +196,9 @@ export default function EditGameDialog({ open, onClose, result, uid }) {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} disabled={deleting}>취소</Button>
-          <Button variant="contained" onClick={handleUpdate} disabled={deleting}>
-            {deleting ? '저장 중...' : '저장'}
+          <Button onClick={onClose} disabled={updating}>취소</Button>
+          <Button variant="contained" onClick={handleUpdate} disabled={updating}>
+            {updating ? '저장 중...' : '저장'}
           </Button>
         </DialogActions>
       </Dialog>

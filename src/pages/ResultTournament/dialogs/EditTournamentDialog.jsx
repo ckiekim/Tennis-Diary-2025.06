@@ -4,17 +4,17 @@ import {
   MenuItem, Stack, TextField, Typography 
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import { handleNumericInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 import AlertDialog from '../../../components/AlertDialog';
 
-export default function EditTournamentDialog({ open, onClose, result, uid }) {
+export default function EditTournamentDialog({ open, onClose, result, uid, resultData }) {
   const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
   const [newFiles, setNewFiles] = useState([]);
-  const [deleting, setDeleting] = useState(false);
+  const [updating, setUpdating] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -34,37 +34,45 @@ export default function EditTournamentDialog({ open, onClose, result, uid }) {
   };
 
   const handleUpdate = async () => {
-    setDeleting(true);
+    setUpdating(true);
     try {
       const originalUrls = result.photoList || [];
       const currentUrls = form.photoList || [];
       const removedUrls = originalUrls.filter((url) => !currentUrls.includes(url));
-
       for (const url of removedUrls) {
         await deletePhotoFromStorage(url);
       }
-
       const newPhotoUrls = [];
       for (const file of newFiles) {
         const url = await uploadImageToFirebase(file, `${uid}/results`);
         newPhotoUrls.push(url);
       }
-      
       const finalPhotoList = [...currentUrls, ...newPhotoUrls];
-      const docRef = doc(db, 'events', result.id);
       
-      await updateDoc(docRef, {
-        name: form.name,
-        place: form.place,
-        category: form.category,
-        partner: form.partner,
-        organizer: form.organizer,
-        division: form.division,
-        result: form.result,
-        price: Number(form.price),
-        memo: form.memo,
-        photoList: finalPhotoList,
+      // Part 1: 'events' 문서 업데이트
+      const eventDocRef = doc(db, 'events', result.id);
+      await updateDoc(eventDocRef, {
+        name: form.name, place: form.place, category: form.category,
+        partner: form.partner, organizer: form.organizer, division: form.division,
       });
+      // Part 2: 'event_results' 문서 업데이트 또는 생성
+      const resultDataToSave = {
+        result: form.result || '', price: Number(form.price) || 0, memo: form.memo || '',
+        photoList: finalPhotoList, uid: uid, eventId: result.id,
+      };
+
+      if (resultData?.id) {
+        // 결과 문서가 있으면 업데이트
+        const resultDocRef = doc(db, 'events', result.id, 'event_results', resultData.id);
+        await updateDoc(resultDocRef, resultDataToSave);
+      } else {
+        // 결과 문서가 없으면 새로 생성
+        const resultsCollectionRef = collection(db, 'events', result.id, 'event_results');
+        await addDoc(resultsCollectionRef, {
+          ...resultDataToSave,
+          createdAt: serverTimestamp(),
+        });
+      }
 
       onClose();
     } catch (err) {
@@ -72,13 +80,12 @@ export default function EditTournamentDialog({ open, onClose, result, uid }) {
       setAlertMessage('업데이트 중 오류가 발생했습니다.');
       setIsAlertOpen(true);
     } finally {
-      setDeleting(false);
+      setUpdating(false);
     }
   };
 
   return (
     <>
-    
       <Dialog open={open} onClose={onClose} fullWidth>
         <DialogTitle>대회 상세 수정</DialogTitle>
         <DialogContent>
@@ -123,8 +130,8 @@ export default function EditTournamentDialog({ open, onClose, result, uid }) {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} disabled={deleting}>취소</Button>
-          <Button variant="contained" onClick={handleUpdate} disabled={deleting}>{deleting ? '저장 중...' : '저장'}</Button>
+          <Button onClick={onClose} disabled={updating}>취소</Button>
+          <Button variant="contained" onClick={handleUpdate} disabled={updating}>{updating ? '저장 중...' : '저장'}</Button>
         </DialogActions>
       </Dialog>
     

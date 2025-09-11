@@ -37,7 +37,7 @@ const GameDetailPage = () => {
   const resultData = eventResults?.[0];
 
   const loading = eventLoading || resultLoading;
-  const combinedData = eventData && resultData ? { ...eventData, ...resultData } : eventData;
+  const combinedData = eventData && resultData ? { ...eventData, ...resultData, id: eventData.id } : eventData;
 
   const handleOpen = (url) => {
     setSelectedImage(url);
@@ -172,7 +172,9 @@ const GameDetailPage = () => {
         </DialogContent>
       </Dialog>
 
-      <EditGameDialog open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} />
+      <EditGameDialog 
+        open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} resultData={resultData} 
+      />
 
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{combinedData?.date} {combinedData?.time}" 일정 및 결과를 삭제하시겠습니까?

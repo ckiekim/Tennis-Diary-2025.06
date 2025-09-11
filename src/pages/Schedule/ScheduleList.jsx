@@ -4,8 +4,9 @@ import { Box, Checkbox, Container, Fab, FormControlLabel, Stack, Typography } fr
 import dayjs from 'dayjs';
 import { db } from '../../api/firebaseConfig';
 import { 
-  collection, addDoc, deleteDoc, updateDoc, doc, arrayUnion, writeBatch, serverTimestamp, increment, getDocs, query, where
+  addDoc, arrayUnion, collection, deleteField, doc, getDocs, increment, query, serverTimestamp, updateDoc, where, writeBatch
 } from 'firebase/firestore';
+import { deletePhotoFromStorage } from '../../api/firebaseStorage';
 
 import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
@@ -192,44 +193,64 @@ const ScheduleList = () => {
   const handleDeleteConfirm = async () => {
     if (!selectedSchedule?.id || !user?.uid) return;
 
+    const batch = writeBatch(db);
+    const userRef = doc(db, 'users', user.uid);
+
+    // 반복 일정 전체 삭제
     if (deleteAllRecurring && selectedSchedule.recurringId) {
-      // 1. 동일한 recurringId를 가진 모든 일정 문서
       const q = query(collection(db, 'events'), where('recurringId', '==', selectedSchedule.recurringId));
       const querySnapshot = await getDocs(q);
       
-      const batch = writeBatch(db);
       let totalPointsToDeduct = 0;
+  
+      for (const eventDoc of querySnapshot.docs) {
+        // 각 일정의 event_results 하위 컬렉션 확인 및 삭제
+        const resultsRef = collection(db, 'events', eventDoc.id, 'event_results');
+        const resultsSnapshot = await getDocs(resultsRef);
 
-      // 2. 찾은 모든 문서를 삭제하고, 차감할 마일리지를 계산
-      querySnapshot.forEach((document) => {
-        const eventData = document.data();
-        batch.delete(document.ref);
-        totalPointsToDeduct += 5; // 생성 포인트
-        if (eventData.result) {
-          totalPointsToDeduct += 5; // 결과 등록 포인트
+        // 결과가 없으면 삭제
+        if (resultsSnapshot.empty) {
+          totalPointsToDeduct += 5; // 일정 생성 포인트만 차감
+          batch.delete(eventDoc.ref);
+        } else {
+          // 결과가 있으면 반복 속성만 제거하여 단일 일정으로 남김
+          batch.update(eventDoc.ref, {
+            isRecurring: deleteField(),
+            recurringId: deleteField()
+          });
         }
-      });
-
-      // 3. 계산된 총 마일리지를 차감
-      const userRef = doc(db, 'users', user.uid);
-      batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
-
-      await batch.commit();
-
+      }
+      if (totalPointsToDeduct > 0) {
+        batch.update(userRef, { mileage: increment(-totalPointsToDeduct) });
+      }
     } else {
       // 단일 일정 삭제
-      await deleteDoc(doc(db, 'events', selectedSchedule.id));
-      let pointsToDeduct = 5;
-      if (selectedSchedule.result) {
-        pointsToDeduct += 5;
+      let pointsToDeduct = 5; // 일정 생성 포인트
+      const eventRef = doc(db, 'events', selectedSchedule.id);
+  
+      // event_results 하위 컬렉션 확인 및 삭제
+      const resultsRef = collection(db, 'events', selectedSchedule.id, 'event_results');
+      const resultsSnapshot = await getDocs(resultsRef);
+      if (!resultsSnapshot.empty) {
+        pointsToDeduct += 5; // 결과 등록 포인트
+        for (const resultDoc of resultsSnapshot.docs) {
+          const resultData = resultDoc.data();
+            if (resultData.photoList && resultData.photoList.length > 0) {
+              for (const url of resultData.photoList) {
+                await deletePhotoFromStorage(url); // Storage에서 사진 파일 삭제
+              }
+            }
+            batch.delete(resultDoc.ref);
+        }
       }
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { mileage: increment(-pointsToDeduct) });
+      batch.delete(eventRef);
+      batch.update(userRef, { mileage: increment(-pointsToDeduct) });
     }
-
+  
+    await batch.commit();
     setDeleteOpen(false);
     setRefreshKey((prev) => prev + 1);
-  }
+  };
   
   const handleResultDialog = (schedule) => {
     setResultTarget(schedule);
@@ -237,14 +258,32 @@ const ScheduleList = () => {
   };
 
   const handleResult = async (id, { type, result, memo, photoList }) => {
-    if (!id) return;  // 예외 처리
-    const docRef = doc(db, 'events', id);
-    await updateDoc(docRef, {
-      result, memo,
-      photoList: arrayUnion(...photoList),   // 사진은 여러 장 저장할 수 있으니 배열 유지
-    });
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { mileage: increment(5) });
+    if (!id || !user?.uid) return;  // 예외 처리
+
+    const resultsCollectionRef = collection(db, 'events', id, 'event_results');
+    const q = query(resultsCollectionRef);
+    const snapshot = await getDocs(q);
+
+    const dataToSave = {
+      result, memo, uid: user.uid, eventId: id,
+      createdAt: serverTimestamp(),
+      photoList: photoList // 새로 업로드된 사진 목록
+    };
+
+    // 기존 결과가 없으면 새로 추가하고 마일리지 5점 추가
+    if (snapshot.empty) {
+      await addDoc(resultsCollectionRef, dataToSave);
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { mileage: increment(5) });
+    } else {
+      // 기존 결과가 있으면 첫 번째 문서를 업데이트 (사진은 기존 배열에 추가)
+      const resultDocRef = snapshot.docs[0].ref;
+      await updateDoc(resultDocRef, {
+        result,
+        memo,
+        photoList: arrayUnion(...photoList)
+      });
+    }
     
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
@@ -319,13 +358,12 @@ const ScheduleList = () => {
       />
 
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDeleteConfirm}>
-        "{selectedSchedule?.date} {selectedSchedule?.type}" 일정을 삭제하시겠습니까? <br />
-        이 작업은 되돌릴 수 없습니다.
+        "{selectedSchedule?.date} {selectedSchedule?.type}" 일정을 삭제하시겠습니까? 
         {selectedSchedule?.isRecurring && (
           <Box sx={{ mt: 2, textAlign: 'left' }}>
             <FormControlLabel
               control={<Checkbox checked={deleteAllRecurring} onChange={(e) => setDeleteAllRecurring(e.target.checked)} />}
-              label="이 반복 일정 전체를 삭제합니다."
+              label="이 반복 일정 전체를 삭제합니다. 단 결과가 입력된 일정은 삭제되지 않습니다."
             />
           </Box>
         )}
