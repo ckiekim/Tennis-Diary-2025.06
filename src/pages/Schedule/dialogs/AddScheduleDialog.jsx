@@ -6,10 +6,8 @@ import {
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
-// import dayjs from 'dayjs';
 
 const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
-// const weekDaysKorMap = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function AddScheduleDialog({
   courts, open, form, setOpen, setForm, onAddSchedule, onAddRecurringSchedule, isClubSchedule = false
@@ -31,17 +29,6 @@ export default function AddScheduleDialog({
   const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
   const isTournament = useMemo(() => form?.type === "대회", [form?.type]);
   const isGame = useMemo(() => form?.type === "게임", [form?.type]);
-
-  // useEffect(() => {
-  //   if (open && selectedDate) {
-  //     setForm(prevForm => ({ ...prevForm, date: selectedDate.format('YYYY-MM-DD') }));
-  //     const dayOfWeekIndex = selectedDate.day();  // 일요일=0, 월요일=1 ... 토요일=6을 반환
-  //     const selectedDay = weekDaysKorMap[dayOfWeekIndex];
-  //     // 반복 옵션의 첫 번째 요일(day1)을 선택된 요일로 업데이트
-  //     setRecurringOptions(prevOptions => ({ ...prevOptions, day1: selectedDay, }));
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [open, selectedDate]);
 
   useEffect(() => {
     if (isJeongmo && isRecurring) {

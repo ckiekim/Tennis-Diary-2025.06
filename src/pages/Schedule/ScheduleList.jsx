@@ -85,7 +85,7 @@ const ScheduleList = () => {
     const isCustom = form.place && !courtNames.includes(form.place);
     const dataToSubmit = {
       ...form,
-      uid: user.uid,
+      uid: user.uid, participantUids: [user.uid],
       date: selectedDate.format('YYYY-MM-DD'),
       isPlaceCustom: isCustom,
       createdAt: serverTimestamp()
@@ -127,9 +127,8 @@ const ScheduleList = () => {
       const newEventRef = doc(collection(db, 'events'));
       const dataToSave = {
         uid: user.uid, type: form.type, date: date.format('YYYY-MM-DD'),
-        time, place: form.place, price: Number(monthlyPrice),
-        isRecurring: true, 
-        recurringId: recurringId,
+        time, place: form.place, price: Number(monthlyPrice), participantUids: [user.uid],
+        isRecurring: true, recurringId: recurringId,
         createdAt: serverTimestamp()
       }
       if (form.type === '정모') {
