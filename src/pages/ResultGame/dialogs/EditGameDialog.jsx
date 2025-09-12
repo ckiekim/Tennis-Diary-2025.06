@@ -1,3 +1,4 @@
+// EditGameDialog.jsx (최종 수정본)
 import React, { useEffect, useState } from 'react';
 import { 
   Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, ImageList, ImageListItem,
@@ -6,7 +7,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import useCourtList from '../../../hooks/useCourtList';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import formatDay from '../../../utils/formatDay';
@@ -16,8 +17,8 @@ import { gameTypes } from '../../../constants/typeGames';
 import { v4 as uuidv4 } from 'uuid';
 import AlertDialog from '../../../components/AlertDialog';
 
-export default function EditGameDialog({ open, onClose, result, uid, resultData }) {
-  const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
+export default function EditGameDialog({ open, onClose, eventData, resultData, uid }) {
+  const [form, setForm] = useState({});
   const [results, setResults] = useState([]);
   const courts = useCourtList();
   const [newFiles, setNewFiles] = useState([]);
@@ -26,10 +27,14 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    setForm({ ...result });
-    setResults(result.result ? stringToResults(result.result) : [{ id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
-    setNewFiles([]);
-  }, [open, result]);
+    if (open) {
+      // form 상태를 두 데이터 소스를 합쳐서 초기화
+      const mergedData = { ...eventData, ...resultData };
+      setForm(mergedData);
+      setResults(mergedData.result ? stringToResults(mergedData.result) : [{ id: uuidv4(), type: '', win: '', draw: '0', loss: '' }]);
+      setNewFiles([]);
+    }
+  }, [open, eventData, resultData]);
 
   const handleResultChange = (id, field, value) => {
     setResults(results.map(r => 
@@ -50,7 +55,7 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
   };
 
   const handleImageDelete = (index) => {
-    const updatedPhotos = [...form.photoList];
+    const updatedPhotos = [...(form.photoList || [])];
     updatedPhotos.splice(index, 1);
     setForm({ ...form, photoList: updatedPhotos });
   };
@@ -58,8 +63,7 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
   const handleUpdate = async () => {
     setUpdating(true);
     try {
-      // 사진 관리 로직
-      const originalUrls = result.photoList || [];
+      const originalUrls = resultData.photoList || [];
       const currentUrls = form.photoList || [];
       const removedUrls = originalUrls.filter((url) => !currentUrls.includes(url));
       for (const url of removedUrls) {
@@ -72,26 +76,23 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
       }
       const finalPhotoList = [...currentUrls, ...newPhotoUrls];
       
-      // 업데이트 로직 분리
-      // Part 1: events 문서 업데이트
-      const eventDocRef = doc(db, 'events', result.id);
-      await updateDoc(eventDocRef, {
-        place: form.place,
-        source: form.source,
+      const batch = writeBatch(db);
+      const eventDocRef = doc(db, 'events', eventData.id);
+      batch.update(eventDocRef, {
+        place: form.place || '',
+        source: form.source || '',
         price: Number(form.price) || 0,
       });
-
-      // Part 2: event_results 문서 업데이트 (결과가 있는 경우에만)
       if (resultData?.id) {
-        const resultDocRef = doc(db, 'events', result.id, 'event_results', resultData.id);
+        const resultDocRef = doc(db, 'events', eventData.id, 'event_results', resultData.id);
         const resultString = resultsToString(results);
-        await updateDoc(resultDocRef, {
+        batch.update(resultDocRef, {
           result: resultString,
-          memo: form.memo,
+          memo: form.memo || '',
           photoList: finalPhotoList,
         });
       }
-
+      await batch.commit();
       onClose();
     } catch (err) {
       console.error('업데이트 실패:', err);
@@ -102,6 +103,8 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
     }
   };
 
+  if (!form || !eventData) return null; // 데이터가 없을 경우 렌더링 방지
+
   return (
     <>
       <Dialog open={open} onClose={onClose} fullWidth>
@@ -109,10 +112,10 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
         <DialogContent>
           <Stack spacing={2} mt={0.5}>
             <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-              일시: {`${result.date} (${formatDay(result.date)}) ${result.time}`}
+              일시: {`${form.date} (${formatDay(form.date)}) ${form.time}`}
             </Typography>
             <TextField
-              label="장소" select fullWidth value={form?.place || ''} size='small'
+              label="장소" select fullWidth value={form.place || ''} size='small'
               onChange={(e) => setForm({ ...form, place: e.target.value })}>
               {courts.map((court) => (
                 <MenuItem key={court.id} value={court.name}>
@@ -152,7 +155,7 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
               </Button>
             </Stack>
             <TextField
-              label="소스" fullWidth value={form?.source || ''} size='small'
+              label="소스" fullWidth value={form.source || ''} size='small'
               onChange={(e) => setForm({ ...form, source: e.target.value })}
             />
             <TextField
@@ -160,7 +163,7 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
               onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
             />
             <TextField
-              label="메모" fullWidth value={form?.memo || ''} size='small'
+              label="메모" fullWidth multiline rows={3} value={form.memo || ''} size='small'
               onChange={(e) => setForm({ ...form, memo: e.target.value })}
             />
 
@@ -169,7 +172,6 @@ export default function EditGameDialog({ open, onClose, result, uid, resultData 
               <input hidden multiple accept="image/*" type="file" onChange={handleFileChange} />
             </Button>
 
-            {/* 미리보기 삭제 가능한 사진 리스트 */}
             {form.photoList && form.photoList.length > 0 && (
               <ImageList cols={3} gap={8}>
                 {form.photoList.map((url, index) => (
