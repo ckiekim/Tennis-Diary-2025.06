@@ -1,68 +1,59 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, orderBy, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
+import { collection, getDocs, orderBy, onSnapshot, query, where } from 'firebase/firestore';
 import useAuthState from './useAuthState';
 
-const useClubSchedules = (clubId) => {
+export default function useClubSchedules(clubId, refreshKey = 0) {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthState();
 
   useEffect(() => {
     if (!clubId || !user) {
-      setSchedules([]);
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    // 'events' 컬렉션에서 'club.id' 필드가 현재 clubId와 일치하는 문서들을 찾습니다.
-    // 날짜 오름차순으로 정렬합니다.
     const q = query(
       collection(db, 'events'),
       where('club.id', '==', clubId),
-      orderBy('date', 'asc')
+      orderBy('date', 'desc'),
+      orderBy('time', 'asc')
     );
 
-    const unsubscribe = onSnapshot(q, async (querySnapshot) => { // 콜백을 async 함수로 변경
-      const schedulesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const schedulesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Firestore에서 받아온 일정이 하나도 없을 경우,
+      // 즉시 상태를 업데이트하고 로직을 종료합니다.
+      if (schedulesData.length === 0) {
+        setSchedules([]);
+        setLoading(false);
+        return; // 여기서 함수 실행을 멈춥니다.
+      }
 
-      // 각 일정의 결과 정보를 추가로 가져오는 로직 ---
-      const schedulesWithResultInfo = await Promise.all(schedulesData.map(async (schedule) => {
+      // 각 일정별로 현재 유저가 결과를 입력했는지 확인
+      const checkResultsPromises = schedulesData.map(async (schedule) => {
         const resultsRef = collection(db, 'events', schedule.id, 'event_results');
-        const resultsSnapshot = await getDocs(resultsRef);
+        const userResultQuery = query(resultsRef, where('uid', '==', user.uid));
+        const userResultSnapshot = await getDocs(userResultQuery);
+        return { ...schedule, userHasSubmitted: !userResultSnapshot.empty };
+      });
 
-        let hasResult = false;
-        let currentUserHasSubmittedResult = false;
-
-        if (!resultsSnapshot.empty) {
-          hasResult = true; // 결과가 하나라도 있으면 true
-          // 결과 목록을 순회하며 현재 사용자가 쓴 글이 있는지 확인
-          for (const doc of resultsSnapshot.docs) {
-            if (doc.data().uid === user.uid) {
-              currentUserHasSubmittedResult = true;
-              break; // 찾았으면 더 이상 순회할 필요 없음
-            }
-          }
-        }
-
-        return { ...schedule, hasResult, currentUserHasSubmittedResult };
-      }));
-      setSchedules(schedulesWithResultInfo);
-      setLoading(false);
+      Promise.all(checkResultsPromises).then(results => {
+        setSchedules(results);
+        setLoading(false);
+      });
     }, (error) => {
-      console.error("클럽 일정 가져오기 실패:", error);
+      console.error("Error fetching club schedules: ", error);
       setLoading(false);
     });
 
-    // 컴포넌트가 언마운트될 때 실시간 리스너를 정리합니다.
+    // Clean up the listener on component unmount or when dependencies change
     return () => unsubscribe();
-  }, [clubId, user]);
+
+  }, [clubId, user, refreshKey]); 
 
   return { schedules, loading };
-};
-
-export default useClubSchedules;
+}

@@ -9,7 +9,7 @@ import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
 
-export const useClubDetailManager = (clubId, user) => {
+export const useClubDetailManager = (clubId, user, members, refreshSchedules) => {
   const navigate = useNavigate();
   const { docData: club } = useSnapshotDocument('clubs', clubId);
 
@@ -125,9 +125,16 @@ export const useClubDetailManager = (clubId, user) => {
 
   const handleAddSchedule = async (scheduleForm) => {
     if (!scheduleForm.time || !scheduleForm.place) return handleAlert('시간과 장소를 입력해주세요.');
+    
+    // members 배열에서 모든 멤버의 uid를 추출합니다.
+    const memberUids = members ? members.map(member => member.id) : [];
+    // 생성자도 참여자에 포함되도록 Set을 사용하여 중복을 제거합니다.
+    const participants = Array.from(new Set([...memberUids, user.uid]));
+
     const dataToSubmit = {
       ...scheduleForm,
-      uid: user.uid,
+      uid: user.uid, // 생성자
+      participantUids: participants, // 모든 클럽 멤버 참여자로 추가
       date: scheduleForm.date ? dayjs(scheduleForm.date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
       club: { id: clubId, name: club.name },
       createdAt: serverTimestamp(),
@@ -135,6 +142,7 @@ export const useClubDetailManager = (clubId, user) => {
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddScheduleOpen(false);
+    refreshSchedules();
   };
 
   const handleUpdateSchedule = async () => {
@@ -146,6 +154,7 @@ export const useClubDetailManager = (clubId, user) => {
     }
     await updateDoc(doc(db, 'events', id), updateData);
     setEditScheduleOpen(false);
+    refreshSchedules();
   };
 
   const handleAddRecurringSchedule = async (recurringOptions, scheduleForm) => {
@@ -157,10 +166,13 @@ export const useClubDetailManager = (clubId, user) => {
     }
 
     const batch = writeBatch(db);
-    const recurringId = doc(collection(db, 'events')).id; // 고유 ID 생성
+    const recurringId = doc(collection(db, 'events')).id;
     const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
     
-    // 다이얼로그에서는 selectedDate가 없으므로 오늘 날짜를 기준으로 시작
+    // 모든 멤버의 uid를 미리 추출합니다.
+    const memberUids = members ? members.map(member => member.id) : [];
+    const participants = Array.from(new Set([...memberUids, user.uid]));
+    
     let currentDate = dayjs(); 
     const finalDate = dayjs(endDate);
     let eventCount = 0;
@@ -169,12 +181,13 @@ export const useClubDetailManager = (clubId, user) => {
       const newEventRef = doc(collection(db, 'events'));
       const dataToSave = {
         uid: user.uid,
-        type: scheduleForm.type, // '정모'
+        participantUids: participants, // 모든 클럽 멤버 참여자로 추가
+        type: scheduleForm.type,
         date: date.format('YYYY-MM-DD'),
         time,
         place: scheduleForm.place,
         price: Number(monthlyPrice) || 0,
-        club: { id: clubId, name: club.name }, // 클럽 정보 주입
+        club: { id: clubId, name: club.name },
         isRecurring: true, 
         recurringId: recurringId,
         createdAt: serverTimestamp()
@@ -203,6 +216,7 @@ export const useClubDetailManager = (clubId, user) => {
     await batch.commit();
 
     setAddScheduleOpen(false);
+    refreshSchedules();
   };
 
   const handleDeleteSchedule = async () => {
@@ -278,6 +292,7 @@ export const useClubDetailManager = (clubId, user) => {
     } finally {
       setDeleteScheduleOpen(false);
       setDeleteAllRecurring(false);
+      refreshSchedules();
     }
   };
 

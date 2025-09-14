@@ -11,7 +11,7 @@ import useClubSchedules from '../../hooks/useClubSchedules';
 import useCourtList from '../../hooks/useCourtList';
 import { useClubDetailManager } from '../../hooks/useClubDetailManager';
 import { db } from '../../api/firebaseConfig';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { arrayUnion, collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 import MainLayout from '../../components/MainLayout';
 import ClubHeader from './components/ClubHeader';
@@ -28,6 +28,8 @@ const ClubDetailPage = () => {
   const [scheduleForm, setScheduleForm] = useState(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [resultTarget, setResultTarget] = useState(null);
+  const [scheduleRefreshKey, setScheduleRefreshKey] = useState(0);
+  const refreshSchedules = () => setScheduleRefreshKey(prev => prev + 1);
 
   // --- 데이터 페칭 ---
   const { user, loading: authLoading } = useAuthState();
@@ -37,11 +39,11 @@ const ClubDetailPage = () => {
     documents: posts, loading: postsLoading, loadingMore, hasMore, loadMore, refresh: refreshPosts 
   } = usePaginatedSubcollection(`clubs/${clubId}/posts`,
     { orderByField: 'createdAt', direction: 'desc', limitCount: 5 });
-  const { schedules: clubSchedules, loading: schedulesLoading } = useClubSchedules(clubId);
+  const { schedules: clubSchedules, loading: schedulesLoading } = useClubSchedules(clubId, scheduleRefreshKey);
   const { docData: currentUserProfile } = useSnapshotDocument('users', user?.uid);
   const courts = useCourtList();
   
-  const manager = useClubDetailManager(clubId, user);
+  const manager = useClubDetailManager(clubId, user, members, refreshSchedules);
 
   const handleOpenAddSchedule = () => {
     if (club) {
@@ -64,24 +66,30 @@ const ClubDetailPage = () => {
   const handleResultSubmit = async (id, { type, result, memo, photoList }) => {
     if (!id || !user?.uid) return;
 
-    const resultsCollectionRef = collection(db, 'events', id, 'event_results');
+    // 일괄 쓰기를 사용하여 두 개의 작업을 원자적으로 실행
+    const batch = writeBatch(db);
 
+    // 작업 1: event_results 하위 컬렉션에 새 결과 문서 추가
+    const newResultRef = doc(collection(db, 'events', id, 'event_results'));
     const dataToSave = {
       result, memo, 
-      uid: user.uid, // 결과를 입력한 사람의 uid
+      uid: user.uid,
       eventId: id,
       createdAt: serverTimestamp(),
       photoList,
     };
+    batch.set(newResultRef, dataToSave);
 
-    await addDoc(resultsCollectionRef, dataToSave);
+    // 작업 2: 부모 event 문서의 participantUids 배열에 현재 사용자 uid 추가
+    const eventRef = doc(db, 'events', id);
+    batch.update(eventRef, {
+      participantUids: arrayUnion(user.uid)
+    });
 
-    // 개인 마일리지 정책 등은 여기에 추가할 수 있습니다.
-    // 예: const userRef = doc(db, 'users', user.uid);
-    // await updateDoc(userRef, { mileage: increment(5) });
+    await batch.commit(); // 두 작업을 한 번에 실행
 
     setResultOpen(false);
-    // TODO: useClubSchedules 훅을 새로고침하는 로직이 필요할 수 있습니다.
+    refreshSchedules(); // 클럽 스케줄 목록 새로고침
   };
 
   // --- 로딩 및 권한 관리 ---
