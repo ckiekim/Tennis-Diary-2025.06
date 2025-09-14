@@ -11,7 +11,7 @@ import useClubSchedules from '../../hooks/useClubSchedules';
 import useCourtList from '../../hooks/useCourtList';
 import { useClubDetailManager } from '../../hooks/useClubDetailManager';
 import { db } from '../../api/firebaseConfig';
-import { arrayUnion, collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { arrayUnion, collection, doc, getDocs, query, updateDoc, where, serverTimestamp, writeBatch } from 'firebase/firestore';
 
 import MainLayout from '../../components/MainLayout';
 import ClubHeader from './components/ClubHeader';
@@ -62,37 +62,46 @@ const ClubDetailPage = () => {
     setResultOpen(true);
   };
 
-  // 3. 결과를 DB에 저장하는 핸들러 (ScheduleList.jsx의 로직과 동일)
   const handleResultSubmit = async (id, { type, result, memo, photoList }) => {
     if (!id || !user?.uid) return;
 
-    // 일괄 쓰기를 사용하여 두 개의 작업을 원자적으로 실행
-    const batch = writeBatch(db);
+    const resultsCollectionRef = collection(db, 'events', id, 'event_results');
+    // 1. 현재 유저가 이미 결과를 냈는지 확인
+    const q = query(resultsCollectionRef, where('uid', '==', user.uid));
+    const existingResultSnapshot = await getDocs(q);
 
-    // 작업 1: event_results 하위 컬렉션에 새 결과 문서 추가
-    const newResultRef = doc(collection(db, 'events', id, 'event_results'));
-    const dataToSave = {
-      result, memo, 
-      uid: user.uid,
-      eventId: id,
-      createdAt: serverTimestamp(),
-      photoList,
-    };
-    batch.set(newResultRef, dataToSave);
+    if (existingResultSnapshot.empty) {
+      // 2-1. 기존 결과가 없으면: 새로 생성 (Create)
+      const batch = writeBatch(db);
+      
+      // 새 결과 문서 추가
+      const newResultRef = doc(collection(db, 'events', id, 'event_results'));
+      const dataToSave = {
+        result, memo, uid: user.uid, eventId: id,
+        createdAt: serverTimestamp(), photoList,
+      };
+      batch.set(newResultRef, dataToSave);
 
-    // 작업 2: 부모 event 문서의 participantUids 배열에 현재 사용자 uid 추가
-    const eventRef = doc(db, 'events', id);
-    batch.update(eventRef, {
-      participantUids: arrayUnion(user.uid)
-    });
+      // 부모 event 문서에 참여자 추가
+      const eventRef = doc(db, 'events', id);
+      batch.update(eventRef, { participantUids: arrayUnion(user.uid) });
 
-    await batch.commit(); // 두 작업을 한 번에 실행
+      await batch.commit();
+
+    } else {
+      // 2-2. 기존 결과가 있으면: 수정 (Update)
+      const existingDocRef = existingResultSnapshot.docs[0].ref;
+      await updateDoc(existingDocRef, {
+        result,
+        memo,
+        photoList, // 사진은 덮어쓰기 (또는 arrayUnion으로 추가도 가능)
+      });
+    }
 
     setResultOpen(false);
-    refreshSchedules(); // 클럽 스케줄 목록 새로고침
+    refreshSchedules();
   };
 
-  // --- 로딩 및 권한 관리 ---
   const isLoading = authLoading || clubLoading || membersLoading || postsLoading || schedulesLoading;
   if (isLoading) { 
     return (
@@ -114,7 +123,6 @@ const ClubDetailPage = () => {
   const isOwner = user?.uid === club.owner;
   const isMember = user ? members.some(member => member.id === user.uid) : false;
 
-  // --- 렌더링 ---
   return (
     <MainLayout title="클럽 상세">
       <Box p={2}>

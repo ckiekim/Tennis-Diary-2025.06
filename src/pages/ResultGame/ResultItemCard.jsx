@@ -37,7 +37,7 @@ export default function ResultItemCard({ eventId, eventData, resultData, current
       }
 
       // 2. event_results 서브컬렉션에서 이 결과 문서만 삭제
-      await deleteDoc(doc(db, 'events', eventId, resultData.id));
+      await deleteDoc(doc(db, 'events', eventId, 'event_results', resultData.id));
 
       // 3. 부모 event 문서의 participantUids 배열에서 현재 유저 uid 제거
       const eventRef = doc(db, 'events', eventId);

@@ -257,40 +257,53 @@ const ScheduleList = () => {
   };
 
   const handleResult = async (id, { type, result, memo, photoList }) => {
-    if (!id || !user?.uid) return;  // 예외 처리
+    if (!id || !user?.uid) return;
 
     const resultsCollectionRef = collection(db, 'events', id, 'event_results');
-    const q = query(resultsCollectionRef);
-    const snapshot = await getDocs(q);
+    // 1. 현재 유저가 이미 결과를 냈는지 확인
+    const q = query(resultsCollectionRef, where('uid', '==', user.uid));
+    const existingResultSnapshot = await getDocs(q);
 
-    const dataToSave = {
-      result, memo, uid: user.uid, eventId: id,
-      createdAt: serverTimestamp(),
-      photoList: photoList // 새로 업로드된 사진 목록
-    };
+    if (existingResultSnapshot.empty) {
+      // 2-1. 기존 결과가 없으면: 새로 생성 (Create)
+      const batch = writeBatch(db);
+      
+      // 새 결과 문서 추가
+      const newResultRef = doc(collection(db, 'events', id, 'event_results'));
+      const dataToSave = {
+        result, memo, uid: user.uid, eventId: id,
+        createdAt: serverTimestamp(), photoList,
+      };
+      batch.set(newResultRef, dataToSave);
 
-    // 기존 결과가 없으면 새로 추가하고 마일리지 5점 추가
-    if (snapshot.empty) {
-      await addDoc(resultsCollectionRef, dataToSave);
+      // 부모 event 문서에 참여자 추가
+      const eventRef = doc(db, 'events', id);
+      batch.update(eventRef, { participantUids: arrayUnion(user.uid) });
+      
+      // 마일리지 지급
       const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, { mileage: increment(5) });
+      batch.update(userRef, { mileage: increment(5) });
+
+      await batch.commit();
+
     } else {
-      // 기존 결과가 있으면 첫 번째 문서를 업데이트 (사진은 기존 배열에 추가)
-      const resultDocRef = snapshot.docs[0].ref;
-      await updateDoc(resultDocRef, {
+      // 2-2. 기존 결과가 있으면: 수정 (Update)
+      const existingDocRef = existingResultSnapshot.docs[0].ref;
+      await updateDoc(existingDocRef, {
         result,
         memo,
-        photoList: arrayUnion(...photoList)
+        photoList, // 사진은 덮어쓰기
       });
     }
     
     setResultOpen(false);
     setRefreshKey((prev) => prev + 1);
+    
     if (type === '대회')
       navigate('/result/tournament');
     else
       navigate('/result/game');
-  }
+  };
 
   const handleOpenAddDialog = () => {
     // 다이얼로그를 열기 전에, 현재 선택된 날짜로 form 상태를 미리 설정합니다.

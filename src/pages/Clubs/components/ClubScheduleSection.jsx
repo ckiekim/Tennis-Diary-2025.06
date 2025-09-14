@@ -59,6 +59,7 @@ const ClubScheduleSection = ({
                       {schedule.hasResult && <CheckCircleOutlineIcon sx={{ fontSize: 14, ml: 0.5, color: 'green' }} />}
                     </Box>
                   }
+                  secondaryTypographyProps={{ component: 'div' }}
                 />
               </ListItem>
             );
