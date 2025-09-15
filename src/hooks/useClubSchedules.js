@@ -36,9 +36,10 @@ export default function useClubSchedules(clubId, refreshKey = 0) {
       // 각 일정별로 현재 유저가 결과를 입력했는지 확인
       const checkResultsPromises = schedulesData.map(async (schedule) => {
         const resultsRef = collection(db, 'events', schedule.id, 'event_results');
-        const userResultQuery = query(resultsRef, where('uid', '==', user.uid));
-        const userResultSnapshot = await getDocs(userResultQuery);
-        return { ...schedule, userHasSubmitted: !userResultSnapshot.empty };
+        const allResultsSnapshot = await getDocs(query(resultsRef)); // 해당 일정의 모든 결과를 가져옴
+        const hasResult = !allResultsSnapshot.empty; // 결과가 하나라도 있는지 여부
+        const userHasSubmitted = hasResult ? allResultsSnapshot.docs.some(doc => doc.data().uid === user.uid) : false; // 내가 낸 결과가 있는지 여부
+        return { ...schedule, hasResult, userHasSubmitted };
       });
 
       Promise.all(checkResultsPromises).then(results => {

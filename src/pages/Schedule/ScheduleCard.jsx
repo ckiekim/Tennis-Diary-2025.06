@@ -1,8 +1,8 @@
 import { Box, IconButton, Typography } from '@mui/material';
 
+import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import NotesIcon from '@mui/icons-material/Notes';
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
   const isLesson = schedule.type === "레슨";
@@ -18,18 +18,18 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
       {/* 아이콘 버튼 영역 */}
       <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 0.25 }}>
         { onEdit && (
-          <IconButton size="small" onClick={() => onEdit(schedule)}>
-            <EditIcon fontSize="small" />
+          <IconButton size="small" onClick={() => onEdit(schedule)} title="수정">
+            <EditCalendarIcon fontSize="small" />
           </IconButton>
         )}
         { onDelete && (
-          <IconButton size="small" onClick={() => onDelete(schedule)}>
+          <IconButton size="small" onClick={() => onDelete(schedule)} title="삭제">
             <DeleteIcon fontSize="small" />
           </IconButton>
         )}
         { !isLesson && (
-          <IconButton size="small" onClick={() => onResult(schedule)}>
-            <NotesIcon fontSize="small" />
+          <IconButton size="small" onClick={() => onResult(schedule)} title="결과 입력">
+            <PostAddIcon fontSize="small" />
           </IconButton>
         )}
       </Box>
@@ -41,7 +41,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
         <>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>🧑‍🤝‍🧑</Box>
-            <Typography variant="body2">{schedule.club.name}</Typography>
+            <Typography variant="body2">{schedule.club?.name || schedule.club}</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>⏰</Box>

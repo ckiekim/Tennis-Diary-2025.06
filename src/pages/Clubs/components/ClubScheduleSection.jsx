@@ -1,7 +1,7 @@
 import { Box, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import dayjs from 'dayjs';
@@ -25,7 +25,7 @@ const ClubScheduleSection = ({
         {schedules.length > 0 ? (
           schedules.map(schedule => {
             const isPast = dayjs().isAfter(dayjs(schedule.date), 'day'); // 지난 일정인지 확인
-            const canAddResult = isMember && isPast && !schedule.currentUserHasSubmittedResult;
+            const canAddResult = isMember && isPast && !schedule.userHasSubmitted;
             return (
               <ListItem
                 key={schedule.id}
@@ -43,7 +43,7 @@ const ClubScheduleSection = ({
                           <EditCalendarIcon fontSize="small" />
                         </IconButton>
                         <IconButton edge="end" size="small" onClick={() => onDeleteSchedule(schedule)} title="삭제">
-                          <DeleteForeverIcon fontSize="small" />
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </>
                     )}
@@ -51,12 +51,17 @@ const ClubScheduleSection = ({
                 }
               >
                 <ListItemText
-                  primary={`${schedule.type} - ${schedule.place}`}
+                  primary={
+                    <Typography variant="body2">
+                      {`${schedule.type} - ${schedule.place}`}
+                    </Typography>
+                  }
                   secondary={
-                    <Box display="flex" alignItems="center">
+                    <Box display="flex" alignItems="center" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
                       {`${dayjs(schedule.date).format('YYYY.MM.DD (ddd)')} ${schedule.time || ''}`}
-                      {/* 3. 결과가 있으면 체크 아이콘 표시 (선택 사항) */}
-                      {schedule.hasResult && <CheckCircleOutlineIcon sx={{ fontSize: 14, ml: 0.5, color: 'green' }} />}
+                      {schedule.hasResult && 
+                        <CheckCircleOutlineIcon sx={{ fontSize: '0.75rem', ml: 0.7, color: 'green', fontWeight: 'bold' }} />
+                      }
                     </Box>
                   }
                   secondaryTypographyProps={{ component: 'div' }}
