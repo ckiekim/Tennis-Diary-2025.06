@@ -3,10 +3,10 @@ import { Box, Typography, TextField, Button, Stack, Avatar, Divider, CircularPro
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import dayjs from 'dayjs';
 
-import { db } from '../../api/firebaseConfig';
-import useAuthState from '../../hooks/useAuthState';
-import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
-import AlertDialog from '../../components/AlertDialog';
+import { db } from '../../../api/firebaseConfig';
+import useAuthState from '../../../hooks/useAuthState';
+import useSnapshotSubcollection from '../../../hooks/useSnapshotSubcollection';
+import AlertDialog from '../../../components/AlertDialog';
 
 const Comments = memo(({ clubId, postId, currentUserProfile }) => {
   const { user: auth } = useAuthState();

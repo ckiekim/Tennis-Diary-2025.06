@@ -10,6 +10,7 @@ import Legend from './Legend';
 
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
+import '../Schedule.css';
 
 // 🗓 커스텀 헤더
 const KoreanCalendarHeader = ({ currentMonth, onMonthChange }) => {

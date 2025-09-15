@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
-import Posts from '../Posts'; // 기존 Posts 컴포넌트를 재사용합니다.
+import Posts from './Posts'; // 기존 Posts 컴포넌트를 재사용합니다.
 
 const ClubPostSection = ({
   clubId,

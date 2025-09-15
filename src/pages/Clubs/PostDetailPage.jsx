@@ -16,7 +16,7 @@ import MainLayout from '../../components/MainLayout';
 import EditPostDialog from './dialogs/EditPostDialog';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import AlertDialog from '../../components/AlertDialog';
-import Comments from './Comments';
+import Comments from './components/Comments';
 
 const PostDetailPage = () => {
   const { clubId, postId } = useParams();

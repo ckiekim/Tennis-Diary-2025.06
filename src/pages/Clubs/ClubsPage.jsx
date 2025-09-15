@@ -6,7 +6,7 @@ import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore
 import useMyClubs from '../../hooks/useMyClubs';
 import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
-import ClubCard from './ClubCard';
+import ClubCard from './components/ClubCard';
 import MainLayout from '../../components/MainLayout'; 
 import AddClubDialog from './dialogs/AddClubDialog'; 
 import AlertDialog from '../../components/AlertDialog';

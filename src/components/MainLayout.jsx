@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Container, IconButton, Toolbar, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import UserAvatar from './UserAvatar';
 import BottomNav from './BottomNav';
@@ -8,7 +8,7 @@ export default function MainLayout({ children, title = '' }) {
   const goToHome = () => { navigate('/'); }
 
   return (
-    <>
+    <Container maxWidth="sm">
       {/* 상단 AppBar */}
       <AppBar position="fixed" color="inherit" elevation={0}>
         <Toolbar sx={{ justifyContent: 'space-between', mt: 0.5 }}>
@@ -34,6 +34,6 @@ export default function MainLayout({ children, title = '' }) {
 
       {/* 하단 네비게이션 */}
       <BottomNav />
-    </>
+    </Container>
   );
 }
