@@ -8,7 +8,7 @@ import { auth } from '../api/firebaseConfig';
 
 const AuthGuard = () => {
   const { user, loading: authLoading } = useAuthState();
-  const { isNewUser, loading: settingsLoading } = useUserSettings();
+  const { settings, loading: settingsLoading } = useUserSettings();
   const location = useLocation(); // 현재 경로를 확인하기 위함
 
   // --- 리디렉션 결과 처리 ---
@@ -16,14 +16,11 @@ const AuthGuard = () => {
     const checkRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
-        // result가 null이 아니면, 방금 로그인을 마치고 돌아온 것
         if (result) {
-          // 이 때 사용자가 생성되거나 로그인 상태가 갱신됨
-          // useAuthState가 자동으로 변경을 감지하므로 특별한 처리는 불필요.
           console.log('리디렉션 로그인 성공:', result.user);
         }
       } catch (error) {
-        console.error('Google 로그인 결과 처리 실패:', error);
+        console.error('로그인 결과 처리 실패:', error);
       }
     };
     
@@ -44,9 +41,12 @@ const AuthGuard = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // 로그인이 되어 있고, 신규 사용자이며, 현재 경로가 '/setting'이 아니라면
+  // settings 객체가 있고, nickname과 location 필드가 모두 존재하는지 확인
+  const isProfileComplete = settings && settings.nickname && settings.location;
+
+  // 프로필이 완성되지 않았고, 현재 경로가 '/setting'이 아니라면
   // 프로필 설정 페이지로 리디렉션
-  if (isNewUser && location.pathname !== '/setting') {
+  if (!isProfileComplete && location.pathname !== '/setting') {
     return <Navigate to="/setting" replace />;
   }
 

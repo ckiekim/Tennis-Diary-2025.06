@@ -7,7 +7,7 @@ import useAuthState from '../../hooks/useAuthState';
 import useSnapshotDocument from '../../hooks/useSnapshotDocument';
 import useSnapshotSubcollection from '../../hooks/useSnapshotSubcollection';
 import usePaginatedSubcollection from '../../hooks/usePaginatedSubcollection';
-import useClubSchedules from '../../hooks/useClubSchedules';
+import usePaginatedClubSchedules from '../../hooks/usePaginatedClubSchedules';
 import useCourtList from '../../hooks/useCourtList';
 import { useClubDetailManager } from '../../hooks/useClubDetailManager';
 import { db } from '../../api/firebaseConfig';
@@ -39,7 +39,13 @@ const ClubDetailPage = () => {
     documents: posts, loading: postsLoading, loadingMore, hasMore, loadMore, refresh: refreshPosts 
   } = usePaginatedSubcollection(`clubs/${clubId}/posts`,
     { orderByField: 'createdAt', direction: 'desc', limitCount: 5 });
-  const { schedules: clubSchedules, loading: schedulesLoading } = useClubSchedules(clubId, scheduleRefreshKey);
+  const { 
+    schedules: clubSchedules, 
+    loading: schedulesLoading,
+    loadingMore: schedulesLoadingMore,
+    hasMore: schedulesHasMore,
+    loadMore: schedulesLoadMore
+  } = usePaginatedClubSchedules(clubId, scheduleRefreshKey);
   const { docData: currentUserProfile } = useSnapshotDocument('users', user?.uid);
   const courts = useCourtList();
   
@@ -152,6 +158,9 @@ const ClubDetailPage = () => {
             manager.setDeleteScheduleOpen(true);
           }}
           onResultClick={handleOpenResultDialog}
+          loadingMore={schedulesLoadingMore}
+          hasMore={schedulesHasMore}
+          onLoadMore={schedulesLoadMore}
         />
         <Divider sx={{ my: 1 }} />
         <ClubPostSection

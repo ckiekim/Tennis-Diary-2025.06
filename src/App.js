@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import dayjs from 'dayjs';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import 'dayjs/locale/ko';
 
 import AuthGuard from './components/AuthGuard';
@@ -29,6 +30,7 @@ import ClubDetailPage from './pages/Clubs/ClubDetailPage';
 import PostDetailPage from './pages/Clubs/PostDetailPage';
 
 const App = () => {
+  dayjs.extend(isSameOrAfter);
   dayjs.locale('ko');
 
   return (

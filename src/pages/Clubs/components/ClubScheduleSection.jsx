@@ -1,4 +1,4 @@
-import { Box, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, List, ListItem, ListItemText, Stack, Typography } from '@mui/material';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,7 +8,8 @@ import dayjs from 'dayjs';
 
 const ClubScheduleSection = ({
   schedules, isOwner, isMember, user,
-  onAddScheduleClick, onEditSchedule, onDeleteSchedule, onResultClick
+  onAddScheduleClick, onEditSchedule, onDeleteSchedule, onResultClick,
+  loadingMore, hasMore, onLoadMore
 }) => {
   return (
     <>
@@ -24,10 +25,10 @@ const ClubScheduleSection = ({
       <List dense sx={{ ml: 0 }}>
         {schedules.length > 0 ? (
           schedules.map(schedule => {
-            const isPast = dayjs().isAfter(dayjs(schedule.date), 'day'); // 지난 일정인지 확인
-            const canAddResult = isMember && isPast && !schedule.userHasSubmitted;
+            const isPastOrToday  = dayjs().isSameOrAfter(dayjs(schedule.date), 'day');
+            const canAddResult = isMember && isPastOrToday  && !schedule.userHasSubmitted;
             return (
-              <ListItem
+              <ListItem sx={{ py: 0 }}
                 key={schedule.id}
                 secondaryAction={
                   <Stack direction="row" spacing={0.2}>
@@ -75,6 +76,18 @@ const ClubScheduleSection = ({
           </Typography>
         )}
       </List>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0 }}>
+        {loadingMore ? (
+          <CircularProgress size={24} />
+        ) : (
+          hasMore && (
+            <Button onClick={onLoadMore} size="small">
+              더보기
+            </Button>
+          )
+        )}
+      </Box>
     </>
   );
 };
