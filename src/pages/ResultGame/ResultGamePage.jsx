@@ -3,7 +3,7 @@ import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 import usePaginatedEventsWithResults from '../../hooks/usePaginatedEventsWithResults';
 import useAuthState from '../../hooks/useAuthState';
 import MainLayout from '../../components/MainLayout';
-import GameCard from './GameCard';
+import GameCard from './components/GameCard';
 
 const ResultGamePage = () => {
   const { user } = useAuthState();

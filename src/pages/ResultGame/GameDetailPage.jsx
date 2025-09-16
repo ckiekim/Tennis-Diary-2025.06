@@ -1,4 +1,3 @@
-// GameDetailPage.jsx (수정된 파일)
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Box, Button, Divider, Stack, Typography, CircularProgress } from '@mui/material';
@@ -7,7 +6,7 @@ import useDocument from '../../hooks/useDocument';
 import useSubcollection from '../../hooks/useSubcollection';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
-import ResultItemCard from './ResultItemCard'; // 새로 만든 컴포넌트 import
+import ResultItemCard from './components/ResultItemCard';
 
 const GameDetailPage = () => {
   const { id } = useParams();

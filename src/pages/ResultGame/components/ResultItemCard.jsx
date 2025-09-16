@@ -1,14 +1,13 @@
-// ResultItemCard.jsx (새 파일)
 import { useState } from 'react';
 import { Button, Card, Dialog, DialogContent, Divider, ImageList, ImageListItem, Stack, Typography } from '@mui/material';
 import { doc, updateDoc, increment, deleteDoc, arrayRemove } from 'firebase/firestore';
-import { db } from '../../api/firebaseConfig';
-import { deletePhotoFromStorage } from '../../api/firebaseStorage';
+import { db } from '../../../api/firebaseConfig';
+import { deletePhotoFromStorage } from '../../../api/firebaseStorage';
 
-import EditGameDialog from './dialogs/EditGameDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
-import AlertDialog from '../../components/AlertDialog';
-import useDocument from '../../hooks/useDocument';
+import EditGameDialog from '../dialogs/EditGameDialog';
+import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
+import AlertDialog from '../../../components/AlertDialog';
+import useDocument from '../../../hooks/useDocument';
 
 // 개별 결과 카드를 표시하는 컴포넌트
 export default function ResultItemCard({ eventId, eventData, resultData, currentUser, onUpdate, isPersonal }) {

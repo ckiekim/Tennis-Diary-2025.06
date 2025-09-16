@@ -3,7 +3,7 @@ import { Box, CircularProgress, Stack, Typography } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import usePaginatedTournamentsWithResults from '../../hooks/usePaginatedTournamentsWithResults';
 import useAuthState from '../../hooks/useAuthState';
-import TournamentCard from './TournamentCard';
+import TournamentCard from './components/TournamentCard';
 
 const ResultTournamentPage = () => {
   const { user } = useAuthState();
