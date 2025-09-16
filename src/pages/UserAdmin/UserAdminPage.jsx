@@ -4,6 +4,10 @@ import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select,
 import MainLayout from '../../components/MainLayout';
 import usePaginatedUsers from '../../hooks/usePaginatedUsers';
 import { PLACEHOLDER_URL } from '../../constants/admin';
+import EmailIcon from '@mui/icons-material/Email';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const UserAdminPage = () => {
   const navigate = useNavigate();
@@ -83,25 +87,41 @@ const UserAdminPage = () => {
                   <Box sx={{ display:'flex', alignItems:'center' }}>
                     <Box
                       component="img" src={photoSrc} alt={user.nickname}
-                      sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 30, display: 'block', marginLeft: '4px' }}
+                      sx={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 24, display: 'block', marginLeft: '4px' }}
                       onError={handleImageError}
                     />
                     <Box sx={{ flex: 1, px: 1.2, py: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <Typography fontSize="14px" fontWeight="bold" noWrap>
+                      <Typography fontSize="13px" fontWeight="bold" noWrap>
                         {user.nickname}
                       </Typography>
-                      <Typography fontSize="13px">
-                        {user.email}
-                      </Typography>
-                      <Typography fontSize="12px">
-                        가입일: {user.joinDate}
-                      </Typography>
-                      <Typography fontSize="12px">
-                        지역: {user.location}
-                      </Typography>
-                      <Typography fontSize="12px">
-                        마일리지: {user.mileage ? user.mileage.toLocaleString() : '0'} 포인트
-                      </Typography>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <EmailIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography fontSize="12px">
+                            {user.email}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <MonetizationOnIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography fontSize="12px">
+                            {user.mileage?.toLocaleString() || 0}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <CalendarTodayIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography fontSize="12px">
+                            {user.joinDate}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <LocationOnIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
+                          <Typography fontSize="12px">
+                            {user.location}
+                          </Typography>
+                        </Box>
+                      </Stack>
                     </Box>
                   </Box>
                 </Card>
