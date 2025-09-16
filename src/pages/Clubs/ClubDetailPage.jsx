@@ -31,7 +31,6 @@ const ClubDetailPage = () => {
   const [scheduleRefreshKey, setScheduleRefreshKey] = useState(0);
   const refreshSchedules = () => setScheduleRefreshKey(prev => prev + 1);
 
-  // --- 데이터 페칭 ---
   const { user, loading: authLoading } = useAuthState();
   const { docData: club, loading: clubLoading } = useSnapshotDocument('clubs', clubId);
   const { documents: members, loading: membersLoading } = useSnapshotSubcollection(`clubs/${clubId}/members`, { orderByField: 'role' });
@@ -72,12 +71,12 @@ const ClubDetailPage = () => {
     if (!id || !user?.uid) return;
 
     const resultsCollectionRef = collection(db, 'events', id, 'event_results');
-    // 1. 현재 유저가 이미 결과를 냈는지 확인
+    // 현재 유저가 이미 결과를 냈는지 확인
     const q = query(resultsCollectionRef, where('uid', '==', user.uid));
     const existingResultSnapshot = await getDocs(q);
 
     if (existingResultSnapshot.empty) {
-      // 2-1. 기존 결과가 없으면: 새로 생성 (Create)
+      // 기존 결과가 없으면: 새로 생성 (Create)
       const batch = writeBatch(db);
       
       // 새 결과 문서 추가
@@ -95,7 +94,7 @@ const ClubDetailPage = () => {
       await batch.commit();
 
     } else {
-      // 2-2. 기존 결과가 있으면: 수정 (Update)
+      // 기존 결과가 있으면: 수정 (Update)
       const existingDocRef = existingResultSnapshot.docs[0].ref;
       await updateDoc(existingDocRef, {
         result,
@@ -143,10 +142,7 @@ const ClubDetailPage = () => {
         />
         <Divider sx={{ my: 1 }} />
         <ClubScheduleSection
-          schedules={clubSchedules}
-          isOwner={isOwner}
-          isMember={isMember}
-          user={user}
+          schedules={clubSchedules} isOwner={isOwner} isMember={isMember} user={user}
           onAddScheduleClick={handleOpenAddSchedule}
           onEditSchedule={(schedule) => {
             manager.setSelectedSchedule({ ...schedule, date: dayjs(schedule.date) });
@@ -158,9 +154,7 @@ const ClubDetailPage = () => {
             manager.setDeleteScheduleOpen(true);
           }}
           onResultClick={handleOpenResultDialog}
-          loadingMore={schedulesLoadingMore}
-          hasMore={schedulesHasMore}
-          onLoadMore={schedulesLoadMore}
+          loadingMore={schedulesLoadingMore} hasMore={schedulesHasMore} onLoadMore={schedulesLoadMore}
         />
         <Divider sx={{ my: 1 }} />
         <ClubPostSection
@@ -171,7 +165,6 @@ const ClubDetailPage = () => {
         />
       </Box>
 
-      {/* 하단 버튼 컴포넌트 추가 */}
       <Stack direction="row" spacing={2} justifyContent="center" my={3}>
         {isOwner && (
           <>
@@ -185,7 +178,6 @@ const ClubDetailPage = () => {
         <Button variant="contained" onClick={() => navigate('/clubs')}>뒤로</Button>
       </Stack>
 
-      {/* 모든 다이얼로그 관리 컴포넌트 */}
       <ClubDialogs 
         manager={manager} club={club} clubId={clubId} isMember={isMember} isOwner={isOwner}
         scheduleForm={scheduleForm} setScheduleForm={setScheduleForm}
@@ -193,11 +185,8 @@ const ClubDetailPage = () => {
         isClubSchedule={true}
       />
       <ResultDialog 
-        open={resultOpen} 
-        target={resultTarget} 
-        setOpen={setResultOpen} 
-        onResult={handleResultSubmit} 
-        uid={user?.uid}
+        open={resultOpen}  target={resultTarget} 
+        setOpen={setResultOpen}  onResult={handleResultSubmit}  uid={user?.uid}
       />
 
       <AlertDialog open={manager.isAlertOpen} onClose={() => manager.setIsAlertOpen(false)}>

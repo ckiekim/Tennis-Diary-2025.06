@@ -25,15 +25,15 @@ const ClubsPage = () => {
     if (!user || !userDoc) return;
 
     try {
-      // 1. Firestore Write Batch 시작
+      // Firestore Write Batch 시작
       const batch = writeBatch(db);
       const now = serverTimestamp();
 
-      // 2. 새로운 clubs 문서 참조 생성 (ID를 미리 확보)
+      // 새로운 clubs 문서 참조 생성 (ID를 미리 확보)
       const newClubRef = doc(collection(db, 'clubs'));
       const newClubId = newClubRef.id;
 
-      // 3. clubs 컬렉션에 문서 추가
+      // clubs 컬렉션에 문서 추가
       batch.set(newClubRef, {
         name: clubData.name,
         description: clubData.description,
@@ -45,7 +45,7 @@ const ClubsPage = () => {
         createdAt: now,
       });
 
-      // 4. clubs/{clubId}/members 서브컬렉션에 클럽장 정보 추가
+      // clubs/{clubId}/members 서브컬렉션에 클럽장 정보 추가
       const memberRef = doc(db, 'clubs', newClubId, 'members', user.uid);
       batch.set(memberRef, {
         username: userDoc.nickname,
@@ -55,7 +55,7 @@ const ClubsPage = () => {
         uid: user.uid     // for collectionGroup query
       });
 
-      // 5. users/{userId}/myClubs 서브컬렉션에 클럽 정보 추가
+      // users/{userId}/myClubs 서브컬렉션에 클럽 정보 추가
       const myClubRef = doc(db, 'users', user.uid, 'myClubs', newClubId);
       batch.set(myClubRef, {
         clubName: clubData.name,
@@ -66,7 +66,7 @@ const ClubsPage = () => {
         joinedAt: now,
       });
 
-      // 6. 모든 쓰기 작업을 한 번에 실행
+      // 모든 쓰기 작업을 한 번에 실행
       await batch.commit();
 
       setAddOpen(false); // 성공 시 다이얼로그 닫기

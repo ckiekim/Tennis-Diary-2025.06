@@ -39,29 +39,29 @@ const PostDetailPage = () => {
     setDeleteDialogOpen(false);
     
     try {
-      // 1. 삭제할 게시글과 댓글 컬렉션의 참조를 만듭니다.
+      // 1. 삭제할 게시글과 댓글 컬렉션의 참조
       const postRef = doc(db, 'clubs', clubId, 'posts', postId);
       const commentsRef = collection(postRef, 'comments');
 
-      // 2. 게시글에 달린 모든 댓글 문서를 가져옵니다.
+      // 2. 게시글에 달린 모든 댓글 문서를 가져옴
       const commentsQuery = query(commentsRef);
       const commentsSnapshot = await getDocs(commentsQuery);
 
-      // 3. Batch Write(일괄 쓰기) 작업을 시작합니다.
+      // 3. Batch Write(일괄 쓰기) 작업을 시작
       const batch = writeBatch(db);
 
-      // 4. 가져온 모든 댓글 문서를 batch에 추가하여 삭제하도록 설정합니다.
+      // 4. 가져온 모든 댓글 문서를 batch에 추가하여 삭제하도록 설정
       commentsSnapshot.forEach((commentDoc) => {
         batch.delete(commentDoc.ref);
       });
 
-      // 5. 마지막으로 게시글 문서도 batch에 추가하여 삭제하도록 설정합니다.
+      // 5. 마지막으로 게시글 문서도 batch에 추가하여 삭제하도록 설정
       batch.delete(postRef);
 
-      // 6. Batch에 담긴 모든 삭제 작업을 한 번에 실행합니다.
+      // 6. Batch에 담긴 모든 삭제 작업을 한 번에 실행
       await batch.commit();
 
-      // 7. 모든 작업이 성공하면 목록 페이지로 이동합니다.
+      // 7. 모든 작업이 성공하면 목록 페이지로 이동
       navigate(`/clubs/${clubId}`);
 
     } catch (error) {
@@ -155,7 +155,7 @@ const PostDetailPage = () => {
               </Button>
               <Button 
                 variant="outlined" color="error"
-                onClick={() => setDeleteDialogOpen(true)} // 삭제 버튼 클릭 시 다이얼로그를 엶
+                onClick={() => setDeleteDialogOpen(true)}
               >
                 삭제
               </Button>
@@ -167,7 +167,7 @@ const PostDetailPage = () => {
         </Box>
       </Box>
 
-      {post && ( // post 데이터가 로드된 후에 다이얼로그를 렌더링
+      {post && ( 
         <EditPostDialog
           open={editDialogOpen}
           onClose={() => setEditDialogOpen(false)}
@@ -180,8 +180,7 @@ const PostDetailPage = () => {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
       >
-        정말로 이 게시글을 삭제하시겠습니까? <br />
-        삭제된 데이터는 복구할 수 없습니다.
+        정말로 이 게시글을 삭제하시겠습니까? 
       </DeleteConfirmDialog>
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         {alertMessage}

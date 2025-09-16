@@ -13,10 +13,7 @@ const UserAdminPage = () => {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('joinDate');
   const [locationSearchText, setLocationSearchText] = useState('');
-  
   const { users, loading, loadingMore, hasMore, loadMore } = usePaginatedUsers(sortBy, locationSearchText);
-
-  // Intersection Observer 로직 추가
   const observerRef = useRef(null);
 
   const handleObserver = useCallback((entries) => {
@@ -49,9 +46,7 @@ const UserAdminPage = () => {
         <FormControl size="small" sx={{ minWidth: 120, maxWidth: 150 }}>
           <InputLabel id="sort-by-label">정렬</InputLabel>
           <Select
-            labelId="sort-by-label"
-            value={sortBy}
-            label="정렬"
+            labelId="sort-by-label" value={sortBy} label="정렬"
             onChange={(e) => setSortBy(e.target.value)}
           >
             <MenuItem value="joinDate">가입일순</MenuItem>
@@ -60,12 +55,8 @@ const UserAdminPage = () => {
           </Select>
         </FormControl>
 
-        {/* 지역 선택 Select를 TextField로 교체합니다. */}
         <TextField
-          size="small"
-          label="지역 검색"
-          variant="outlined"
-          value={locationSearchText}
+          size="small" label="지역 검색" variant="outlined" value={locationSearchText}
           onChange={(e) => setLocationSearchText(e.target.value)}
           sx={{ maxWidth: 150 }}
         />
@@ -129,7 +120,6 @@ const UserAdminPage = () => {
             )}
           </Stack>
             
-          {/* 감시할 요소 및 추가 로딩 인디케이터 */}
           <Box 
             ref={observerRef} 
             sx={{ display: 'flex', justifyContent: 'center', my: 2, height: '50px' }}
