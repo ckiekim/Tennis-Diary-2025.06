@@ -78,7 +78,7 @@ export default function CourtAdminPage() {
 
   return (
 	  <MainLayout title='코트 관리'>
-		  <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+		  <Grid container spacing={1} alignItems="center" sx={{ p: 1, mb: 1 }}>
         <Grid item xs={4} sx={{minWidth: 120, maxWidth: 140}}>
           <FormControl fullWidth size="small">
             <InputLabel>검색 기준</InputLabel>

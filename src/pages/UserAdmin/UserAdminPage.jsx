@@ -42,7 +42,7 @@ const UserAdminPage = () => {
 
   return (
     <MainLayout title="사용자 관리">
-      <Box sx={{ p: 1, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Box sx={{ p: 1, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', mb: 1 }}>
         <FormControl size="small" sx={{ minWidth: 120, maxWidth: 140 }}>
           <InputLabel id="sort-by-label">정렬</InputLabel>
           <Select
@@ -74,7 +74,7 @@ const UserAdminPage = () => {
               const photoSrc = isValidPhoto ? user.photo : '/img/no-image.jpeg';
 
               return (
-                <Card sx={{ mb: 0, p: 0 }} key={user.uid} onClick={() => navigate(`/tools/user/${user.uid}`)}>
+                <Card sx={{ my: 1, p: 0 }} key={user.uid} onClick={() => navigate(`/tools/user/${user.uid}`)}>
                   <Box sx={{ display:'flex', alignItems:'center' }}>
                     <Box
                       component="img" src={photoSrc} alt={user.nickname}
