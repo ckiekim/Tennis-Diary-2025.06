@@ -118,24 +118,47 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
       const memberUid = memberDoc.id;
       const myClubRef = db.doc(`users/${memberUid}/myClubs/${clubId}`);
       batch.delete(myClubRef);
+      batch.delete(memberDoc.ref);  // members 문서 자체도 삭제
     });
     
-    // (선택사항) 클럽 하위의 members 문서들 자체도 삭제
-    membersSnapshot.forEach((memberDoc) => {
-      batch.delete(memberDoc.ref);
-    });
+    // 4. 클럽의 모든 게시글(posts) 및 그 하위의 댓글(comments), 관련 스토리지 이미지 삭제
+    const postsSnapshot = await clubRef.collection("posts").get();
+    if (!postsSnapshot.empty) {
+      for (const postDoc of postsSnapshot.docs) {
+        // 각 게시글의 'comments' 하위 컬렉션 삭제
+        const commentsSnapshot = await postDoc.ref.collection("comments").get();
+        if (!commentsSnapshot.empty) {
+          commentsSnapshot.forEach((commentDoc) => {
+            batch.delete(commentDoc.ref);
+          });
+        }
+        // 게시글 이미지 삭제
+        const postData = postDoc.data();
+        if (postData.imageUrl) {
+          try {
+            const decodedUrl = decodeURIComponent(postData.imageUrl);
+            const pathStartIndex = decodedUrl.indexOf("/o/") + 3;
+            const pathEndIndex = decodedUrl.indexOf("?alt=media");
+            const filePath = decodedUrl.substring(pathStartIndex, pathEndIndex);
+            await storage.bucket().file(filePath).delete();
+          } catch (storageError) {
+            console.error(`게시글 이미지 삭제 실패 (Post ID: ${postDoc.id}):`, storageError);
+          }
+        }
+        // 게시글 문서 삭제
+        batch.delete(postDoc.ref);
+      }
+    }
 
-    // 4. 메인 'clubs' 컬렉션에서 클럽 문서 삭제
+    // 5. 메인 'clubs' 컬렉션에서 클럽 문서 삭제
     batch.delete(clubRef);
 
-    // 5. Batch 작업 실행
+    // 6. Batch 작업 실행
     await batch.commit();
 
-    // 6. 스토리지에서 클럽 대표 이미지 삭제
+    // 7. 스토리지에서 클럽 대표 이미지 삭제
     if (clubData.profileUrl) {
       try {
-        // URL에서 파일 경로를 추출해야 합니다.
-        // 예: https://firebasestorage.googleapis.com/v0/b/your-project.appspot.com/o/club_profiles%2Fimage.jpg?alt=media
         const decodedUrl = decodeURIComponent(clubData.profileUrl);
         const pathStartIndex = decodedUrl.indexOf("/o/") + 3;
         const pathEndIndex = decodedUrl.indexOf("?alt=media");
