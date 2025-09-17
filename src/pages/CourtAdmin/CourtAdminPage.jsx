@@ -16,10 +16,10 @@ export default function CourtAdminPage() {
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [selectedCourt, setSelectedCourt] = useState(null);
-	const [region, setRegion] = useState('');
-	const [isIndoor, setIsIndoor] = useState('');
+  const [searchType, setSearchType] = useState('name'); // 'name' 또는 'location'
+	const [searchTerm, setSearchTerm] = useState('');
 	
-	const filters = useMemo(() => ({ region, isIndoor }), [region, isIndoor]);
+	const filters = useMemo(() => ({ searchType, searchTerm }), [searchType, searchTerm]);
 	const { courts, loading, loadingMore, hasMore, loadMore, refresh } = usePaginatedCourts(filters);
 	const observerRef = useRef(null);
 
@@ -47,9 +47,6 @@ export default function CourtAdminPage() {
 			}
 		};
 	}, [handleObserver]);
-
-	const handleRegionChange = (e) => setRegion(e.target.value);
-	const handleIndoorChange = (e) => setIsIndoor(e.target.value);
 
 	const handleAddCourt = async (form) => {
 		await addDoc(collection(db, 'courts'), form);
@@ -82,20 +79,27 @@ export default function CourtAdminPage() {
   return (
 	  <MainLayout title='코트 관리'>
 		  <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
-        <Grid item xs={8} sx={{maxWidth: 200}}>
-          <TextField
-            label="지역" value={region} onChange={handleRegionChange} size="small" fullWidth
-          />
-        </Grid>
-        <Grid item xs={4}>
-          <FormControl fullWidth size="small" sx={{ minWidth: 100 }}>
-            <InputLabel>실내여부</InputLabel>
-            <Select value={isIndoor} onChange={handleIndoorChange} label="실내여부">
-              <MenuItem value="">전체</MenuItem>
-              <MenuItem value="true">실내</MenuItem>
-              <MenuItem value="false">실외</MenuItem>
+        <Grid item xs={4} sx={{minWidth: 120, maxWidth: 140}}>
+          <FormControl fullWidth size="small">
+            <InputLabel>검색 기준</InputLabel>
+            <Select 
+              value={searchType} 
+              onChange={(e) => setSearchType(e.target.value)} 
+              label="검색 기준"
+            >
+              <MenuItem value="name">코트 이름</MenuItem>
+              <MenuItem value="location">지역</MenuItem>
             </Select>
           </FormControl>
+        </Grid>
+        <Grid item xs={8} sx={{maxWidth: 140}}>
+          <TextField
+            label="검색어 입력"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
+            fullWidth
+          />
         </Grid>
       </Grid>
 

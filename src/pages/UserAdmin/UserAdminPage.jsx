@@ -43,7 +43,7 @@ const UserAdminPage = () => {
   return (
     <MainLayout title="사용자 관리">
       <Box sx={{ p: 1, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <FormControl size="small" sx={{ minWidth: 120, maxWidth: 150 }}>
+        <FormControl size="small" sx={{ minWidth: 120, maxWidth: 140 }}>
           <InputLabel id="sort-by-label">정렬</InputLabel>
           <Select
             labelId="sort-by-label" value={sortBy} label="정렬"
@@ -58,7 +58,7 @@ const UserAdminPage = () => {
         <TextField
           size="small" label="지역 검색" variant="outlined" value={locationSearchText}
           onChange={(e) => setLocationSearchText(e.target.value)}
-          sx={{ maxWidth: 150 }}
+          sx={{ maxWidth: 140 }}
         />
       </Box>
 
