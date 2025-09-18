@@ -185,61 +185,60 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
 exports.updateMyClubsOnClubChange = onDocumentUpdated({
     document: "clubs/{clubId}",
     region: "asia-northeast3",
-  },
-  async (event) => {
-    // 1. 변경 전/후 데이터 가져오기
-    const beforeData = event.data.before.data();
-    const afterData = event.data.after.data();
-    const { clubId } = event.params;
+  }, async (event) => {
+  // 1. 변경 전/후 데이터 가져오기
+  const beforeData = event.data.before.data();
+  const afterData = event.data.after.data();
+  const { clubId } = event.params;
 
-    // 2. 클럽 이름, 지역, 프로필 URL 중 하나라도 변경되었는지 확인
-    if (
-      beforeData.name === afterData.name &&
-      beforeData.region === afterData.region &&
-      beforeData.profileUrl === afterData.profileUrl
-    ) {
-      console.log(`클럽 [${clubId}]의 주요 정보 변경 없음. 업데이트를 건너뜁니다.`);
-      return null; // 변경 없으면 함수 종료
-    }
+  // 2. 클럽 이름, 지역, 프로필 URL 중 하나라도 변경되었는지 확인
+  if (
+    beforeData.name === afterData.name &&
+    beforeData.region === afterData.region &&
+    beforeData.profileUrl === afterData.profileUrl
+  ) {
+    console.log(`클럽 [${clubId}]의 주요 정보 변경 없음. 업데이트를 건너뜁니다.`);
+    return null; // 변경 없으면 함수 종료
+  }
 
-    console.log(`클럽 [${clubId}] 정보 변경 감지. 멤버들의 myClubs 업데이트 시작.`);
+  console.log(`클럽 [${clubId}] 정보 변경 감지. 멤버들의 myClubs 업데이트 시작.`);
 
-    // 3. 업데이트할 필드만 담은 객체 생성
-    const updatedFields = {
-      clubName: afterData.name,
-      region: afterData.region,
-      clubProfileUrl: afterData.profileUrl,
-    };
+  // 3. 업데이트할 필드만 담은 객체 생성
+  const updatedFields = {
+    clubName: afterData.name,
+    region: afterData.region,
+    clubProfileUrl: afterData.profileUrl,
+  };
 
-    // 4. 이 클럽에 속한 모든 멤버의 정보를 가져옵니다.
-    const membersSnapshot = await db
-      .collection(`clubs/${clubId}/members`)
-      .get();
+  // 4. 이 클럽에 속한 모든 멤버의 정보를 가져옵니다.
+  const membersSnapshot = await db
+    .collection(`clubs/${clubId}/members`)
+    .get();
 
-    if (membersSnapshot.empty) {
-      console.log(`클럽 [${clubId}]에 멤버가 없어 업데이트를 종료합니다.`);
-      return null;
-    }
+  if (membersSnapshot.empty) {
+    console.log(`클럽 [${clubId}]에 멤버가 없어 업데이트를 종료합니다.`);
+    return null;
+  }
 
-    // 5. Batch Write를 사용해 모든 멤버의 myClubs 문서를 원자적으로 업데이트
-    const batch = db.batch();
-    membersSnapshot.forEach((memberDoc) => {
-      const memberUid = memberDoc.id;
-      const myClubRef = db.doc(`users/${memberUid}/myClubs/${clubId}`);
-      batch.update(myClubRef, updatedFields);
-    });
-
-    try {
-      await batch.commit();
-      console.log(
-        `클럽 [${clubId}]의 ${membersSnapshot.size}명 멤버 정보 업데이트 성공.`
-      );
-      return { success: true };
-    } catch (error) {
-      console.error(
-        `클럽 [${clubId}] 멤버 정보 업데이트 중 오류 발생:`,
-        error
-      );
-      return { success: false, error: error.message };
-    }
+  // 5. Batch Write를 사용해 모든 멤버의 myClubs 문서를 원자적으로 업데이트
+  const batch = db.batch();
+  membersSnapshot.forEach((memberDoc) => {
+    const memberUid = memberDoc.id;
+    const myClubRef = db.doc(`users/${memberUid}/myClubs/${clubId}`);
+    batch.update(myClubRef, updatedFields);
   });
+
+  try {
+    await batch.commit();
+    console.log(
+      `클럽 [${clubId}]의 ${membersSnapshot.size}명 멤버 정보 업데이트 성공.`
+    );
+    return { success: true };
+  } catch (error) {
+    console.error(
+      `클럽 [${clubId}] 멤버 정보 업데이트 중 오류 발생:`,
+      error
+    );
+    return { success: false, error: error.message };
+  }
+});
