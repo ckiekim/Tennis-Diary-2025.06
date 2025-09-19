@@ -44,6 +44,7 @@ export const useScheduleManager = (selectedDate, user, courts) => {
     // ... 기존 handleAddSchedule 로직 ...
     const dataToSubmit = {
       ...formData,
+      price: Number(formData.price ?? 0),
       uid: user.uid,
       participantUids: [user.uid],
       createdAt: serverTimestamp()
@@ -105,8 +106,12 @@ export const useScheduleManager = (selectedDate, user, courts) => {
 
   const handleUpdate = async () => {
     if (!selectedSchedule?.id) return;
-    const { id, ...updateData } = selectedSchedule;
-    await updateDoc(doc(db, 'events', id), updateData);
+    const updateData = {
+      ...selectedSchedule,
+      price: Number(selectedSchedule.price ?? 0),
+    };
+    delete updateData.id;
+    await updateDoc(doc(db, 'events', selectedSchedule.id), updateData);
     setEditOpen(false);
   };
 

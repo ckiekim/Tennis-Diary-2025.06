@@ -85,7 +85,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           <Typography variant="body2">{schedule.source}</Typography>
         </Box>
       )}
-      {schedule.price && (
+      {schedule.price != null && (    // 0을 포함하여 null이나 undefined가 아닌 모든 경우에 표시
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>💰</Box>
           <Typography variant="body2">
