@@ -28,6 +28,7 @@ import AdvertisementPage from './pages/More/AdvertisementPage';
 import ClubsPage from './pages/Clubs/ClubsPage';
 import ClubDetailPage from './pages/Clubs/ClubDetailPage';
 import PostDetailPage from './pages/Clubs/PostDetailPage';
+import ExpensePage from './pages/Expense/ExpensePage';
 
 const App = () => {
   dayjs.extend(isSameOrAfter);
@@ -51,7 +52,7 @@ const App = () => {
           <Route path="/result/tournament/:id" element={<TournamentDetailPage />} />
           <Route path="/tools/goods" element={<GoodsPage />} />
           <Route path="/tools/goods/:id" element={<GoodsDetailPage />} />
-          <Route path="/tools/advertise" element={<AdvertisementPage />} />
+          <Route path="/tools/expense" element={<ExpensePage />} />
           <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/more/agreement" element={<AgreementPage />} />
@@ -67,6 +68,7 @@ const App = () => {
           <Route path="/tools/courts" element={<CourtAdminPage />} />
           <Route path="/tools/users" element={<UserAdminPage />} />
           <Route path="/tools/user/:uid" element={<UserDetailPage />} />
+          <Route path="/tools/advertise" element={<AdvertisementPage />} />
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}

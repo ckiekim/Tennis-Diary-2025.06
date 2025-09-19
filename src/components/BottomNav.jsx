@@ -19,6 +19,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import GroupsIcon from '@mui/icons-material/Groups';
 import WidgetsIcon from '@mui/icons-material/Widgets';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const BottomNav = () => {
   const [anchorElResult, setAnchorElResult] = useState(null);
@@ -81,8 +82,8 @@ const BottomNav = () => {
   };
 
   const handleMoreMenuClick = (path) => {
-    setAnchorElMore(null); // 메뉴를 닫습니다.
-    navigate(path); // 해당 경로로 이동합니다.
+    setAnchorElMore(null);
+    navigate(path);
   };
 
   return (
@@ -130,9 +131,9 @@ const BottomNav = () => {
           <CardGiftcardIcon fontSize="small" sx={{ mr: 1 }} />
           용품
         </MenuItem>
-        <MenuItem onClick={() => handleToolsMenuClick('/tools/advertise')}>
-          <StyleIcon fontSize="small" sx={{ mr: 1 }} />
-          홍보
+        <MenuItem onClick={() => handleToolsMenuClick('/tools/expense')}>
+          <ReceiptLongIcon fontSize="small" sx={{ mr: 1 }} />
+          비용
         </MenuItem>
         {isAdmin && [
           <Divider key="admin-divider" sx={{ my: 0.5 }} />,
@@ -143,6 +144,10 @@ const BottomNav = () => {
           <MenuItem key="users-menu" onClick={() => handleToolsMenuClick('/tools/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
             사용자관리
+          </MenuItem>,
+          <MenuItem key="adv-menu" onClick={() => handleToolsMenuClick('/tools/advertise')}>
+            <StyleIcon fontSize="small" sx={{ mr: 1 }} />
+            홍보
           </MenuItem>
         ]}
       </Menu>
