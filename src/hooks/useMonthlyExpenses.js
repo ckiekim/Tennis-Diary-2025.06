@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
 import dayjs from 'dayjs';
 
-export function useMonthlyExpenses(uid) {
+export default function useMonthlyExpenses(uid) {
   const [monthlyData, setMonthlyData] = useState({});
   const [loading, setLoading] = useState(true);
 

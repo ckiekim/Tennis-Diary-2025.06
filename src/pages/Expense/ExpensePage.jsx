@@ -3,9 +3,9 @@ import {
   Box, CircularProgress, Divider, Paper,
   Table, TableBody, TableCell, TableContainer, TableHead, TableFooter, TableRow, Typography
 } from '@mui/material'; 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useAuthState from '../../hooks/useAuthState';
-import { useMonthlyExpenses } from '../../hooks/useMonthlyExpenses';
+import useMonthlyExpenses from '../../hooks/useMonthlyExpenses';
 import MainLayout from '../../components/MainLayout';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import typeColors from '../../constants/typeColors';
@@ -47,7 +47,6 @@ const ExpensePage = () => {
       acc[key] = chartData.reduce((sum, item) => sum + (item[key] || 0), 0);
       return acc;
     }, {});
-    
     grandTotal = chartData.reduce((sum, item) => sum + (item.total || 0), 0);
 
     // 누계에 따라 내림차순으로 카테고리 정렬
@@ -60,7 +59,6 @@ const ExpensePage = () => {
     }
     return tickItem;
   };
-
   const formatTooltip = (value) => `${value.toLocaleString()}원`;
 
   return (
@@ -85,8 +83,8 @@ const ExpensePage = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 {/* 🚀 dataKey를 표시용 month로 변경 */}
                 <XAxis dataKey="monthForDisplay" fontSize={12} />
-                <YAxis tickFormatter={(tick) => `${tick / 10000}만`} fontSize={12} />
-                <Tooltip formatter={(value) => `${value.toLocaleString()}원`} />
+                <YAxis tickFormatter={formatYAxis} fontSize={12} />
+                <Tooltip formatter={formatTooltip} />
                 <Legend />
                 {sortedCategories.map(key => (
                   <Bar key={key} dataKey={key} stackId="a" fill={typeColors[key]} name={key} />
