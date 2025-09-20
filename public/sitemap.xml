@@ -54,6 +54,12 @@
     </url>
 
     <url>
+        <loc>https://www.tennis-diary.kr/merit</loc>
+        <lastmod>2025-09-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://www.tennis-diary.kr/setting</loc>
         <lastmod>2025-09-20</lastmod>
         <changefreq>monthly</changefreq>

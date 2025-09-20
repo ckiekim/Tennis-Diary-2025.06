@@ -5,6 +5,7 @@ import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../../api/firebaseConfig';
 import AlertDialog from '../../components/AlertDialog';
 import { FaComment } from 'react-icons/fa';
+import InfoIcon from '@mui/icons-material/Info';
 import DownloadIcon from '@mui/icons-material/Download';
 
 export default function LoginPage() {
@@ -64,7 +65,7 @@ export default function LoginPage() {
       sx={{ mt: 8, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4, }}
     >
       <img src="/img/logo.png" alt="Logo" style={{ maxWidth: '300px', margin: '0 auto' }} />
-      <Typography variant="h5" sx={{marginTop: '60px'}}>로그인이 필요합니다</Typography>
+      <Typography variant="h5" sx={{marginTop: '40px'}}>로그인이 필요합니다</Typography>
       <Box 
         sx={{ 
           display: 'flex',  flexDirection: { xs: 'column', sm: 'row' }, // 모바일에서는 세로, 데스크탑에서는 가로 정렬
@@ -84,10 +85,24 @@ export default function LoginPage() {
           카카오 로그인
         </Button>
       </Box>
-      <Box sx={{ justifyContent: 'center' }}>
+      <Box sx={{ 
+          display: 'flex', flexDirection: 'column', // 세로로 배치
+          alignItems: 'center', // 가운데 정렬
+          gap: 2, // 버튼 사이 간격
+          mt: 8, mb: 2
+        }}
+      >
         <Button
-          variant="contained" startIcon={<DownloadIcon />} href="/Tennis Diary 사용설명서.pdf" download 
-          sx={{ mt: 4, mb: 2 }}
+          variant="outlined" 
+          startIcon={<InfoIcon />} 
+          onClick={() => navigate('/merit')}
+        >
+          앱 둘러보기 (주요 기능)
+        </Button>
+        <Button
+          variant="contained" 
+          startIcon={<DownloadIcon />} 
+          href="/Tennis Diary 사용설명서.pdf" download 
         >
           사용설명서 다운로드
         </Button>
