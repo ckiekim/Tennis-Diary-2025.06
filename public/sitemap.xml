@@ -61,6 +61,12 @@
     </url>
 
     <url>
+        <loc>https://www.tennis-diary.kr/more/advertise</loc>
+        <lastmod>2025-09-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
         <loc>https://www.tennis-diary.kr/more/mileageInfo</loc>
         <lastmod>2025-09-20</lastmod>
         <changefreq>yearly</changefreq>

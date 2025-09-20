@@ -144,10 +144,6 @@ const BottomNav = () => {
           <MenuItem key="users-menu" onClick={() => handleToolsMenuClick('/tools/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
             사용자관리
-          </MenuItem>,
-          <MenuItem key="adv-menu" onClick={() => handleToolsMenuClick('/tools/advertise')}>
-            <StyleIcon fontSize="small" sx={{ mr: 1 }} />
-            홍보
           </MenuItem>
         ]}
       </Menu>
@@ -158,6 +154,10 @@ const BottomNav = () => {
         open={Boolean(anchorElMore)}
         onClose={() => setAnchorElMore(null)}
       >
+        <MenuItem onClick={() => handleMoreMenuClick('/more/advertise')}>
+          <StyleIcon fontSize="small" sx={{ mr: 1 }} />
+          특장점
+        </MenuItem>
         <MenuItem onClick={() => handleMoreMenuClick('/more/mileageInfo')}>
           <MonetizationOnIcon fontSize="small" sx={{ mr: 1 }} />
           마일리지 안내

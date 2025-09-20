@@ -53,6 +53,7 @@ const App = () => {
           <Route path="/tools/goods" element={<GoodsPage />} />
           <Route path="/tools/goods/:id" element={<GoodsDetailPage />} />
           <Route path="/tools/expense" element={<ExpensePage />} />
+          <Route path="/more/advertise" element={<AdvertisementPage />} />
           <Route path="/more/mileageInfo" element={<MileageInfoPage />} />
           <Route path="/more/appInfo" element={<AppInfoPage />} />
           <Route path="/more/agreement" element={<AgreementPage />} />
@@ -68,7 +69,6 @@ const App = () => {
           <Route path="/tools/courts" element={<CourtAdminPage />} />
           <Route path="/tools/users" element={<UserAdminPage />} />
           <Route path="/tools/user/:uid" element={<UserDetailPage />} />
-          <Route path="/tools/advertise" element={<AdvertisementPage />} />
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}
