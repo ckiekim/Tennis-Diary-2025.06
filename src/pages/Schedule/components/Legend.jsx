@@ -10,7 +10,9 @@ export default function Legend() {
         mb: 3, mt: -3
       }}
     >
-      {Object.entries(typeColors).map(([label, color]) => (
+      {Object.entries(typeColors)
+        .filter(([label]) => label !== '용품')
+        .map(([label, color]) => (
         <Box
           key={label}
           sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
