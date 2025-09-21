@@ -17,10 +17,10 @@ export default function LoginPage() {
     { num: 1, title: '앱 설치 안내' },
     { num: 2, title: '가입 및 초기 프로필 설정 안내' },
     { num: 3, title: '일정 관리 안내' },
-    { num: 4, title: '앱 설치 안내' },
-    { num: 5, title: '앱 설치 안내' },
-    { num: 6, title: '앱 설치 안내' },
-    { num: 7, title: '앱 설치 안내' },
+    { num: 4, title: '결과 안내' },
+    { num: 5, title: '클럽 안내' },
+    { num: 6, title: '용품 관리 안내' },
+    { num: 7, title: '비용 관리 안내' },
   ];
 
   // Google 로그인 성공 시 호출될 콜백 함수
@@ -71,14 +71,14 @@ export default function LoginPage() {
   return (
     <Container
       maxWidth="sm"
-      sx={{ mt: 8, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4, }}
+      sx={{ mt: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 2, }}
     >
       <img src="/img/logo.png" alt="Logo" style={{ maxWidth: '300px', margin: '0 auto' }} />
-      <Typography variant="h5" sx={{marginTop: '40px'}}>로그인이 필요합니다</Typography>
+      <Typography variant="h6" sx={{mt: 5, mb: 2}}>로그인이 필요합니다</Typography>
       <Box 
         sx={{ 
           display: 'flex',  flexDirection: { xs: 'column', sm: 'row' }, // 모바일에서는 세로, 데스크탑에서는 가로 정렬
-          justifyContent: 'center',  alignItems: 'center', gap: 2, height: '50px',
+          justifyContent: 'center',  alignItems: 'center', gap: 1, height: '50px',
         }}
       >
         <div id="googleSignInButton"></div>
@@ -97,7 +97,7 @@ export default function LoginPage() {
       <Box sx={{ 
           display: 'flex', flexDirection: 'column', // 세로로 배치
           alignItems: 'center', // 가운데 정렬
-          gap: 2, // 버튼 사이 간격
+          gap: 1, // 버튼 사이 간격
           mt: 8, mb: 2
         }}
       >

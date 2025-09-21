@@ -53,7 +53,7 @@ const InstallGuidePage = () => {
         <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
           📱 iPhone / iPad (Safari 브라우저)
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body1" color="text.secondary">
           1. Safari 브라우저를 열고 <strong>www.tennis-diary.kr</strong> 사이트로 이동합니다. <br />
           2. 하단 메뉴 바에서 공유 아이콘(상자 위로 화살표가 나가는 모양)을 누릅니다. <br />
           3. 나타나는 메뉴에서 아래로 스크롤하여 '홈 화면에 추가'를 선택합니다. <br />
@@ -68,7 +68,7 @@ const InstallGuidePage = () => {
         <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
           💻 PC (Chrome, Edge 브라우저)
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body1" color="text.secondary">
           1. Chrome 또는 Edge 브라우저를 열고 <strong>www.tennis-diary.kr</strong> 사이트로 이동합니다. <br />
           2. 주소창 오른쪽 끝에 나타나는 설치 아이콘(컴퓨터와 아래쪽 화살표 모양)을 클릭합니다. <br />
           3. 나타나는 팝업에서 '설치' 버튼을 누릅니다. <br />

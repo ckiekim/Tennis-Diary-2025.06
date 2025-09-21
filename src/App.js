@@ -9,10 +9,7 @@ import SchedulePage from './pages/Schedule/SchedulePage';
 import LoginPage from './pages/Home/LoginPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
 import NotFoundError from './pages/Home/NotFoundError';
-import MeritPage from './pages/Guide/MeritPage';
-import InstallGuidePage from './pages/Guide/InstallGuidePage';
-import ProfileGuidePage from './pages/Guide/ProfileGuidePage';
-import ScheduleGuidePage from './pages/Guide/ScheduleGuidePage';
+import ClubGuidePage from './pages/Guide/ClubGuidePage';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
 import GameDetailPage from './pages/ResultGame/GameDetailPage';
 import ResultStatPage from './pages/ResultStat/ResultStatPage';
@@ -33,6 +30,13 @@ import ClubsPage from './pages/Clubs/ClubsPage';
 import ClubDetailPage from './pages/Clubs/ClubDetailPage';
 import PostDetailPage from './pages/Clubs/PostDetailPage';
 import ExpensePage from './pages/Expense/ExpensePage';
+import MeritPage from './pages/Guide/MeritPage';
+import InstallGuidePage from './pages/Guide/InstallGuidePage';
+import ProfileGuidePage from './pages/Guide/ProfileGuidePage';
+import ScheduleGuidePage from './pages/Guide/ScheduleGuidePage';
+import ResultGuidePage from './pages/Guide/ResultGuidePage';
+import GoodsGuidePage from './pages/Guide/GoodsGuidePage';
+import ExpenseGuidePage from './pages/Guide/ExpenseGuidePage';
 
 const App = () => {
   dayjs.extend(isSameOrAfter);
@@ -48,6 +52,10 @@ const App = () => {
         <Route path="/guide/1" element={<InstallGuidePage />} />
         <Route path="/guide/2" element={<ProfileGuidePage />} />
         <Route path="/guide/3" element={<ScheduleGuidePage />} />
+        <Route path="/guide/4" element={<ResultGuidePage />} />
+        <Route path="/guide/5" element={<ClubGuidePage />} />
+        <Route path="/guide/6" element={<GoodsGuidePage />} />
+        <Route path="/guide/7" element={<ExpenseGuidePage />} />
 
         {/* 로그인이 필요한 페이지들을 AuthGuard로 감싸기 */}
         <Route element={<AuthGuard />}>
