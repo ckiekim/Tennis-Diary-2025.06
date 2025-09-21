@@ -5,36 +5,39 @@ import 'dayjs/locale/ko';
 
 import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
-import SchedulePage from './pages/Schedule/SchedulePage';
 import LoginPage from './pages/Home/LoginPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
 import NotFoundError from './pages/Home/NotFoundError';
-import ClubGuidePage from './pages/Guide/ClubGuidePage';
+import UserSettingPage from './pages/UserSetting/UserSettingPage';
+
+import SchedulePage from './pages/Schedule/SchedulePage';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
 import GameDetailPage from './pages/ResultGame/GameDetailPage';
-import ResultStatPage from './pages/ResultStat/ResultStatPage';
 import ResultTournamentPage from './pages/ResultTournament/ResultTournamentPage';
 import TournamentDetailPage from './pages/ResultTournament/TournamentDetailPage';
+import ResultStatPage from './pages/ResultStat/ResultStatPage';
+import ClubsPage from './pages/Clubs/ClubsPage';
+import ClubDetailPage from './pages/Clubs/ClubDetailPage';
+import PostDetailPage from './pages/Clubs/PostDetailPage';
 import GoodsPage from './pages/Goods/GoodsPage';
 import GoodsDetailPage from './pages/Goods/GoodsDetailPage';
+import ExpensePage from './pages/Expense/ExpensePage';
+
 import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserDetailPage from './pages/UserAdmin/UserDetailPage';
-import UserSettingPage from './pages/UserSetting/UserSettingPage';
 import MileageInfoPage from './pages/More/MileageInfoPage';
 import AppInfoPage from './pages/More/AppInfoPage';
 import AgreementPage from './pages/More/AgreementPage';
 import PwaInstallGuidePage from './pages/More/PwaInstallGuidePage';
 import AdvertisementPage from './pages/More/AdvertisementPage';
-import ClubsPage from './pages/Clubs/ClubsPage';
-import ClubDetailPage from './pages/Clubs/ClubDetailPage';
-import PostDetailPage from './pages/Clubs/PostDetailPage';
-import ExpensePage from './pages/Expense/ExpensePage';
+
 import MeritPage from './pages/Guide/MeritPage';
 import InstallGuidePage from './pages/Guide/InstallGuidePage';
 import ProfileGuidePage from './pages/Guide/ProfileGuidePage';
 import ScheduleGuidePage from './pages/Guide/ScheduleGuidePage';
 import ResultGuidePage from './pages/Guide/ResultGuidePage';
+import ClubGuidePage from './pages/Guide/ClubGuidePage';
 import GoodsGuidePage from './pages/Guide/GoodsGuidePage';
 import ExpenseGuidePage from './pages/Guide/ExpenseGuidePage';
 
