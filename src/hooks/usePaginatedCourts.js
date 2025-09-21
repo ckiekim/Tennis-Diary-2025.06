@@ -10,7 +10,12 @@ const buildQuery = (filters, lastDoc = null) => {
   const { searchType, searchTerm } = filters;
 
   if (searchTerm) {
-    q = query(q, orderBy(searchType)); 
+    if (searchType === 'location') {
+      q = query(q, orderBy('location'), orderBy('name'));
+    } else {
+      q = query(q, orderBy(searchType));
+    }
+    
     q = query(q, 
       where(searchType, '>=', searchTerm),
       where(searchType, '<=', searchTerm + '\uf8ff')
