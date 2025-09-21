@@ -1,18 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Avatar, Box, Button, Container, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { auth } from '../../api/firebaseConfig';
 import AlertDialog from '../../components/AlertDialog';
 import { FaComment } from 'react-icons/fa';
 import InfoIcon from '@mui/icons-material/Info';
-import DownloadIcon from '@mui/icons-material/Download';
 
 export default function LoginPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   
   const navigate = useNavigate();
+  const guideNavigate = (num) => navigate('/guide/' + num);
+  const guidePages = [
+    { num: 1, title: '앱 설치 안내' },
+    { num: 2, title: '가입 및 초기 프로필 설정 안내' },
+    { num: 3, title: '일정 관리 안내' },
+    { num: 4, title: '앱 설치 안내' },
+    { num: 5, title: '앱 설치 안내' },
+    { num: 6, title: '앱 설치 안내' },
+    { num: 7, title: '앱 설치 안내' },
+  ];
 
   // Google 로그인 성공 시 호출될 콜백 함수
   const handleGoogleCredentialResponse = async (response) => {
@@ -92,20 +101,26 @@ export default function LoginPage() {
           mt: 8, mb: 2
         }}
       >
-        <Button
-          variant="outlined" 
-          startIcon={<InfoIcon />} 
-          onClick={() => navigate('/merit')}
-        >
-          앱 둘러보기 (주요 기능)
-        </Button>
-        <Button
-          variant="contained" 
-          startIcon={<DownloadIcon />} 
-          href="/Tennis Diary 사용설명서.pdf" download 
-        >
-          사용설명서 다운로드
-        </Button>
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Button
+            variant="outlined" 
+            startIcon={<InfoIcon />} 
+            onClick={() => navigate('/guide/merit')}
+          >
+            앱 둘러보기 (주요 기능)
+          </Button>
+        </Stack>
+        <Stack direction="row" spacing={0}>
+          {guidePages.map((page) => (
+            <Tooltip title={page.title} key={page.num}>
+              <IconButton color="inherit" onClick={() => guideNavigate(page.num)}>
+                <Avatar sx={{ width: 28, height: 28, fontSize: '1rem', bgcolor: 'primary.main' }}>
+                  {page.num}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+          ))}
+        </Stack>
       </Box>
 
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>

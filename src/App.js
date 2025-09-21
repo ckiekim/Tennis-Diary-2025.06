@@ -7,9 +7,12 @@ import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
 import SchedulePage from './pages/Schedule/SchedulePage';
 import LoginPage from './pages/Home/LoginPage';
-import MeritPage from './pages/Home/MeritPage';
 import KakaoCallback from './pages/Home/KakaoCallback';
 import NotFoundError from './pages/Home/NotFoundError';
+import MeritPage from './pages/Guide/MeritPage';
+import InstallGuidePage from './pages/Guide/InstallGuidePage';
+import ProfileGuidePage from './pages/Guide/ProfileGuidePage';
+import ScheduleGuidePage from './pages/Guide/ScheduleGuidePage';
 import ResultGamePage from './pages/ResultGame/ResultGamePage';
 import GameDetailPage from './pages/ResultGame/GameDetailPage';
 import ResultStatPage from './pages/ResultStat/ResultStatPage';
@@ -40,8 +43,11 @@ const App = () => {
       <Routes>
         {/* 로그인이 필요 없는 페이지 */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/merit" element={<MeritPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
+        <Route path="/guide/merit" element={<MeritPage />} />
+        <Route path="/guide/1" element={<InstallGuidePage />} />
+        <Route path="/guide/2" element={<ProfileGuidePage />} />
+        <Route path="/guide/3" element={<ScheduleGuidePage />} />
 
         {/* 로그인이 필요한 페이지들을 AuthGuard로 감싸기 */}
         <Route element={<AuthGuard />}>

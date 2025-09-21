@@ -1,9 +1,10 @@
-import { Box, Typography, Link, Container } from '@mui/material';
+import { Box, Typography, Link } from '@mui/material';
+import GuideLayout from '../../components/GuideLayout';
 import StyleIcon from '@mui/icons-material/Style';
 
 const MeritPage = () => {
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
+    <GuideLayout>
       <Box sx={{ p: 1, pb: 4 }}>
         {/* 로고 및 메인 슬로건 */}
         <Box
@@ -59,7 +60,7 @@ const MeritPage = () => {
         </Box>
 
       </Box>
-    </Container>
+    </GuideLayout>
   );
 };
 
