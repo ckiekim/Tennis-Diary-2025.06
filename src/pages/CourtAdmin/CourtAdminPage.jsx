@@ -70,7 +70,17 @@ export default function CourtAdminPage() {
 	};
 
 	const handleDeleteConfirm = async () => {
-		await deletePhotoFromStorage(selectedCourt.photo);
+		if (!selectedCourt) return;
+    try {
+      // Promise.all을 사용해 모든 사진 삭제 작업을 병렬로 처리
+      const deletePromises = selectedCourt.details
+        .filter(detail => detail.photo) // photo URL이 있는 경우만 필터링
+        .map(detail => deletePhotoFromStorage(detail.photo));
+      await Promise.all(deletePromises);
+    } catch (error) {
+      console.error("사진 삭제 중 오류 발생:", error);
+    }
+    
 		await deleteDoc(doc(db, 'courts', selectedCourt.id));
 		setDeleteOpen(false);
 		refresh();

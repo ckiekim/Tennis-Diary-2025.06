@@ -1,58 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Button, Checkbox, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, FormControlLabel, MenuItem, TextField, Typography
+  Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, IconButton, Paper, Stack, TextField, Typography,
 } from '@mui/material';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import AlertDialog from '../../../components/AlertDialog';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
-  const [form, setForm] = useState(court);
-  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    setForm(court);
+    if (court) {
+      setForm({
+        ...court,
+        // details 배열 각 항목에 UI 상태를 위한 'uploading' 플래그 추가
+        details: court.details ? court.details.map(d => ({ ...d, uploading: false })) : []
+      });
+    }
   }, [court]);
 
-  const handleChange = (e) => {
+  if (!form) return null;
+
+  const handleDetailChange = (index, e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const newDetails = [...form.details];
+    newDetails[index][name] = value;
+    setForm(prev => ({ ...prev, details: newDetails }));
   };
 
-  const handleCheckboxChange = (e) => {
-    setForm((prev) => ({ ...prev, is_indoor: e.target.checked }));
-  };
-
-  const handleFileChange = async (e) => {
+  const handleFileChange = async (index, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    let newDetails = [...form.details];
+    const oldPhotoUrl = newDetails[index].photo;
+    newDetails[index].uploading = true;
+    setForm(prev => ({ ...prev, details: newDetails }));
+
     try {
-      const photoUrl = await uploadImageToFirebase(file, 'courts');
-      await deletePhotoFromStorage(form.photo);
-      setForm((prev) => ({ ...prev, photo: photoUrl }));
+      const newPhotoUrl = await uploadImageToFirebase(file, 'courts');
+      if (oldPhotoUrl) await deletePhotoFromStorage(oldPhotoUrl);
+      
+      newDetails = [...form.details];
+      newDetails[index].photo = newPhotoUrl;
     } catch (error) {
-      console.error('파일 업로드/ 실패:', error);
-      setAlertMessage('사진을 변경하는 중 오류가 발생했습니다.');
+      setAlertMessage('사진 변경 중 오류가 발생했습니다.');
       setIsAlertOpen(true);
     } finally {
-      setUploading(false);
+      newDetails[index].uploading = false;
+      setForm(prev => ({ ...prev, details: newDetails }));
     }
+  };
+
+  const handleAddDetail = () => {
+    setForm(prev => ({
+      ...prev,
+      details: [...prev.details, { type: '실내', surface: '하드', photo: '', uploading: false }]
+    }));
+  };
+  
+  const handleRemoveDetail = (index) => {
+    const newDetails = form.details.filter((_, i) => i !== index);
+    setForm(prev => ({ ...prev, details: newDetails }));
   };
 
   const handleSubmit = () => {
-    if (!form.name || !form.location || !form.surface) {
-      setAlertMessage('이름, 위치, 서페이스는 필수 항목입니다.');
+    if (!form.name || !form.location || form.details.length === 0) {
+      setAlertMessage('이름, 위치, 그리고 최소 1개의 코트 상세 정보는 필수입니다.');
       setIsAlertOpen(true);
       return;
     }
-    onUpdate(form);
+    
+    // --- 변경점 시작 ---
+    // 호환성 로직 제거: 더 이상 is_indoor 등 옛날 필드를 정리할 필요가 없습니다.
+    const finalForm = {
+      ...form,
+      // 저장 시에는 UI 상태인 'uploading' 플래그만 제거합니다.
+      details: form.details.map(({ uploading, ...rest }) => rest)
+    };
+    // --- 변경점 끝 ---
+    
+    onUpdate(finalForm);
     onClose();
   };
-
-  if (!form) return null;
 
   return (
     <>
@@ -60,57 +93,54 @@ const EditCourtDialog = ({ open, onClose, court, onUpdate }) => {
         <DialogTitle>테니스 코트 수정</DialogTitle>
         <DialogContent>
           <TextField
-            fullWidth margin="dense" label="이름" name="name" value={form.name || ''}
-            onChange={handleChange}
+            fullWidth margin="dense" label="코트 이름" name="name" value={form.name || ''}
+            onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
           />
           <TextField
             fullWidth margin="dense" label="위치" name="location" value={form.location || ''}
-            onChange={handleChange}
+            onChange={(e) => setForm(prev => ({ ...prev, location: e.target.value }))}
           />
-          <TextField
-            select fullWidth margin="dense" label="서페이스" name="surface" value={form.surface || ''}
-            onChange={handleChange}
-          >
-            <MenuItem value="하드">하드</MenuItem>
-            <MenuItem value="인조잔디">인조잔디</MenuItem>
-            <MenuItem value="클레이">클레이</MenuItem>
-          </TextField>
-          <FormControlLabel
-            control={<Checkbox checked={form.is_indoor || false} onChange={handleCheckboxChange} />}
-            label="실내 코트"
-          />
-
-          {/* 이미지 업로드 */}
-          <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
-            {uploading ? (
-              <>
-                <CircularProgress size={24} />
-                <Typography variant="body2" sx={{ ml: 1 }}>업로드 중...</Typography>
-              </>
-            ) : (
-              <Button component="label" variant="outlined" disabled={uploading}>
-                사진 선택
-                <input type="file" hidden onChange={handleFileChange} />
-              </Button>
-            )}
-          </Box>
-
-          {/* 이미지 미리보기 */}
-          {form.photo && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <img src={form.photo} alt="미리보기" style={{ width: '50%' }} />
-            </Box>
-          )}
+          <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>코트 상세 정보</Typography>
+          <Stack spacing={2}>
+            {form.details.map((detail, index) => (
+              <Paper key={index} variant="outlined" sx={{ p: 2, position: 'relative' }}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleRemoveDetail(index)}
+                  sx={{ position: 'absolute', top: 4, right: 4 }}
+                  disabled={form.details.length <= 1}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+                <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                  <TextField select label="타입" name="type" value={detail.type} onChange={(e) => handleDetailChange(index, e)} size="small">
+                    <MenuItem value="실내">실내</MenuItem>
+                    <MenuItem value="실외">실외</MenuItem>
+                  </TextField>
+                  <TextField select label="서페이스" name="surface" value={detail.surface} onChange={(e) => handleDetailChange(index, e)} size="small">
+                    <MenuItem value="하드">하드</MenuItem>
+                    <MenuItem value="인조잔디">인조잔디</MenuItem>
+                    <MenuItem value="클레이">클레이</MenuItem>
+                  </TextField>
+                </Stack>
+                <Button variant="outlined" component="label" size="small" disabled={detail.uploading}>
+                  {detail.uploading ? '업로드 중...' : '사진 선택'}
+                  <input hidden type="file" onChange={(e) => handleFileChange(index, e)} />
+                </Button>
+                {detail.photo && <img src={detail.photo} alt="미리보기" style={{ width: '100px', height: '100px', objectFit: 'cover', marginLeft: '10px' }} />}
+              </Paper>
+            ))}
+            <Button startIcon={<AddCircleOutlineIcon />} onClick={handleAddDetail}>
+              코트 상세 정보 추가
+            </Button>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>취소</Button>
           <Button onClick={handleSubmit} variant="contained">저장</Button>
         </DialogActions>
       </Dialog>
-      
-      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
-        {alertMessage}
-      </AlertDialog>
+      <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>{alertMessage}</AlertDialog>
     </>
   );
 };

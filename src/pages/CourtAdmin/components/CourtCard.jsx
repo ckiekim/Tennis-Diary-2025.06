@@ -3,12 +3,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const CourtCard = ({ court, onEdit, onDelete }) => {
+  const representativePhoto = court.details?.[0]?.photo || court.photo || '/img/no-image.jpeg';
+
   return (
     <Card sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', position: 'relative', p: 0 }}>
       <CardMedia
         component="img"
         sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1, }}
-        image={court.photo || '/img/no-image.jpeg'}
+        image={representativePhoto}
         alt={court.name}
       />
 
@@ -19,10 +21,15 @@ const CourtCard = ({ court, onEdit, onDelete }) => {
         <Typography fontSize="12px" color="text.secondary">
           {court.location}
         </Typography>
-        <Typography fontSize="12px" color="text.secondary">
-          {court.surface}
-          {court.is_indoor && ' / 실내'}
-        </Typography>
+        {court.details && court.details.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 3, mt: 0.1 }}> {/* gap을 이용해 간격 조절 */}
+            {court.details.map(detail => (
+              <Typography key={detail.type} fontSize="11px" color="text.secondary">
+                - {detail.type} / {detail.surface}
+              </Typography>
+            ))}
+          </Box>
+        )}
       </Box>
 
       {/* 아이콘 영역 */}
