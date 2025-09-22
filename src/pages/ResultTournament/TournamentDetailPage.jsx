@@ -83,6 +83,9 @@ const TournamentDetailPage = () => {
   if (loading) return <Typography>로딩 중...</Typography>;
   if (!combinedData) return <Typography>데이터가 없습니다.</Typography>;
 
+  const displayPlace = combinedData.placeInfo.courtType === '실내'
+    ? `${combinedData.placeInfo.courtName} (실내)` : combinedData.placeInfo.courtName;
+
   return (
     <MainLayout title='대회 상세'>
       <Box p={2}>
@@ -100,7 +103,7 @@ const TournamentDetailPage = () => {
 
         <Typography variant="body2" fontWeight="bold">장소</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
-          {combinedData.place} 테니스코트
+          {displayPlace} 테니스코트
         </Typography>
         <Divider sx={{ my: 1 }} />
 

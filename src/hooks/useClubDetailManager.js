@@ -8,6 +8,7 @@ import { db, functions } from '../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
+import { createPlaceInfo } from '../utils/handlePlaceInfo';
 
 export const useClubDetailManager = (clubId, user, members, refreshSchedules) => {
   const navigate = useNavigate();
@@ -124,35 +125,51 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   };
 
   const handleAddSchedule = async (scheduleForm) => {
-    if (!scheduleForm.time || !scheduleForm.place) return handleAlert('시간과 장소를 입력해주세요.');
-    
-    // members 배열에서 모든 멤버의 uid를 추출합니다.
+    const placeInfo = createPlaceInfo(scheduleForm);
+    if (!placeInfo) return handleAlert('장소를 입력해주세요.');
+    if (!scheduleForm.time) return handleAlert('시간을 입력해주세요.');
+
     const memberUids = members ? members.map(member => member.id) : [];
-    // 생성자도 참여자에 포함되도록 Set을 사용하여 중복을 제거합니다.
     const participants = Array.from(new Set([...memberUids, user.uid]));
 
     const dataToSubmit = {
       ...scheduleForm,
-      uid: user.uid, // 생성자
-      participantUids: participants, // 모든 클럽 멤버 참여자로 추가
+      placeInfo, // place 대신 placeInfo 사용
+      uid: user.uid,
+      participantUids: participants,
       date: scheduleForm.date ? dayjs(scheduleForm.date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
       club: { id: clubId, name: club.name },
       createdAt: serverTimestamp(),
     };
+    // 불필요한 필드 제거
+    delete dataToSubmit.place;
+    delete dataToSubmit.placeSelection;
+
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddScheduleOpen(false);
     refreshSchedules();
   };
 
-  const handleUpdateSchedule = async () => {
-    // ... (기존 handleUpdateSchedule 로직과 동일)
-    if (!selectedSchedule?.id) return;
-    const { id, ...updateData } = selectedSchedule;
-    if (updateData.date && typeof updateData.date !== 'string') {
-        updateData.date = dayjs(updateData.date).format('YYYY-MM-DD');
+  const handleUpdateSchedule = async (scheduleToUpdate) => {
+    if (!scheduleToUpdate?.id) return;
+
+    const placeInfo = scheduleToUpdate.placeSelection 
+      ? createPlaceInfo(scheduleToUpdate)  : scheduleToUpdate.placeInfo;
+    const updateData = { ...scheduleToUpdate };
+    if (placeInfo) {
+      updateData.placeInfo = placeInfo;
     }
-    await updateDoc(doc(db, 'events', id), updateData);
+    if (updateData.date && typeof updateData.date !== 'string') {
+      updateData.date = dayjs(updateData.date).format('YYYY-MM-DD');
+    }
+    
+    // 불필요한 필드 제거
+    delete updateData.id;
+    delete updateData.place;
+    delete updateData.placeSelection;
+    
+    await updateDoc(doc(db, 'events', scheduleToUpdate.id), updateData);
     setEditScheduleOpen(false);
     refreshSchedules();
   };
@@ -160,7 +177,8 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   const handleAddRecurringSchedule = async (recurringOptions, scheduleForm) => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
     
-    if (!scheduleForm.place || !endDate) {
+    const placeInfo = createPlaceInfo(scheduleForm);
+    if (!placeInfo || !endDate) {
       handleAlert('장소와 종료일을 모두 입력해주세요.');
       return;
     }
@@ -185,7 +203,7 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
         type: scheduleForm.type,
         date: date.format('YYYY-MM-DD'),
         time,
-        place: scheduleForm.place,
+        placeInfo,
         price: Number(monthlyPrice) || 0,
         club: { id: clubId, name: club.name },
         isRecurring: true, 
@@ -214,7 +232,6 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
     }
 
     await batch.commit();
-
     setAddScheduleOpen(false);
     refreshSchedules();
   };

@@ -29,8 +29,7 @@ const ScheduleDialogs = ({ manager, courts, user, refresh }) => {
         open={manager.editOpen}
         selectedSchedule={manager.selectedSchedule}
         setOpen={manager.setEditOpen}
-        setSelectedSchedule={manager.setSelectedSchedule}
-        onUpdate={() => manager.handleUpdate().then(handleDialogClose(manager.setEditOpen))}
+        onUpdate={(form) => manager.handleUpdate(form).then(handleDialogClose(manager.setEditOpen))}
       />
 
       <DeleteConfirmDialog 

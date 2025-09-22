@@ -62,8 +62,7 @@ const ClubDialogs = ({
         open={manager.editScheduleOpen}
         selectedSchedule={manager.selectedSchedule}
         setOpen={manager.setEditScheduleOpen}
-        setSelectedSchedule={manager.setSelectedSchedule}
-        onUpdate={manager.handleUpdateSchedule}
+        onUpdate={(form) => manager.handleUpdateSchedule(form)}
         isClubSchedule={isClubSchedule}
       />
 

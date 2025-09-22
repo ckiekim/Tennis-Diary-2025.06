@@ -9,6 +9,8 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
   const isTournament = schedule.type === "대회";
   const isJeongmo = schedule.type === "정모";
   const isRecurring = schedule?.isRecurring;
+  const placeText = schedule.placeInfo.courtType === '실내'
+    ? `${schedule.placeInfo.courtName} (실내)` : schedule.placeInfo.courtName;
 
   return (
     <Box
@@ -49,7 +51,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
-            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
+            <Typography variant="body2">{placeText} 테니스코트</Typography>
           </Box>
         </>
       ) : isTournament ? (
@@ -64,7 +66,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           </Box>
            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
-            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
+            <Typography variant="body2">{placeText} 테니스코트</Typography>
           </Box>
         </>
       ) : (
@@ -75,7 +77,7 @@ export default function ScheduleCard({ schedule, onEdit, onDelete, onResult }) {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{display: 'inline-block', width: '20px', textAlign: 'center', fontSize: '14px'}}>📍</Box>
-            <Typography variant="body2">{schedule.place} 테니스코트</Typography>
+            <Typography variant="body2">{placeText} 테니스코트</Typography>
           </Box>
         </>
       )}

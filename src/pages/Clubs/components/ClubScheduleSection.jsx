@@ -27,6 +27,9 @@ const ClubScheduleSection = ({
           schedules.map(schedule => {
             const isPastOrToday  = dayjs().isSameOrAfter(dayjs(schedule.date), 'day');
             const canAddResult = isMember && isPastOrToday  && !schedule.userHasSubmitted;
+            const displayPlace = schedule.placeInfo.courtType === '실내'
+              ? `${schedule.placeInfo.courtName} (실내)` : schedule.placeInfo.courtName;
+
             return (
               <ListItem sx={{ py: 0 }}
                 key={schedule.id}
@@ -54,7 +57,7 @@ const ClubScheduleSection = ({
                 <ListItemText
                   primary={
                     <Typography variant="body2">
-                      {`${schedule.type} - ${schedule.place}`}
+                      {`${schedule.type} - ${displayPlace}`}
                     </Typography>
                   }
                   secondary={

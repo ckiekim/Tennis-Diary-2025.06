@@ -11,6 +11,8 @@ export default function TournamentCard({ item }) {
   } else if (item.organizer === 'KATA') {
     logoSrc = '/img/KATA.png';
   }
+  const displayPlace = item.placeInfo.courtType === '실내'
+    ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
 
   return (
     <Card 
@@ -38,7 +40,7 @@ export default function TournamentCard({ item }) {
           {item.name} {/* 대회명 */}
         </Typography>
         <Typography fontSize="12px">
-          장소: {item.place} 테니스코트
+          장소: {displayPlace} 테니스코트
         </Typography>
         <Box display="flex" gap={2}>
           <Typography fontSize="12px">

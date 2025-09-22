@@ -40,6 +40,9 @@ const GameDetailPage = () => {
     return <MainLayout title='게임 상세'><Typography p={2}>해당 일정을 찾을 수 없습니다.</Typography></MainLayout>;
   }
 
+  const displayPlace = eventData.placeInfo.courtType === '실내'
+    ? `${eventData.placeInfo.courtName} (실내)` : eventData.placeInfo.courtName;
+
   return (
     <MainLayout title='게임 상세'>
       <Box p={2}>
@@ -47,7 +50,7 @@ const GameDetailPage = () => {
         <Typography variant="h6" gutterBottom>일정 정보</Typography>
         <Stack spacing={1} mb={3}>
           <Typography><b>일시:</b> {`${eventData.date} (${formatDay(eventData.date)}) ${eventData.time}`}</Typography>
-          <Typography><b>장소:</b> {eventData.place} 테니스코트</Typography>
+          <Typography><b>장소:</b> {displayPlace} 테니스코트</Typography>
           {eventData.club?.name && <Typography><b>클럽:</b> {eventData.club.name}</Typography>}
         </Stack>
         <Divider />

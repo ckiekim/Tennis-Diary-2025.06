@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import dayjs from 'dayjs';
+import { createPlaceInfo } from '../utils/handlePlaceInfo';
 
 export const useScheduleManager = (selectedDate, user, courts) => {
   const navigate = useNavigate();
@@ -41,23 +42,32 @@ export const useScheduleManager = (selectedDate, user, courts) => {
   };
 
   const handleAddSchedule = async (formData) => {
-    // ... 기존 handleAddSchedule 로직 ...
+    const placeInfo = createPlaceInfo(formData);
+    if (!placeInfo) {
+      setAlertMessage('장소를 입력해주세요.');
+      setIsAlertOpen(true);
+      return;
+    }
     const dataToSubmit = {
       ...formData,
+      placeInfo, // 새로 생성한 placeInfo 객체를 추가
       price: Number(formData.price ?? 0),
       uid: user.uid,
       participantUids: [user.uid],
       createdAt: serverTimestamp()
     };
+    delete dataToSubmit.place; // 기존 place 필드 삭제
+    delete dataToSubmit.placeSelection; // 임시 선택 정보 필드 삭제
+
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
     setAddOpen(false);
   };
 
   const handleAddRecurringSchedule = async (recurringOptions, formData) => {
-    // ... 기존 handleAddRecurringSchedule 로직 ...
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
-    if (!formData.place || !endDate) {
+    const placeInfo = createPlaceInfo(formData);
+    if (!placeInfo || !endDate) {
       setAlertMessage('장소와 종료일을 모두 입력해주세요.');
       setIsAlertOpen(true);
       return;
@@ -104,15 +114,34 @@ export const useScheduleManager = (selectedDate, user, courts) => {
     setEditOpen(true);
   };
 
-  const handleUpdate = async () => {
-    if (!selectedSchedule?.id) return;
+  const handleUpdate = async (scheduleToUpdate) => {
+    if (!scheduleToUpdate?.id) return;
+
+    // placeSelection이 있으면 새로운 placeInfo를 생성, 없으면 기존 값을 유지
+    const placeInfo = scheduleToUpdate.placeSelection 
+      ? createPlaceInfo(scheduleToUpdate) 
+      : scheduleToUpdate.placeInfo;
     const updateData = {
-      ...selectedSchedule,
-      price: Number(selectedSchedule.price ?? 0),
+      ...scheduleToUpdate,
+      price: Number(scheduleToUpdate.price ?? 0),
     };
+    if (placeInfo) {
+      updateData.placeInfo = placeInfo;
+    }
+
+    // 임시 필드와 더 이상 사용하지 않는 필드 삭제
     delete updateData.id;
-    await updateDoc(doc(db, 'events', selectedSchedule.id), updateData);
-    setEditOpen(false);
+    delete updateData.place;
+    delete updateData.placeSelection;
+    
+    try {
+      await updateDoc(doc(db, 'events', scheduleToUpdate.id), updateData);
+      setEditOpen(false);
+    } catch (error) {
+      console.error("❌ Firestore 업데이트 실패:", error);
+      setAlertMessage('업데이트 중 오류가 발생했습니다.');
+      setIsAlertOpen(true);
+    }
   };
 
   const handleDelete = (schedule) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { 
   Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
-  FormGroup, FormControlLabel, Grid, MenuItem, Stack, Switch, TextField, Typography 
+  FormGroup, FormControlLabel, Grid, MenuItem, Stack, Switch, TextField, ToggleButtonGroup, ToggleButton, Typography 
 } from '@mui/material';
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
@@ -12,7 +12,6 @@ const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 export default function AddScheduleDialog({
   courts, open, form, setOpen, setForm, onAddSchedule, onAddRecurringSchedule, isClubSchedule = false
 }) {
-  
   const sourceList = useSourceList();
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringOptions, setRecurringOptions] = useState({
@@ -24,6 +23,8 @@ export default function AddScheduleDialog({
     monthlyPrice: '',
     endDate: '',
   });
+  const [selectedCourt, setSelectedCourt] = useState(null); // 선택된 코트 객체
+  const [courtType, setCourtType] = useState(''); // 선택된 코트 타입 (예: "실내")
 
   const isJeongmo = useMemo(() => form?.type === "정모", [form?.type]);
   const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
@@ -39,6 +40,29 @@ export default function AddScheduleDialog({
       }));
     }
   }, [isJeongmo, isRecurring]);
+
+  useEffect(() => {
+    if (selectedCourt) {
+      setForm(prev => ({
+        ...prev,
+        // useScheduleManager에서 사용할 수 있도록 선택 정보를 저장
+        placeSelection: {
+          court: selectedCourt,
+          type: courtType,
+        },
+        // 사용자가 직접 입력하는 경우를 위해 place 필드도 유지
+        place: selectedCourt.name,
+      }));
+    }
+  }, [selectedCourt, courtType, setForm]);
+
+  // 다이얼로그가 열릴 때, form에 기존 데이터가 있으면 상태 복원
+  useEffect(() => {
+    if (open && form?.placeSelection?.court) {
+      setSelectedCourt(form.placeSelection.court);
+      setCourtType(form.placeSelection.type);
+    }
+  }, [open, form]);
 
   if (!form) {
     return null;
@@ -66,6 +90,33 @@ export default function AddScheduleDialog({
       organizer: e.target.value,
       division: '', // 주관 변경 시 참가부문 초기화
     });
+  };
+
+  // Autocomplete에서 코트를 선택했을 때 호출
+  const handleCourtChange = (event, newValue) => {
+    const courtObject = typeof newValue === 'string' ? courts.find(c => c.name === newValue) : newValue;
+    
+    if (courtObject) {
+      setSelectedCourt(courtObject);
+      // 코트 상세 정보가 있으면 첫 번째 타입을 기본값으로 설정
+      if (courtObject.details && courtObject.details.length > 0) {
+        setCourtType(courtObject.details[0].type);
+      } else {
+        setCourtType('');
+      }
+    } else {
+      // 사용자가 리스트에 없는 코트 이름을 직접 입력한 경우
+      setSelectedCourt(null);
+      setCourtType('');
+      setForm(prev => ({ ...prev, place: newValue, placeSelection: null }));
+    }
+  };
+  
+  // 실내/실외 토글 버튼 핸들러
+  const handleCourtTypeChange = (event, newType) => {
+    if (newType !== null) {
+      setCourtType(newType);
+    }
   };
 
   return (
@@ -133,15 +184,35 @@ export default function AddScheduleDialog({
                   </Grid>
                 </Grid>
               )}
+              {/* 장소 선택 Autocomplete (반복/대회/일반 모든 경우에 적용) */}
               <Autocomplete
-                options={courts.map(c => c.name)}
-                value={form.place || ''}
-                onInputChange={(event, newInputValue) => {
-                  setForm((prevForm) => ({ ...prevForm, place: newInputValue, }));
+                options={courts}
+                getOptionLabel={(option) => option.name || option}
+                value={selectedCourt || form.place || ''}
+                onChange={handleCourtChange}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === 'input') {
+                    handleCourtChange(event, newInputValue);
+                  }
                 }}
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
+
+              {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
+              {selectedCourt?.details && selectedCourt.details.length > 1 && (
+                <ToggleButtonGroup
+                  color="primary" value={courtType} exclusive
+                  onChange={handleCourtTypeChange} aria-label="Court Type"
+                  fullWidth size="small"
+                >
+                  {selectedCourt.details.map((detail) => (
+                    <ToggleButton key={detail.type} value={detail.type}>
+                      {detail.type} ({detail.surface})
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
               <TextField
                 label="월 비용" type="number" fullWidth size="small"
                 value={recurringOptions.monthlyPrice}
@@ -165,15 +236,35 @@ export default function AddScheduleDialog({
                 }}
                 InputLabelProps={{ shrink: true }} 
               />
+              {/* 장소 선택 Autocomplete (반복/대회/일반 모든 경우에 적용) */}
               <Autocomplete
-                options={courts.map(c => c.name)}
-                value={form.place || ''}
-                onInputChange={(event, newInputValue) => {
-                  setForm((prevForm) => ({ ...prevForm, place: newInputValue, }));
+                options={courts}
+                getOptionLabel={(option) => option.name || option}
+                value={selectedCourt || form.place || ''}
+                onChange={handleCourtChange}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === 'input') {
+                    handleCourtChange(event, newInputValue);
+                  }
                 }}
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
+
+              {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
+              {selectedCourt?.details && selectedCourt.details.length > 1 && (
+                <ToggleButtonGroup
+                  color="primary" value={courtType} exclusive
+                  onChange={handleCourtTypeChange} aria-label="Court Type"
+                  fullWidth size="small"
+                >
+                  {selectedCourt.details.map((detail) => (
+                    <ToggleButton key={detail.type} value={detail.type}>
+                      {detail.type} ({detail.surface})
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
               <Grid container spacing={2}>
                 <Grid item xs={6} sx={{ minWidth: 100 }}>
                   <TextField label="참가종목" select fullWidth size="small" value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })}>
@@ -217,15 +308,35 @@ export default function AddScheduleDialog({
                   onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
                 />
               )}
+              {/* 장소 선택 Autocomplete (반복/대회/일반 모든 경우에 적용) */}
               <Autocomplete
-                options={courts.map(c => c.name)}
-                value={form.place || ''}
-                onInputChange={(event, newInputValue) => {
-                  setForm((prevForm) => ({ ...prevForm, place: newInputValue, }));
+                options={courts}
+                getOptionLabel={(option) => option.name || option}
+                value={selectedCourt || form.place || ''}
+                onChange={handleCourtChange}
+                onInputChange={(event, newInputValue, reason) => {
+                  if (reason === 'input') {
+                    handleCourtChange(event, newInputValue);
+                  }
                 }}
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
+
+              {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
+              {selectedCourt?.details && selectedCourt.details.length > 1 && (
+                <ToggleButtonGroup
+                  color="primary" value={courtType} exclusive
+                  onChange={handleCourtTypeChange} aria-label="Court Type"
+                  fullWidth size="small"
+                >
+                  {selectedCourt.details.map((detail) => (
+                    <ToggleButton key={detail.type} value={detail.type}>
+                      {detail.type} ({detail.surface})
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              )}
               <TextField
                 label="비용" fullWidth size="small" type="number" value={form.price || ''}
                 onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}

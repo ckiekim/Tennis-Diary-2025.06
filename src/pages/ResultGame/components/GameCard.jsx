@@ -5,6 +5,9 @@ import formatDay from '../../../utils/formatDay';
 export default function GameCard({ item }) {
   const navigate = useNavigate();
   const day = formatDay(item.date);
+  const displayPlace = item.placeInfo.courtType === '실내'
+    ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
+  const photoUrl = item.placeInfo?.courtPhotoUrl || '/img/no-image.jpeg';
 
   const renderResult = () => {
     // '게임' 타입이고 결과가 1개만 있을 경우, 실제 결과를 표시
@@ -38,7 +41,7 @@ export default function GameCard({ item }) {
     <Card sx={{ mb: 0, p: 0 }} onClick={() => navigate(`/result/game/${item.id}`)}>
       <Box sx={{ display:'flex', alignItems:'stretch' }}>
         <Box
-          component="img" src={item.photo || '/img/no-image.jpeg'} alt="court"
+          component="img" src={photoUrl} alt="court"
           sx={{ width: 82, height: 82, objectFit: 'cover', borderRadius: 0, display: 'block', }}
           onError={(e) => (e.target.style.display = 'none')}
         />
@@ -48,7 +51,7 @@ export default function GameCard({ item }) {
             {`${item.date} (${day}) ${item.time}`}
           </Typography>
           <Typography fontSize="12px">
-            {item.place} 테니스코트
+            {displayPlace} 테니스코트
           </Typography>
           {renderResult()}
           {item.source && 
