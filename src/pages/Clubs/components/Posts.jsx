@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Link as RouterLink } from 'react-router-dom'; // [수정] Link 컴포넌트 임포트
+import { Link as RouterLink } from 'react-router-dom';
 import { Box, Button, CircularProgress, Divider, Link as MuiLink, List, ListItem, ListItemText, Paper, Typography } from '@mui/material'; // [수정] ListItemButton 대신 ListItem 사용, ListItemText는 그대로
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'; 
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'; 
@@ -26,7 +26,7 @@ const Posts = memo(({clubId, posts, loading, loadingMore, hasMore, loadMore }) =
             <div key={post.id}>
               <ListItem
                 alignItems="flex-start" // 텍스트가 여러 줄일 때 정렬
-                sx={{ py: 0, px: 1 }} // 패딩 조절
+                sx={{ py: 0, px: 1 }} 
               >
                 <ListItemText
                   primary={

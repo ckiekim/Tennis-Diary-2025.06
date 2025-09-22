@@ -7,9 +7,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import dayjs from 'dayjs';
 
 const ClubScheduleSection = ({
-  schedules, isOwner, isMember, user,
-  onAddScheduleClick, onEditSchedule, onDeleteSchedule, onResultClick,
-  loadingMore, hasMore, onLoadMore
+  schedules, isOwner, isMember, user, onAddScheduleClick, 
+  onEditSchedule, onDeleteSchedule, onResultClick, loadingMore, hasMore, onLoadMore
 }) => {
   return (
     <>
@@ -35,7 +34,7 @@ const ClubScheduleSection = ({
                 key={schedule.id}
                 secondaryAction={
                   <Stack direction="row" spacing={0.2}>
-                    {/* 2. 멤버이고 지난 일정이면 '결과 입력' 버튼 표시 */}
+                    {/* 멤버이고 지난 일정이면 '결과 입력' 버튼 표시 */}
                     {canAddResult && (
                       <IconButton edge="end" size="small" onClick={() => onResultClick(schedule)} title="결과 입력">
                         <PostAddIcon fontSize="small" />

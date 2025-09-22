@@ -37,11 +37,9 @@ const ClubCard = ({ club }) => {
             <Chip {...getRoleChipProps(club.role)} 
               size="small" 
               sx={{ 
-                height: '20px',          // 1. 높이를 원하는 크기로 직접 지정 (기본 small은 24px)
-                fontSize: '0.65rem',      // 2. 폰트 크기를 더 작게 조절
-                '.MuiChip-label': {      // 3. Chip 내부 라벨의 스타일을 직접 타겟팅
-                  padding: '0 6px'     //    좌우 패딩을 줄여서 전체 너비를 좁힘
-                }
+                height: '20px',           // 기본 small은 24px
+                fontSize: '0.65rem',      // 폰트 크기를 더 작게 조절
+                '.MuiChip-label': { padding: '0 6px' }
               }}
             />
           </Box>

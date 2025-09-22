@@ -13,7 +13,6 @@ export default function EditScheduleDialog({
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courtType, setCourtType] = useState('');
 
-  // 다이얼로그가 열리거나 초기 데이터가 변경될 때만 상태를 설정합니다.
   useEffect(() => {
     if (selectedSchedule) {
       setForm(selectedSchedule); // 폼 상태를 초기 데이터로 설정
@@ -31,7 +30,7 @@ export default function EditScheduleDialog({
     }
   }, [selectedSchedule, courts]);
 
-  if (!form) return null; // form이 설정되기 전에는 아무것도 렌더링하지 않습니다.
+  if (!form) return null; // form이 설정되기 전에는 아무것도 렌더링하지 않음
 
   const handleCourtChange = (event, newValue) => {
     const courtObject = typeof newValue === 'string' 
@@ -60,7 +59,7 @@ export default function EditScheduleDialog({
       setForm(prev => ({
         ...prev,
         placeSelection: {
-          // court 정보가 날아가지 않도록 안전하게 업데이트합니다.
+          // court 정보가 날아가지 않도록 안전하게 업데이트
           court: prev.placeSelection?.court || selectedCourt,
           type: newType
         }
@@ -178,7 +177,6 @@ export default function EditScheduleDialog({
             renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
             freeSolo size="small"
           />
-
           {selectedCourt?.details && selectedCourt.details.length > 1 && (
             <ToggleButtonGroup
               color="primary" value={courtType} exclusive

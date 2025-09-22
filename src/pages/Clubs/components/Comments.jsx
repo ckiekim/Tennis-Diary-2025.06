@@ -31,7 +31,7 @@ const Comments = memo(({ clubId, postId, currentUserProfile }) => {
     const batch = writeBatch(db);
 
     try {
-      // 1. 새로운 댓글 문서 생성
+      // 새로운 댓글 문서 생성
       const commentRef = doc(collection(db, commentsPath)); // 자동 ID 생성
       batch.set(commentRef, {
         content: newComment, authorId: auth.uid,
@@ -39,7 +39,7 @@ const Comments = memo(({ clubId, postId, currentUserProfile }) => {
         createdAt: new Date(), // serverTimestamp는 batch에서 직접 사용 불가
       });
 
-      // 2. 게시물 문서의 commentCount 1 증가
+      // 게시물 문서의 commentCount 1 증가
       const postRef = doc(db, 'clubs', clubId, 'posts', postId);
       batch.update(postRef, { commentCount: comments.length + 1 }); // increment(1) 대신 정확한 카운트로 보정
 

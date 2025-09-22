@@ -23,8 +23,7 @@ const ClubDialogs = ({
             open={manager.deleteOpen} onClose={() => manager.setDeleteOpen(false)}
             onConfirm={manager.handleDeleteClub}
           >
-            "{club.name}" 클럽을 정말 삭제하시겠습니까? <br />
-            모든 관련 데이터가 삭제되며 이 작업은 되돌릴 수 없습니다.
+            "{club.name}" 클럽을 정말 삭제하시겠습니까?
           </DeleteConfirmDialog>
           <InviteMemberDialog
             open={manager.inviteOpen} onClose={() => manager.setInviteOpen(false)}

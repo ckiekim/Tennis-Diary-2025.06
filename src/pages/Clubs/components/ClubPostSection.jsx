@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
-import Posts from './Posts'; // 기존 Posts 컴포넌트를 재사용합니다.
+import Posts from './Posts'; 
 
 const ClubPostSection = ({
   clubId,
@@ -23,7 +23,6 @@ const ClubPostSection = ({
         )}
       </Box>
 
-      {/* 기존에 사용하던 Posts 컴포넌트를 그대로 활용합니다. */}
       <Posts 
         clubId={clubId}
         posts={posts}
