@@ -136,6 +136,10 @@ export default function EditTournamentDialog({ open, onClose, result, uid, resul
     }
   };
 
+  if (!form) {
+    return null; 
+  }
+
   return (
     <>
       <Dialog open={open} onClose={onClose} fullWidth>
