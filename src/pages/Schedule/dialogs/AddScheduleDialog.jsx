@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
-import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
+import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions } from '../../../data/tournamentConstants';
 
 const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 
@@ -198,7 +198,6 @@ export default function AddScheduleDialog({
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
-
               {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
               {selectedCourt?.details && selectedCourt.details.length > 1 && (
                 <ToggleButtonGroup
@@ -250,7 +249,6 @@ export default function AddScheduleDialog({
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
-
               {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
               {selectedCourt?.details && selectedCourt.details.length > 1 && (
                 <ToggleButtonGroup
@@ -284,7 +282,8 @@ export default function AddScheduleDialog({
                 {form.organizer && (
                   <Grid item xs={6} sx={{ minWidth: 120 }}>
                     <TextField label="참가부문" select fullWidth size="small" value={form.division || ''} onChange={(e) => setForm({ ...form, division: e.target.value })}>
-                      {(form.organizer === 'KATA' ? kataDivisions : katoDivisions).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                      {(form.organizer === 'KATA' ? kataDivisions : form.organizer === 'KATO' ? katoDivisions : ktaDivisions)
+                        .map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
                     </TextField>
                   </Grid>
                 )}
@@ -322,7 +321,6 @@ export default function AddScheduleDialog({
                 renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
                 freeSolo size="small"
               />
-
               {/* 선택된 코트가 실내/실외 옵션을 모두 가질 경우 토글 버튼을 보여줌 */}
               {selectedCourt?.details && selectedCourt.details.length > 1 && (
                 <ToggleButtonGroup

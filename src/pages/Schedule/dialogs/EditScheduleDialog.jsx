@@ -4,7 +4,7 @@ import {
   Stack, TextField, ToggleButtonGroup, ToggleButton 
 } from '@mui/material';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
-import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
+import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions } from '../../../data/tournamentConstants';
 
 export default function EditScheduleDialog({
   courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false
@@ -128,7 +128,8 @@ export default function EditScheduleDialog({
                       label="참가부문" select fullWidth size="small" value={form.division || ''} 
                       onChange={(e) => setForm({ ...form, division: e.target.value })}
                     >
-                      {(form.organizer === 'KATA' ? kataDivisions : katoDivisions).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                      {(form.organizer === 'KATA' ? kataDivisions : form.organizer === 'KATO' ? katoDivisions : ktaDivisions)
+                        .map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
                     </TextField>
                   </Grid>
                 )}

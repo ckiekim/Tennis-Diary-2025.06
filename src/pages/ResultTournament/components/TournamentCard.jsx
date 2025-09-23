@@ -10,6 +10,8 @@ export default function TournamentCard({ item }) {
     logoSrc = '/img/KATO.png';
   } else if (item.organizer === 'KATA') {
     logoSrc = '/img/KATA.png';
+  } else if (item.organizer === 'KTA') {
+    logoSrc = '/img/KTA.png';
   }
   const displayPlace = item.placeInfo.courtType === '실내'
     ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;

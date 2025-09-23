@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem,
-  MenuItem, Stack, TextField, Typography 
+  Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, ImageList, ImageListItem,
+  MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography 
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -11,17 +11,59 @@ import { handleNumericInputChange } from '../../../utils/handleInput';
 import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
 import AlertDialog from '../../../components/AlertDialog';
 
-export default function EditTournamentDialog({ open, onClose, result, uid, resultData }) {
-  const [form, setForm] = useState({ ...result, photoList: result.photoList || [] });
+export default function EditTournamentDialog({ open, onClose, result, uid, resultData, courts }) {
+  const [form, setForm] = useState(null);
+  const [selectedCourt, setSelectedCourt] = useState(null);
+  const [courtType, setCourtType] = useState('');
   const [newFiles, setNewFiles] = useState([]);
   const [updating, setUpdating] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
-    setForm({ ...result });
-    setNewFiles([]);
-  }, [result]);
+    if (result) {
+      setForm(result);
+      setNewFiles([]);
+      
+      const placeSource = result.placeInfo || { courtName: result.place, courtId: null, courtType: null };
+      if (placeSource.courtId) {
+        const court = courts.find(c => c.id === placeSource.courtId);
+        setSelectedCourt(court || null);
+        setCourtType(placeSource.courtType || '');
+      } else if (placeSource.courtName) { // 하위 호환성
+        const court = courts.find(c => c.name === placeSource.courtName);
+        setSelectedCourt(court || null);
+        setCourtType(court?.details?.[0]?.type || '');
+      }
+    }
+  }, [result, courts]);
+  
+  const handleCourtChange = (event, newValue) => {
+    const courtObject = typeof newValue === 'string' ? courts.find(c => c.name === newValue) : newValue;
+    if (courtObject) {
+      const newCourtType = courtObject.details?.[0]?.type || '';
+      setSelectedCourt(courtObject);
+      setCourtType(newCourtType);
+      setForm(prev => ({ ...prev, placeSelection: { court: courtObject, type: newCourtType } }));
+    } else {
+      setSelectedCourt(null);
+      setCourtType('');
+      setForm(prev => ({ ...prev, place: newValue, placeSelection: null }));
+    }
+  };
+
+  const handleCourtTypeChange = (event, newType) => {
+    if (newType) {
+      setCourtType(newType);
+      setForm(prev => ({
+        ...prev,
+        placeSelection: {
+          court: prev.placeSelection?.court || selectedCourt,
+          type: newType,
+        }
+      }));
+    }
+  };
 
   const handleFileChange = (e) => {
     setNewFiles([...e.target.files]);
@@ -48,14 +90,24 @@ export default function EditTournamentDialog({ open, onClose, result, uid, resul
         newPhotoUrls.push(url);
       }
       const finalPhotoList = [...currentUrls, ...newPhotoUrls];
+
+      let placeInfo = form.placeInfo; // 기본값은 기존 정보
+      if (form.placeSelection) { // 사용자가 코트를 변경했을 경우
+        const { court, type } = form.placeSelection;
+        const detail = court.details?.find(d => d.type === type) || {};
+        placeInfo = {
+          courtId: court.id, courtName: court.name, courtType: type,
+          courtAddress: court.location || '', courtPhotoUrl: detail.photo || ''
+        };
+      }
       
-      // Part 1: 'events' 문서 업데이트
+      // 'events' 문서 업데이트
       const eventDocRef = doc(db, 'events', result.id);
       await updateDoc(eventDocRef, {
-        name: form.name, place: form.place, category: form.category,
+        name: form.name, placeInfo, category: form.category,
         partner: form.partner, organizer: form.organizer, division: form.division,
       });
-      // Part 2: 'event_results' 문서 업데이트 또는 생성
+      // 'event_results' 문서 업데이트 또는 생성
       const resultDataToSave = {
         result: form.result || '', price: Number(form.price) || 0, memo: form.memo || '',
         photoList: finalPhotoList, uid: uid, eventId: result.id,
@@ -91,7 +143,29 @@ export default function EditTournamentDialog({ open, onClose, result, uid, resul
         <DialogContent>
           <Stack spacing={2} mt={0.5}>
             <TextField label="대회명" fullWidth value={form.name || ''} size='small' onChange={(e) => setForm({ ...form, name: e.target.value })}/>
-            <TextField label="장소" fullWidth value={form.place || ''} size='small' onChange={(e) => setForm({ ...form, place: e.target.value })}/>
+            <Autocomplete
+              options={courts}
+              getOptionLabel={(option) => option?.name || ''} // 안전하게 ?. 체이닝 추가
+              value={selectedCourt} // Autocomplete의 value는 항상 객체 또는 null이어야 합니다.
+              onChange={handleCourtChange}
+              onInputChange={(event, newInputValue, reason) => {
+                if (reason === 'input') setForm(prev => ({...prev, place: newInputValue}));
+              }}
+              renderInput={(params) => <TextField {...params} label="장소" fullWidth size="small" />}
+              freeSolo
+            />
+            {selectedCourt?.details && selectedCourt.details.length > 1 && (
+              <ToggleButtonGroup
+                color="primary" value={courtType} exclusive
+                onChange={handleCourtTypeChange} fullWidth size="small"
+              >
+                {selectedCourt.details.map((detail) => (
+                  <ToggleButton key={detail.type} value={detail.type}>
+                    {detail.type} ({detail.surface})
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            )}
             <TextField label="참가종목" select fullWidth value={form.category || ''} size='small' onChange={(e) => setForm({ ...form, category: e.target.value })}>
               {tournamentCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
             </TextField>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Divider, ImageList, ImageListItem, Stack, Typography } from '@mui/material';
 import useAuthState from '../../hooks/useAuthState';
 import useDocument from '../../hooks/useDocument';
+import useCourtList from '../../hooks/useCourtList';
 import useSubcollection from '../../hooks/useSubcollection';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
@@ -26,6 +27,7 @@ const TournamentDetailPage = () => {
 
   const { docData: eventData, loading: eventLoading } = useDocument('events', id, refreshKey);
   const { user } = useAuthState();
+  const courts = useCourtList();
 
   const resultsPath = id ? `events/${id}/event_results` : null;
   const { documents: eventResults, loading: resultLoading } = useSubcollection(
@@ -166,6 +168,7 @@ const TournamentDetailPage = () => {
       
       {editOpen && <EditTournamentDialog 
         open={editOpen} onClose={handleEditClose} result={combinedData} uid={user.uid} resultData={resultData}
+        courts={courts}
       />}
 
       <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
