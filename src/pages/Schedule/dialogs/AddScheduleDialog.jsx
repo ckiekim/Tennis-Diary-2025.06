@@ -5,7 +5,9 @@ import {
 } from '@mui/material';
 import useSourceList from '../../../hooks/useSourceList';
 import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
-import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions } from '../../../data/tournamentConstants';
+import { 
+  tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions
+} from '../../../data/tournamentConstants';
 
 const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 
@@ -282,8 +284,14 @@ export default function AddScheduleDialog({
                 {form.organizer && (
                   <Grid item xs={6} sx={{ minWidth: 120 }}>
                     <TextField label="참가부문" select fullWidth size="small" value={form.division || ''} onChange={(e) => setForm({ ...form, division: e.target.value })}>
-                      {(form.organizer === 'KATA' ? kataDivisions : form.organizer === 'KATO' ? katoDivisions : ktaDivisions)
-                        .map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                      {(
+                        form.organizer === 'KATA' ? kataDivisions :
+                        form.organizer === 'KATO' ? katoDivisions :
+                        form.organizer === 'KTA' ? ktaDivisions :
+                        form.organizer === '던롭 X-OPEN' ? dxoDivisions :
+                        form.organizer === 'WEMIX' ? wemixDivisions :
+                        [] // 해당하는 주관사가 없을 경우 빈 배열 반환
+                      ).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
                     </TextField>
                   </Grid>
                 )}
