@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-const API_ENDPOINT = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo';
+const API_ENDPOINT = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo';
 const API_KEY = process.env.REACT_APP_HOLIDAY_API_KEY; 
-// const API_KEY = '49aa2c642c5f729d14e821de99962ba7f2f864cc4a54f632366cd8eaef8cc412';
 
 // API 응답 데이터를 캐시하여 중복 요청을 방지합니다.
 const holidayCache = new Map();
