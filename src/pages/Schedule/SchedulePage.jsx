@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Fab, Stack, Typography } from '@mui/material';
 import dayjs from 'dayjs';
 
@@ -6,6 +6,7 @@ import useAuthState from '../../hooks/useAuthState';
 import useEventDateMap from '../../hooks/useEventDateMap';
 import useScheduleByDate from '../../hooks/useScheduleByDate';
 import useCourtList from '../../hooks/useCourtList';
+import useHolidays from '../../hooks/useHolidays';
 import { useScheduleManager } from '../../hooks/useScheduleManager';
 
 import KoreanDatePicker from './components/KoreanDatePicker';
@@ -18,18 +19,25 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
-    const [refreshKey, setRefreshKey] = useState(0);
-    const refresh = () => setRefreshKey(prev => prev + 1);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refresh = () => setRefreshKey(prev => prev + 1);
+
+  const { user } = useAuthState();
+  const courts = useCourtList();
+  const { holidays } = useHolidays(selectedDate.year(), selectedDate.month());
+  const holidayName = useMemo(() => {
+    const ymd = selectedDate.format('YYYY-MM-DD');
+    const holiday = holidays.find(h => h.date === ymd);
+    return holiday ? holiday.name : '';
+  }, [selectedDate, holidays]);
   
-    const { user } = useAuthState();
-    const courts = useCourtList();
-    
-    // 데이터 로직과 상태 관리를 커스텀 훅으로 위임
-    const manager = useScheduleManager(selectedDate, user, courts);
-    
-    // UI 렌더링에 필요한 데이터는 훅에서 가져옴
-    const eventDateMap = useEventDateMap(refreshKey);
-    const schedules = useScheduleByDate(selectedDate, refreshKey);
+  // 데이터 로직과 상태 관리를 커스텀 훅으로 위임
+  const manager = useScheduleManager(selectedDate, user, courts);
+  
+  // UI 렌더링에 필요한 데이터는 훅에서 가져옴
+  const eventDateMap = useEventDateMap(refreshKey);
+  const schedules = useScheduleByDate(selectedDate, refreshKey);
+
 
   return (
     <MainLayout title='테니스 다이어리'>
@@ -40,6 +48,9 @@ const SchedulePage = () => {
           <CalendarMonthIcon />
           <Typography variant="subtitle1" fontWeight="bold">
             {selectedDate.format('YYYY.MM.DD (ddd)')}
+            {holidayName && 
+              <span style={{ fontSize: '14px', fontWeight: 'normal', marginLeft: '9px' }}>{holidayName}</span>
+            } 
           </Typography>
         </Stack>
 

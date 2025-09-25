@@ -5,6 +5,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { Box, IconButton, Typography } from '@mui/material';
+import useHolidays from '../../../hooks/useHolidays';
 import CustomPickersDay from './CustomPickersDay';
 import Legend from './Legend';
 
@@ -32,6 +33,7 @@ const KoreanCalendarHeader = ({ currentMonth, onMonthChange }) => {
 // 🧩 KoreanDatePicker 본체
 const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   const [displayMonth, setDisplayMonth] = useState(value);
+  const { holidays } = useHolidays(displayMonth.year(), displayMonth.month());
 
   // ✅ 월 변경 시 날짜도 새 달의 첫날로 바꿔줌
   const handleMonthChange = (newMonth) => {
@@ -66,6 +68,7 @@ const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
                 <CustomPickersDay 
                   {...props} 
                   eventTypes={eventDateMap[dayjs(props.day).format('YYYY-MM-DD')]}
+                  holidays={holidays}
                 />
               ),
             }}
