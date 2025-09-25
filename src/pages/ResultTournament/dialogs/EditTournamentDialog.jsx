@@ -8,7 +8,9 @@ import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/fi
 import { db } from '../../../api/firebaseConfig';
 import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/firebaseStorage';
 import { handleNumericInputChange } from '../../../utils/handleInput';
-import { tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions } from '../../../data/tournamentConstants';
+import { 
+  tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions 
+} from '../../../data/tournamentConstants';
 import AlertDialog from '../../../components/AlertDialog';
 
 export default function EditTournamentDialog({ open, onClose, result, uid, resultData, courts }) {
@@ -179,7 +181,13 @@ export default function EditTournamentDialog({ open, onClose, result, uid, resul
             </TextField>
             {form.organizer && (
               <TextField label="참가부문" select fullWidth value={form.division || ''} size='small' onChange={(e) => setForm({ ...form, division: e.target.value })}>
-                {(form.organizer === 'KATA' ? kataDivisions : katoDivisions).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
+                {(
+                  form.organizer === 'KATO' ? katoDivisions :
+                  form.organizer === 'KATA' ? kataDivisions :
+                  form.organizer === 'KTA' ? ktaDivisions :
+                  form.organizer === '던롭' ? dxoDivisions :
+                  form.organizer === 'WEMIX' ? wemixDivisions : []
+                ).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
               </TextField>
             )}
             <TextField label="결과" fullWidth value={form?.result || ''} size='small' onChange={(e) => setForm({ ...form, result: e.target.value })}/>

@@ -134,7 +134,7 @@ export default function EditScheduleDialog({
                         form.organizer === 'KATA' ? kataDivisions :
                         form.organizer === 'KATO' ? katoDivisions :
                         form.organizer === 'KTA' ? ktaDivisions :
-                        form.organizer === '던롭 X-OPEN' ? dxoDivisions :
+                        form.organizer === '던롭' ? dxoDivisions :
                         form.organizer === 'WEMIX' ? wemixDivisions :
                         [] // 해당하는 주관사가 없을 경우 빈 배열 반환
                       ).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}

@@ -97,7 +97,7 @@ const TournamentDetailPage = () => {
         </Typography>
         <Divider sx={{ my: 1 }} />
         
-        <Typography variant="body2" fontWeight="bold">일시</Typography>
+        <Typography variant="body2" fontWeight="bold">일자</Typography>
         <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
           {`${combinedData.date} (${formatDay(combinedData.date)})`}
         </Typography>

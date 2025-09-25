@@ -5,14 +5,13 @@ import formatDay from '../../../utils/formatDay';
 export default function TournamentCard({ item }) {
   const navigate = useNavigate();
   const day = formatDay(item.date);
-  let logoSrc = '/img/no-image.jpeg';
-  if (item.organizer === 'KATO') {
-    logoSrc = '/img/KATO.png';
-  } else if (item.organizer === 'KATA') {
-    logoSrc = '/img/KATA.png';
-  } else if (item.organizer === 'KTA') {
-    logoSrc = '/img/KTA.png';
-  }
+  const logoSrc = 
+    item.organizer === 'KATO' ? '/img/KATO.png' :
+    item.organizer === 'KATA' ? '/img/KATA.png' :
+    item.organizer === 'KTA' ? '/img/KTA.png' :
+    item.organizer === '던롭' ? '/img/DXO.png' :
+    item.organizer === 'WEMIX' ? '/img/WEMIX.png' : '/img/no-image.jpeg';
+
   const displayPlace = item.placeInfo.courtType === '실내'
     ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
 
