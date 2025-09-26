@@ -29,6 +29,7 @@ const ScheduleDialogs = ({ manager, courts, user, refresh }) => {
         open={manager.editOpen}
         selectedSchedule={manager.selectedSchedule}
         setOpen={manager.setEditOpen}
+        recurringEditInfo={manager.recurringEditInfo}
         onUpdate={(form) => manager.handleUpdate(form).then(handleDialogClose(manager.setEditOpen))}
       />
 

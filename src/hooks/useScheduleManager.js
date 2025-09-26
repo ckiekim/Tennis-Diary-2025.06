@@ -20,6 +20,7 @@ export const useScheduleManager = (selectedDate, user, courts) => {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [recurringEditInfo, setRecurringEditInfo] = useState({ price: '', endDate: '' });
   const [resultTarget, setResultTarget] = useState(null);
   const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -109,39 +110,100 @@ export const useScheduleManager = (selectedDate, user, courts) => {
     setAddOpen(false);
   };
 
-  const handleEdit = (schedule) => {
+  const handleEdit = async (schedule) => {
     setSelectedSchedule(schedule);
+    if (schedule.isRecurring && schedule.recurringId) {
+      // 반복 일정인 경우, DB에서 해당 시리즈의 마지막 날짜를 찾음
+      const q = query(collection(db, 'events'), where('recurringId', '==', schedule.recurringId));
+      const querySnapshot = await getDocs(q);
+      
+      const daysOfWeek = new Set();
+      const times = new Set();
+      let lastDate = '';
+      querySnapshot.forEach(doc => {
+        const eventData = doc.data();
+        const eventDate = dayjs(eventData.date);
+        const dayName = ['일', '월', '화', '수', '목', '금', '토'][eventDate.day()];
+        
+        daysOfWeek.add(dayName);
+        times.add(eventData.time);
+
+        if (!lastDate || eventDate.isAfter(dayjs(lastDate))) {
+          lastDate = eventData.date;
+        }
+      });
+
+      const sortedDays = Array.from(daysOfWeek).sort((a, b) => dayMap[a] - dayMap[b]);
+      const sortedTimes = Array.from(times);
+      
+      // 찾은 정보로 상태 업데이트
+      setRecurringEditInfo({
+        price: schedule.price,
+        endDate: lastDate,
+        frequency: sortedDays.length || 1,
+        day1: sortedDays[0] || '월',
+        time1: sortedTimes[0] || '',
+        day2: sortedDays[1] || '수',
+        time2: sortedTimes.length > 1 ? sortedTimes[1] : sortedTimes[0] || '',
+      });
+    } else {
+      // 반복 일정이 아니면 recurringEditInfo를 초기화
+      setRecurringEditInfo(null);
+    }
     setEditOpen(true);
   };
 
-  const handleUpdate = async (scheduleToUpdate) => {
-    if (!scheduleToUpdate?.id) return;
+  const handleUpdate = async (updatedForm) => {
+    if (!updatedForm?.id) return;
 
-    // placeSelection이 있으면 새로운 placeInfo를 생성, 없으면 기존 값을 유지
-    const placeInfo = scheduleToUpdate.placeSelection 
-      ? createPlaceInfo(scheduleToUpdate) 
-      : scheduleToUpdate.placeInfo;
-    const updateData = {
-      ...scheduleToUpdate,
-      price: Number(scheduleToUpdate.price ?? 0),
-    };
+    // 1. [공통] 단일 일정에 대한 업데이트 데이터를 먼저 준비합니다.
+    const placeInfo = updatedForm.placeSelection 
+      ? createPlaceInfo(updatedForm) 
+      : updatedForm.placeInfo;
+
+    const singleUpdateData = { ...updatedForm };
     if (placeInfo) {
-      updateData.placeInfo = placeInfo;
+      singleUpdateData.placeInfo = placeInfo;
     }
-
-    // 임시 필드와 더 이상 사용하지 않는 필드 삭제
-    delete updateData.id;
-    delete updateData.place;
-    delete updateData.placeSelection;
     
-    try {
-      await updateDoc(doc(db, 'events', scheduleToUpdate.id), updateData);
-      setEditOpen(false);
-    } catch (error) {
-      console.error("❌ Firestore 업데이트 실패:", error);
-      setAlertMessage('업데이트 중 오류가 발생했습니다.');
-      setIsAlertOpen(true);
+    // 반복 일정 정보가 있다면, 개별 이벤트의 가격은 recurringInfo의 가격을 따릅니다.
+    if (updatedForm.recurringInfo) {
+      singleUpdateData.price = Number(updatedForm.recurringInfo.price ?? 0);
+    } else {
+      singleUpdateData.price = Number(updatedForm.price ?? 0);
     }
+    
+    // 불필요한 임시 필드들을 정리합니다.
+    delete singleUpdateData.id;
+    delete singleUpdateData.place;
+    delete singleUpdateData.placeSelection;
+    delete singleUpdateData.recurringInfo;
+
+    // 2. [공통] 선택된 단일 일정을 먼저 업데이트합니다. (장소, 시간 등이 여기서 반영됨)
+    await updateDoc(doc(db, 'events', updatedForm.id), singleUpdateData);
+
+    // 3. [반복 일정 전용] 만약 반복 일정이라면, 시리즈 전체에 대한 추가 업데이트를 실행합니다.
+    if (updatedForm.isRecurring && updatedForm.recurringId && updatedForm.recurringInfo) {
+      const { price, endDate } = updatedForm.recurringInfo;
+      const batch = writeBatch(db);
+      
+      const q = query(collection(db, 'events'), where('recurringId', '==', updatedForm.recurringId));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach(eventDoc => {
+        // 모든 반복 일정의 '비용'을 업데이트합니다.
+        batch.update(eventDoc.ref, { price: Number(price) });
+
+        // 새로운 종료일 이후의 일정은 삭제합니다.
+        if (dayjs(eventDoc.data().date).isAfter(dayjs(endDate))) {
+          batch.delete(eventDoc.ref);
+        }
+      });
+      
+      await batch.commit();
+    }
+    
+    setEditOpen(false);
   };
 
   const handleDelete = (schedule) => {
@@ -229,6 +291,7 @@ export const useScheduleManager = (selectedDate, user, courts) => {
     isAlertOpen, setIsAlertOpen,
     selectedSchedule, setSelectedSchedule,
     resultTarget,
+    recurringEditInfo,
     deleteAllRecurring, setDeleteAllRecurring,
     alertMessage,
     handleOpenAddDialog,

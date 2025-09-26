@@ -1,38 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { 
-  Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, 
-  Stack, TextField, ToggleButtonGroup, ToggleButton 
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, FormGroup, FormControlLabel, MenuItem, Stack, Switch, TextField 
 } from '@mui/material';
-import { handleNumericInputChange, handleTimeInputChange } from '../../../utils/handleInput';
-import { 
-  tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions
-} from '../../../data/tournamentConstants';
+import TournamentFields from './TournamentFields';
+import RecurringFields from './RecurringFields';
+import StandardFields from './StandardFields';
 
 export default function EditScheduleDialog({
-  courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false
+  courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false, recurringEditInfo
 }) {
   const [form, setForm] = useState(null);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringOptions, setRecurringOptions] = useState({ 
+    frequency: 1, day1: '월', time1: '', day2: '수', time2: '', monthlyPrice: '', endDate: '' 
+  });
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courtType, setCourtType] = useState('');
 
   useEffect(() => {
     if (selectedSchedule) {
       setForm(selectedSchedule); // 폼 상태를 초기 데이터로 설정
+      const isRecurringEvent = selectedSchedule.isRecurring || false;
+      setIsRecurring(isRecurringEvent);
 
-      const { place, placeInfo } = selectedSchedule;
-      if (placeInfo) {
-        const court = courts.find(c => c.id === placeInfo.courtId);
+     if (isRecurringEvent && recurringEditInfo) {
+        // 부모로부터 받은 recurringEditInfo로 상태를 설정
+        setRecurringOptions({
+          monthlyPrice: recurringEditInfo.price,
+          endDate: recurringEditInfo.endDate,
+          frequency: recurringEditInfo.frequency,
+          day1: recurringEditInfo.day1,
+          time1: recurringEditInfo.time1,
+          day2: recurringEditInfo.day2,
+          time2: recurringEditInfo.time2,
+        });
+      }
+      const placeSource = selectedSchedule.placeInfo || { courtName: selectedSchedule.place };
+      if (placeSource.courtId) {
+        const court = courts.find(c => c.id === placeSource.courtId);
         setSelectedCourt(court || null);
-        setCourtType(placeInfo.courtType || '');
-      } else if (place) { // 하위 호환성을 위한 폴백
-        const court = courts.find(c => c.name === place);
+        setCourtType(placeSource.courtType || '');
+      } else if (placeSource.courtName) {
+        const court = courts.find(c => c.name === placeSource.courtName);
         setSelectedCourt(court || null);
         setCourtType(court?.details?.[0]?.type || '');
       }
     }
-  }, [selectedSchedule, courts]);
-
-  if (!form) return null; // form이 설정되기 전에는 아무것도 렌더링하지 않음
+  }, [selectedSchedule, courts, recurringEditInfo]);
 
   const handleCourtChange = (event, newValue) => {
     const courtObject = typeof newValue === 'string' 
@@ -70,16 +84,32 @@ export default function EditScheduleDialog({
   };
 
   const handleConfirmUpdate = () => {
-    onUpdate(form);
+    let finalData = { 
+      ...form,
+    };
+    // 반복 일정인 경우, recurringOptions의 값을 form 데이터에 반영
+    if ((isLesson || isJeongmo) && isRecurring) {
+      finalData.recurringInfo = {
+        price: recurringOptions.monthlyPrice,
+        endDate: recurringOptions.endDate,
+      };
+    }
+    onUpdate(finalData);
   };
 
-  const isJeongmo = form.type === "정모";
-  const isTournament = form.type === "대회";
-  const isGame = form.type === "게임";
-
-  const handleOrganizerChange = (e) => {
-    setForm({ ...form, organizer: e.target.value, division: '' });
+  const isJeongmo = useMemo(() => form?.type === "정모", [form?.type]);
+  const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
+  const isTournament = useMemo(() => form?.type === "대회", [form?.type]);
+  const isGame = useMemo(() => form?.type === "게임", [form?.type]);
+  
+  const courtProps = {
+    selectedCourt, courtType,
+    place: form?.place,
+    onCourtChange: handleCourtChange,
+    onCourtTypeChange: handleCourtTypeChange,
   };
+  
+  if (!form) return null; // form이 설정되기 전에는 아무것도 렌더링하지 않음
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
@@ -96,108 +126,45 @@ export default function EditScheduleDialog({
             <MenuItem value="대회">대회</MenuItem>
             <MenuItem value="정모">정모</MenuItem>
           </TextField>
+          {(isLesson || isJeongmo) && (
+            <FormGroup>
+              <FormControlLabel
+                control={<Switch checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
+                label="반복 일정"
+              />
+            </FormGroup>
+          )}
           {isTournament ? (
-            <Stack spacing={2}>
-              <TextField label="대회명" fullWidth size="small" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              <Grid container spacing={2}>
-                <Grid item xs={6} sx={{ minWidth: 100 }}>
-                  <TextField 
-                    label="참가종목" select fullWidth size="small" value={form.category || ''} 
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  >
-                    {tournamentCategories.map(cat => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-                  </TextField>
-                </Grid>
-                <Grid item xs={6} sx={{ maxWidth: 120 }}>
-                  <TextField 
-                    label="파트너" fullWidth size="small" value={form.partner || ''} 
-                    onChange={(e) => setForm({ ...form, partner: e.target.value })} 
-                  />
-                </Grid>
-              </Grid>
-              <Grid container spacing={2}>
-                <Grid item xs={6} sx={{ minWidth: 100 }}>
-                  <TextField 
-                    label="주관" select fullWidth size="small" value={form.organizer || ''} 
-                    onChange={handleOrganizerChange}
-                  >
-                    {tournamentOrganizers.map(org => <MenuItem key={org} value={org}>{org}</MenuItem>)}
-                  </TextField>
-                </Grid>
-                {form.organizer && (
-                  <Grid item xs={6} sx={{ minWidth: 120 }}>
-                    <TextField 
-                      label="참가부문" select fullWidth size="small" value={form.division || ''} 
-                      onChange={(e) => setForm({ ...form, division: e.target.value })}
-                    >
-                      {(
-                        form.organizer === 'KATA' ? kataDivisions :
-                        form.organizer === 'KATO' ? katoDivisions :
-                        form.organizer === 'KTA' ? ktaDivisions :
-                        form.organizer === '던롭' ? dxoDivisions :
-                        form.organizer === 'WEMIX' ? wemixDivisions :
-                        [] // 해당하는 주관사가 없을 경우 빈 배열 반환
-                      ).map(div => <MenuItem key={div} value={div}>{div}</MenuItem>)}
-                    </TextField>
-                  </Grid>
-                )}
-              </Grid>
-              <TextField 
-                label="참가비" fullWidth size="small" type="number" value={form.price || ''}
-                onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
-              />
-            </Stack>
+            <TournamentFields 
+              form={form} 
+              setForm={setForm} 
+              courts={courts} 
+              courtProps={courtProps} 
+            />
+          ) : (isLesson || isJeongmo) && isRecurring ? (
+            <RecurringFields 
+              recurringOptions={recurringOptions} 
+              setRecurringOptions={setRecurringOptions} 
+              courts={courts} 
+              courtProps={courtProps} 
+            />
           ) : (
-            <>
-              {isJeongmo && (
-                <TextField 
-                  label="정모 이름" fullWidth size="small" 
-                  value={form.club?.name || form.club || ''}
-                  onChange={(e) => setForm({...form, club: e.target.value})}
-                  disabled={isClubSchedule}
-                />
-              )}
-              <TextField
-                label="시간" fullWidth size="small" value={form?.time || ''}
-                onChange={(e) => setForm({ ...form, time: handleTimeInputChange(e.target.value) })}
-              />
-              <TextField
-                label="비용" fullWidth size="small" type="number" value={form.price || ''}
-                onChange={(e) => setForm({ ...form, price: handleNumericInputChange(e.target.value) })}
-              />
-             {isGame && (
-                <TextField
-                  label="소스" fullWidth size="small" value={form?.source || ''}
-                  onChange={(e) => setForm({ ...form, source: e.target.value })}
-                />
-              )}
-            </>
+            <StandardFields 
+              form={form} 
+              setForm={setForm} 
+              isGame={isGame} 
+              courts={courts} 
+              courtProps={courtProps} 
+            />
           )}
 
-          {/* 공통 장소 선택 UI */}
-          <Autocomplete
-            options={courts}
-            getOptionLabel={(option) => option.name || ''}
-            value={selectedCourt || form.place || ''}
-            onChange={handleCourtChange}
-            onInputChange={(event, newInputValue, reason) => {
-              if (reason === 'input') handleCourtChange(event, newInputValue);
-            }}
-            renderInput={(params) => <TextField {...params} label="장소" fullWidth />}
-            freeSolo size="small"
-          />
-          {selectedCourt?.details && selectedCourt.details.length > 1 && (
-            <ToggleButtonGroup
-              color="primary" value={courtType} exclusive
-              onChange={handleCourtTypeChange} aria-label="Court Type"
-              fullWidth size="small"
-            >
-              {selectedCourt.details.map((detail) => (
-                <ToggleButton key={detail.type} value={detail.type}>
-                  {detail.type} ({detail.surface})
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
+          {isJeongmo && (
+            <TextField 
+              label="정모 이름" fullWidth size="small" 
+              value={form.club?.name || form.club || ''}
+              onChange={(e) => setForm({...form, club: e.target.value})}
+              disabled={isClubSchedule}
+            />
           )}
         </Stack>
       </DialogContent>
