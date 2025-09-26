@@ -85,7 +85,7 @@ export const useScheduleManager = (selectedDate, user, courts) => {
         type: formData.type,
         date: date.format('YYYY-MM-DD'),
         time,
-        place: formData.place,
+        placeInfo,
         price: Number(monthlyPrice),
         isRecurring: true,
         recurringId: recurringId,
