@@ -153,52 +153,73 @@ export const useScheduleManager = (selectedDate, user, courts) => {
     setEditOpen(true);
   };
 
-  const handleUpdate = async (updatedForm) => {
+  const handleUpdate = async (updatedForm, updateScope) => {
     if (!updatedForm?.id) return;
 
-    // 1. [공통] 단일 일정에 대한 업데이트 데이터를 먼저 준비합니다.
-    const placeInfo = updatedForm.placeSelection 
-      ? createPlaceInfo(updatedForm) 
-      : updatedForm.placeInfo;
+    // 1. '이 일정만' 수정할 경우
+    if (updateScope === 'single') {
+      const placeInfo = updatedForm.placeSelection 
+        ? createPlaceInfo(updatedForm) 
+        : updatedForm.placeInfo;
 
-    const singleUpdateData = { ...updatedForm };
-    if (placeInfo) {
-      singleUpdateData.placeInfo = placeInfo;
+      const singleUpdateData = { ...updatedForm };
+      if (placeInfo) singleUpdateData.placeInfo = placeInfo;
+      singleUpdateData.price = Number(updatedForm.recurringInfo?.price ?? updatedForm.price ?? 0);
+      
+      // 시리즈에서 분리하기 위해 반복 관련 필드를 제거합니다.
+      delete singleUpdateData.isRecurring;
+      delete singleUpdateData.recurringId;
+      
+      // 임시 필드 정리
+      delete singleUpdateData.id;
+      delete singleUpdateData.place;
+      delete singleUpdateData.placeSelection;
+      delete singleUpdateData.recurringInfo;
+
+      await updateDoc(doc(db, 'events', updatedForm.id), singleUpdateData);
     }
-    
-    // 반복 일정 정보가 있다면, 개별 이벤트의 가격은 recurringInfo의 가격을 따릅니다.
-    if (updatedForm.recurringInfo) {
-      singleUpdateData.price = Number(updatedForm.recurringInfo.price ?? 0);
-    } else {
-      singleUpdateData.price = Number(updatedForm.price ?? 0);
-    }
-    
-    // 불필요한 임시 필드들을 정리합니다.
-    delete singleUpdateData.id;
-    delete singleUpdateData.place;
-    delete singleUpdateData.placeSelection;
-    delete singleUpdateData.recurringInfo;
-
-    // 2. [공통] 선택된 단일 일정을 먼저 업데이트합니다. (장소, 시간 등이 여기서 반영됨)
-    await updateDoc(doc(db, 'events', updatedForm.id), singleUpdateData);
-
-    // 3. [반복 일정 전용] 만약 반복 일정이라면, 시리즈 전체에 대한 추가 업데이트를 실행합니다.
-    if (updatedForm.isRecurring && updatedForm.recurringId && updatedForm.recurringInfo) {
-      const { price, endDate } = updatedForm.recurringInfo;
+    // 2. '향후 모든 일정'을 수정할 경우
+    else if (updateScope === 'future' && updatedForm.recurringId) {
       const batch = writeBatch(db);
       
-      const q = query(collection(db, 'events'), where('recurringId', '==', updatedForm.recurringId));
+      // 1. 수정 기준일 이후의 기존 일정들을 모두 조회합니다.
+      const q = query(
+        collection(db, 'events'), 
+        where('recurringId', '==', updatedForm.recurringId),
+        where('date', '>=', updatedForm.date)
+      );
       const querySnapshot = await getDocs(q);
 
+      // 2. 조회된 기존 일정들을 모두 삭제합니다.
       querySnapshot.forEach(eventDoc => {
-        // 모든 반복 일정의 '비용'을 업데이트합니다.
-        batch.update(eventDoc.ref, { price: Number(price) });
-
-        // 새로운 종료일 이후의 일정은 삭제합니다.
-        if (dayjs(eventDoc.data().date).isAfter(dayjs(endDate))) {
-          batch.delete(eventDoc.ref);
-        }
+        batch.delete(eventDoc.ref);
       });
+
+      // 3. 새로운 설정으로 미래의 일정들을 다시 생성합니다.
+      const { frequency, day1, time1, day2, time2, price, endDate } = updatedForm.recurringInfo;
+      const placeInfo = createPlaceInfo(updatedForm);
+      
+      let currentDate = dayjs(updatedForm.date); // 수정 기준일부터 시작
+      const finalDate = dayjs(endDate);
+
+      const addEventToBatch = (date, time) => {
+        const newEventRef = doc(collection(db, 'events'));
+        const dataToSave = {
+          uid: updatedForm.uid, participantUids: updatedForm.participantUids,
+          type: updatedForm.type, club: updatedForm.club || null,
+          date: date.format('YYYY-MM-DD'), time, placeInfo, price: Number(price),
+          isRecurring: true, recurringId: updatedForm.recurringId,
+          createdAt: serverTimestamp()
+        };
+        batch.set(newEventRef, dataToSave);
+      };
+
+      while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
+        const dayOfWeek = currentDate.day();
+        if (dayOfWeek === dayMap[day1]) addEventToBatch(currentDate, time1);
+        if (frequency === 2 && dayOfWeek === dayMap[day2]) addEventToBatch(currentDate, time2);
+        currentDate = currentDate.add(1, 'day');
+      }
       
       await batch.commit();
     }

@@ -5,6 +5,7 @@ import {
 import TournamentFields from './TournamentFields';
 import RecurringFields from './RecurringFields';
 import StandardFields from './StandardFields';
+// import dayjs from 'dayjs';
 
 export default function EditScheduleDialog({
   courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false, recurringEditInfo
@@ -84,17 +85,36 @@ export default function EditScheduleDialog({
   };
 
   const handleConfirmUpdate = () => {
-    let finalData = { 
-      ...form,
-    };
+    const userChoice = window.confirm("수정의 범위를 알려주세요.\n\n'확인' = 이 일정만 수정\n'취소' = 향후 모든 일정 수정");
+    const updateScope = userChoice ? 'single' : 'future';
+
+    let finalData = { ...form };
+    
     // 반복 일정인 경우, recurringOptions의 값을 form 데이터에 반영
     if ((isLesson || isJeongmo) && isRecurring) {
-      finalData.recurringInfo = {
-        price: recurringOptions.monthlyPrice,
-        endDate: recurringOptions.endDate,
+      // const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+      // const eventDayOfWeek = dayjs(form.date).day();
+
+      // if (recurringEditInfo) {
+      //   if (eventDayOfWeek === dayMap[recurringEditInfo.day1]) {
+      //     finalData.time = recurringOptions.time1;
+      //   } else if (recurringEditInfo.frequency === 2 && eventDayOfWeek === dayMap[recurringEditInfo.day2]) {
+      //     finalData.time = recurringOptions.time2;
+      //   }
+      // } else {
+      //   // 혹시 모를 예외 상황을 위한 대비
+      //   finalData.time = recurringOptions.time1;
+      // }
+      
+      // 시리즈 전체에 적용될 정보(비용, 종료일)를 recurringInfo에 담습니다.
+      finalData.recurringInfo = { 
+        ...recurringOptions,
+        price: recurringOptions.monthlyPrice, // price 필드명 통일
       };
+      delete finalData.recurringInfo.monthlyPrice;
     }
-    onUpdate(finalData);
+
+    onUpdate(finalData, updateScope);
   };
 
   const isJeongmo = useMemo(() => form?.type === "정모", [form?.type]);
