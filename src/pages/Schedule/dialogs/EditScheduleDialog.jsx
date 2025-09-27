@@ -5,7 +5,8 @@ import {
 import TournamentFields from './TournamentFields';
 import RecurringFields from './RecurringFields';
 import StandardFields from './StandardFields';
-// import dayjs from 'dayjs';
+import UpdateScopeDialog from './UpdateScopeDialog';
+import dayjs from 'dayjs';
 
 export default function EditScheduleDialog({
   courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false, recurringEditInfo
@@ -17,15 +18,15 @@ export default function EditScheduleDialog({
   });
   const [selectedCourt, setSelectedCourt] = useState(null);
   const [courtType, setCourtType] = useState('');
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
 
   useEffect(() => {
     if (selectedSchedule) {
-      setForm(selectedSchedule); // 폼 상태를 초기 데이터로 설정
+      setForm(selectedSchedule);
       const isRecurringEvent = selectedSchedule.isRecurring || false;
       setIsRecurring(isRecurringEvent);
 
      if (isRecurringEvent && recurringEditInfo) {
-        // 부모로부터 받은 recurringEditInfo로 상태를 설정
         setRecurringOptions({
           monthlyPrice: recurringEditInfo.price,
           endDate: recurringEditInfo.endDate,
@@ -76,7 +77,6 @@ export default function EditScheduleDialog({
       setForm(prev => ({
         ...prev,
         placeSelection: {
-          // court 정보가 날아가지 않도록 안전하게 업데이트
           court: prev.placeSelection?.court || selectedCourt,
           type: newType
         }
@@ -84,37 +84,46 @@ export default function EditScheduleDialog({
     }
   };
 
-  const handleConfirmUpdate = () => {
-    const userChoice = window.confirm("수정의 범위를 알려주세요.\n\n'확인' = 이 일정만 수정\n'취소' = 향후 모든 일정 수정");
-    const updateScope = userChoice ? 'single' : 'future';
+  const createPayload = (scope) => {
+    const finalData = { 
+      ...form, 
+      placeSelection: selectedCourt ? { court: selectedCourt, type: courtType } : null,
+    };
 
-    let finalData = { ...form };
-    
-    // 반복 일정인 경우, recurringOptions의 값을 form 데이터에 반영
-    if ((isLesson || isJeongmo) && isRecurring) {
-      // const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
-      // const eventDayOfWeek = dayjs(form.date).day();
+    if (isRecurring) {
+      finalData.recurringInfo = { ...recurringOptions };
 
-      // if (recurringEditInfo) {
-      //   if (eventDayOfWeek === dayMap[recurringEditInfo.day1]) {
-      //     finalData.time = recurringOptions.time1;
-      //   } else if (recurringEditInfo.frequency === 2 && eventDayOfWeek === dayMap[recurringEditInfo.day2]) {
-      //     finalData.time = recurringOptions.time2;
-      //   }
-      // } else {
-      //   // 혹시 모를 예외 상황을 위한 대비
-      //   finalData.time = recurringOptions.time1;
-      // }
-      
-      // 시리즈 전체에 적용될 정보(비용, 종료일)를 recurringInfo에 담습니다.
-      finalData.recurringInfo = { 
-        ...recurringOptions,
-        price: recurringOptions.monthlyPrice, // price 필드명 통일
-      };
-      delete finalData.recurringInfo.monthlyPrice;
+      // '이 일정만 수정'을 선택한 경우, 변경된 요일에 맞춰 날짜를 재계산합니다.
+      if (scope === 'single') {
+        const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+        const originalDay = dayjs(form.date).day();
+        const newDay = dayMap[recurringOptions.day1]; // 주1회 기준
+
+        if (originalDay !== newDay) {
+          finalData.date = dayjs(form.date).day(newDay).format('YYYY-MM-DD');
+        }
+
+        // 개별 일정의 시간과 비용도 recurringOptions의 값으로 업데이트합니다.
+        finalData.time = recurringOptions.time1;
+        finalData.price = recurringOptions.monthlyPrice;
+      }
     }
 
-    onUpdate(finalData, updateScope);
+    onUpdate({ form: finalData, scope });
+  };
+
+  const handleConfirmUpdate = () => {
+    if ((isLesson || isJeongmo) && isRecurring) {
+      setScopeDialogOpen(true);
+    } else {
+      createPayload(null);
+    }
+  };
+
+  const handleScopeConfirm = (updateScope) => {
+    setScopeDialogOpen(false); 
+
+    createPayload(updateScope);
   };
 
   const isJeongmo = useMemo(() => form?.type === "정모", [form?.type]);
@@ -132,68 +141,76 @@ export default function EditScheduleDialog({
   if (!form) return null; // form이 설정되기 전에는 아무것도 렌더링하지 않음
 
   return (
-    <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
-      <DialogTitle>일정 수정</DialogTitle>
-      <DialogContent>
-        <Stack spacing={2} mt={1}>
-          <TextField
-            label="종류" select fullWidth size="small" value={form?.type || ''}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
-            disabled={isClubSchedule}
-          >
-            <MenuItem value="레슨">레슨</MenuItem>
-            <MenuItem value="게임">게임</MenuItem>
-            <MenuItem value="대회">대회</MenuItem>
-            <MenuItem value="정모">정모</MenuItem>
-          </TextField>
-          {(isLesson || isJeongmo) && (
-            <FormGroup>
-              <FormControlLabel
-                control={<Switch checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
-                label="반복 일정"
-              />
-            </FormGroup>
-          )}
-          {isTournament ? (
-            <TournamentFields 
-              form={form} 
-              setForm={setForm} 
-              courts={courts} 
-              courtProps={courtProps} 
-            />
-          ) : (isLesson || isJeongmo) && isRecurring ? (
-            <RecurringFields 
-              recurringOptions={recurringOptions} 
-              setRecurringOptions={setRecurringOptions} 
-              courts={courts} 
-              courtProps={courtProps} 
-            />
-          ) : (
-            <StandardFields 
-              form={form} 
-              setForm={setForm} 
-              isGame={isGame} 
-              courts={courts} 
-              courtProps={courtProps} 
-            />
-          )}
-
-          {isJeongmo && (
-            <TextField 
-              label="정모 이름" fullWidth size="small" 
-              value={form.club?.name || form.club || ''}
-              onChange={(e) => setForm({...form, club: e.target.value})}
+    <>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+        <DialogTitle>일정 수정</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="종류" select fullWidth size="small" value={form?.type || ''}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
               disabled={isClubSchedule}
-            />
-          )}
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(false)}>취소</Button>
-        <Button variant="contained" onClick={handleConfirmUpdate}>
-          수정
-        </Button>
-      </DialogActions>
-    </Dialog>
+            >
+              <MenuItem value="레슨">레슨</MenuItem>
+              <MenuItem value="게임">게임</MenuItem>
+              <MenuItem value="대회">대회</MenuItem>
+              <MenuItem value="정모">정모</MenuItem>
+            </TextField>
+            {(isLesson || isJeongmo) && (
+              <FormGroup>
+                <FormControlLabel
+                  control={<Switch checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
+                  label="반복 일정"
+                />
+              </FormGroup>
+            )}
+            {isTournament ? (
+              <TournamentFields 
+                form={form} 
+                setForm={setForm} 
+                courts={courts} 
+                courtProps={courtProps} 
+              />
+            ) : (isLesson || isJeongmo) && isRecurring ? (
+              <RecurringFields 
+                recurringOptions={recurringOptions} 
+                setRecurringOptions={setRecurringOptions} 
+                courts={courts} 
+                courtProps={courtProps} 
+              />
+            ) : (
+              <StandardFields 
+                form={form} 
+                setForm={setForm} 
+                isGame={isGame} 
+                courts={courts} 
+                courtProps={courtProps} 
+              />
+            )}
+
+            {isJeongmo && (
+              <TextField 
+                label="정모 이름" fullWidth size="small" 
+                value={form.club?.name || form.club || ''}
+                onChange={(e) => setForm({...form, club: e.target.value})}
+                disabled={isClubSchedule}
+              />
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>취소</Button>
+          <Button variant="contained" onClick={handleConfirmUpdate}>
+            수정
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <UpdateScopeDialog
+        open={scopeDialogOpen}
+        onClose={() => setScopeDialogOpen(false)}
+        onConfirm={handleScopeConfirm}
+      />
+    </>
   );
 }

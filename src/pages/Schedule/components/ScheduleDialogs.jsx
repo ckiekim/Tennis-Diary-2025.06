@@ -30,7 +30,7 @@ const ScheduleDialogs = ({ manager, courts, user, refresh }) => {
         selectedSchedule={manager.selectedSchedule}
         setOpen={manager.setEditOpen}
         recurringEditInfo={manager.recurringEditInfo}
-        onUpdate={(form) => manager.handleUpdate(form).then(handleDialogClose(manager.setEditOpen))}
+        onUpdate={(payload) => manager.handleUpdate(payload).then(handleDialogClose(manager.setEditOpen))}
       />
 
       <ConfirmDialog 

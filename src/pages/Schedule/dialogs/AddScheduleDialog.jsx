@@ -26,6 +26,31 @@ export default function AddScheduleDialog({
   const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
   const isTournament = useMemo(() => form?.type === "대회", [form?.type]);
   const isGame = useMemo(() => form?.type === "게임", [form?.type]);
+  
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+
+    // 날짜 등 유지하고 싶은 공통 값은 보존합니다.
+    const commonData = {
+      date: form.date,
+      club: isClubSchedule ? form.club : null,
+    };
+
+    // 새로운 종류에 맞는 깨끗한 form 상태를 만듭니다.
+    const newForm = {
+      ...commonData, // 공통 값 유지
+      type: newType,
+      name: '', time: '', place: '', placeSelection: null, price: '',
+      source: '', category: '', partner: '', organizer: '', division: '',
+    };
+
+    setForm(newForm);
+
+    // 다이얼로그의 다른 상태들도 함께 초기화합니다.
+    setSelectedCourt(null);
+    setCourtType('');
+    setIsRecurring(false);
+  };
 
   useEffect(() => {
     if (selectedCourt) {
@@ -103,7 +128,7 @@ export default function AddScheduleDialog({
         <Stack spacing={2} mt={1}>
           <TextField
             label="종류" select fullWidth size="small" value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
+            onChange={handleTypeChange}
             disabled={isClubSchedule}
           >
             <MenuItem value="게임">게임</MenuItem>
@@ -163,4 +188,3 @@ export default function AddScheduleDialog({
     </Dialog>
   );
 }
-

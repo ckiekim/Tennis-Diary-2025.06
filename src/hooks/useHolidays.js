@@ -57,7 +57,7 @@ const useHolidays = (year, month) => {
       }
     };
 
-    fetchHolidays();
+    // fetchHolidays();
   }, [year, month]);
 
   return { holidays, loading, error };
