@@ -1,6 +1,6 @@
 import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import EditClubDialog from '../dialogs/EditClubDialog';
-import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 import InviteMemberDialog from '../dialogs/InviteMemberDialog';
 import AddPostDialog from '../dialogs/AddPostDialog';
 import AddScheduleDialog from '../../Schedule/dialogs/AddScheduleDialog';
@@ -19,12 +19,12 @@ const ClubDialogs = ({
             open={manager.editOpen}  onClose={() => manager.setEditOpen(false)}
             onUpdate={manager.handleUpdateClub} clubData={club} clubId={clubId}
           />
-          <DeleteConfirmDialog 
+          <ConfirmDialog 
             open={manager.deleteOpen} onClose={() => manager.setDeleteOpen(false)}
             onConfirm={manager.handleDeleteClub}
           >
             "{club.name}" 클럽을 정말 삭제하시겠습니까?
-          </DeleteConfirmDialog>
+          </ConfirmDialog>
           <InviteMemberDialog
             open={manager.inviteOpen} onClose={() => manager.setInviteOpen(false)}
             onInvite={manager.handleInviteMember}
@@ -35,12 +35,12 @@ const ClubDialogs = ({
         open={manager.addPostOpen} onClose={() => manager.setAddPostOpen(false)}
         clubId={clubId} onSuccess={onPostAdded} currentUserProfile={currentUserProfile}
       />
-      <DeleteConfirmDialog open={manager.leaveOpen} onClose={() => manager.setLeaveOpen(false)} onConfirm={manager.handleLeaveClub} title="탈퇴">
+      <ConfirmDialog open={manager.leaveOpen} onClose={() => manager.setLeaveOpen(false)} onConfirm={manager.handleLeaveClub} title="탈퇴">
         "{club.name}" 클럽에서 정말 탈퇴하시겠습니까?
-      </DeleteConfirmDialog>
-      <DeleteConfirmDialog open={!!manager.kickTarget} onClose={() => manager.setKickTarget(null)} onConfirm={manager.handleKickMember} title="강퇴">
+      </ConfirmDialog>
+      <ConfirmDialog open={!!manager.kickTarget} onClose={() => manager.setKickTarget(null)} onConfirm={manager.handleKickMember} title="강퇴">
         "{manager.kickTarget?.username}"님을 정말로 강퇴시키겠습니까?
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
       
       {isMember && ( // 멤버만 일정 추가 가능
         <AddScheduleDialog
@@ -65,7 +65,7 @@ const ClubDialogs = ({
         isClubSchedule={isClubSchedule}
       />
 
-      <DeleteConfirmDialog
+      <ConfirmDialog
         open={manager.deleteScheduleOpen}
         onClose={() => manager.setDeleteScheduleOpen(false)}
         onConfirm={manager.handleDeleteSchedule}
@@ -86,7 +86,7 @@ const ClubDialogs = ({
             />
           </Box>
         )}
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
     </>
   );
 };

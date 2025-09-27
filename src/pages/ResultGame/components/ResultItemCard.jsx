@@ -5,7 +5,7 @@ import { db } from '../../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../../api/firebaseStorage';
 
 import EditGameDialog from '../dialogs/EditGameDialog';
-import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 import AlertDialog from '../../../components/AlertDialog';
 import useDocument from '../../../hooks/useDocument';
 
@@ -114,9 +114,9 @@ export default function ResultItemCard({ eventId, eventData, resultData, current
         resultData={resultData}
         uid={currentUser.uid}
       />
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         이 결과를 삭제하시겠습니까?
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>{alertMessage}</AlertDialog>
     </Card>
   );

@@ -8,7 +8,7 @@ import useSubcollection from '../../hooks/useSubcollection';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditTournamentDialog from './dialogs/EditTournamentDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import AlertDialog from '../../components/AlertDialog';
 import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
@@ -171,9 +171,9 @@ const TournamentDetailPage = () => {
         courts={courts}
       />}
 
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{combinedData?.date}, {combinedData?.name}" 대회 결과를 삭제하시겠습니까? 
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
 
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         {alertMessage}

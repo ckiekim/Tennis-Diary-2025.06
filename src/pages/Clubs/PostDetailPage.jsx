@@ -14,7 +14,7 @@ import usePostViewCount from '../../hooks/usePostViewCount';
 import usePostLike from '../../hooks/usePostLike';
 import MainLayout from '../../components/MainLayout';
 import EditPostDialog from './dialogs/EditPostDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import AlertDialog from '../../components/AlertDialog';
 import Comments from './components/Comments';
 
@@ -175,13 +175,13 @@ const PostDetailPage = () => {
           post={{ ...post, id: postId }}
         />
       )}
-      <DeleteConfirmDialog
+      <ConfirmDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
       >
         정말로 이 게시글을 삭제하시겠습니까? 
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         {alertMessage}
       </AlertDialog>

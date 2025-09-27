@@ -6,7 +6,7 @@ import MainLayout from '../../components/MainLayout';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
 import { deletePhotoFromStorage } from '../../api/firebaseStorage.js';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog.jsx';
+import ConfirmDialog from '../../components/ConfirmDialog.jsx';
 import AlertDialog from '../../components/AlertDialog.jsx';
 
 const UserDetailPage = () => {
@@ -101,10 +101,10 @@ const UserDetailPage = () => {
         <Button variant="contained" onClick={() => navigate(-1)}>목록으로</Button>
       </Stack>
       
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{user.nickname}" 사용자를 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
 
       <AlertDialog open={isAlertOpen} onClose={handleAlertClose}>
         {alertMessage}

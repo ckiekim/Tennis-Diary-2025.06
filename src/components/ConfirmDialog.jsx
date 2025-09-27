@@ -8,7 +8,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
  * @param {function} props.onConfirm - 확인 버튼 클릭 핸들러
  * @param {React.ReactNode} props.children - 다이얼로그에 표시될 내용
  */
-const DeleteConfirmDialog = ({ open, onClose, onConfirm, children, title = '삭제' }) => {
+const ConfirmDialog = ({ open, onClose, onConfirm, children, title = '삭제' }) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title} 확인</DialogTitle>
@@ -28,4 +28,4 @@ const DeleteConfirmDialog = ({ open, onClose, onConfirm, children, title = '삭�
   );
 };
 
-export default DeleteConfirmDialog;
+export default ConfirmDialog;

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import AddScheduleDialog from '../dialogs/AddScheduleDialog';
 import EditScheduleDialog from '../dialogs/EditScheduleDialog';
-import DeleteConfirmDialog from '../../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 import ResultDialog from '../dialogs/ResultDialog';
 import AlertDialog from '../../../components/AlertDialog';
 
@@ -33,7 +33,7 @@ const ScheduleDialogs = ({ manager, courts, user, refresh }) => {
         onUpdate={(form) => manager.handleUpdate(form).then(handleDialogClose(manager.setEditOpen))}
       />
 
-      <DeleteConfirmDialog 
+      <ConfirmDialog 
         open={manager.deleteOpen}
         onClose={() => manager.setDeleteOpen(false)}
         onConfirm={() => manager.handleDeleteConfirm().then(handleDialogClose(manager.setDeleteOpen))}
@@ -47,7 +47,7 @@ const ScheduleDialogs = ({ manager, courts, user, refresh }) => {
             />
           </Box>
         )}
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
 
       <ResultDialog 
         open={manager.resultOpen}

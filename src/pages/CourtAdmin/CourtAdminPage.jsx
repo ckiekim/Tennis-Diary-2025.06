@@ -7,7 +7,7 @@ import usePaginatedCourts from '../../hooks/usePaginatedCourts';
 import CourtCard from './components/CourtCard';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import EditCourtDialog from './dialogs/EditCourtDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../../components/MainLayout';
 
@@ -159,13 +159,13 @@ export default function CourtAdminPage() {
         onUpdate={handleUpdateCourt}
       />
 
-      <DeleteConfirmDialog
+      <ConfirmDialog
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDeleteConfirm}
       >
         "{selectedCourt?.name}" 코트를 삭제하시겠습니까? 
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
 	  </MainLayout>
 	);
 }

@@ -6,7 +6,7 @@ import useDocument from '../../hooks/useDocument';
 import formatDay from '../../utils/formatDay';
 import MainLayout from '../../components/MainLayout';
 import EditGoodsDialog from './dialogs/EditGoodsDialog';
-import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import AlertDialog from '../../components/AlertDialog';
 import { deleteDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../../api/firebaseConfig';
@@ -140,10 +140,10 @@ const GoodsDetailPage = () => {
         open={editOpen} onClose={handleEditClose} item={item} onSave={handleUpdate} uid={user.uid} 
       />}
 
-      <DeleteConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
+      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete}>
         "{item?.name}" 용품 정보를 삭제하시겠습니까? <br />
         이 작업은 되돌릴 수 없습니다.
-      </DeleteConfirmDialog>
+      </ConfirmDialog>
 
       <AlertDialog open={isAlertOpen} onClose={() => setIsAlertOpen(false)}>
         {alertMessage}
