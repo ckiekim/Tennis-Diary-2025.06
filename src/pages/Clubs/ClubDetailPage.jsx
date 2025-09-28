@@ -144,10 +144,11 @@ const ClubDetailPage = () => {
         <ClubScheduleSection
           schedules={clubSchedules} isOwner={isOwner} isMember={isMember} user={user}
           onAddScheduleClick={handleOpenAddSchedule}
-          onEditSchedule={(schedule) => {
-            manager.setSelectedSchedule({ ...schedule, date: dayjs(schedule.date) });
-            manager.setEditScheduleOpen(true);
-          }}
+          // onEditSchedule={(schedule) => {
+          //   manager.setSelectedSchedule({ ...schedule, date: dayjs(schedule.date) });
+          //   manager.setEditScheduleOpen(true);
+          // }}
+          onEditSchedule={manager.handleEditSchedule}
           onDeleteSchedule={(schedule) => {
             manager.setSelectedSchedule(schedule);
             manager.setDeleteAllRecurring(false);

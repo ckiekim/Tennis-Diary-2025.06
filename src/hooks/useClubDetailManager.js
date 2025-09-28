@@ -30,6 +30,9 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   const [deleteScheduleOpen, setDeleteScheduleOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
+  const [recurringEditInfo, setRecurringEditInfo] = useState(null);
+
+  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
 
   // 2. 모든 핸들러 함수
   const handleAlert = (message) => {
@@ -126,22 +129,16 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
 
   const handleAddSchedule = async (scheduleForm) => {
     const placeInfo = createPlaceInfo(scheduleForm);
-    if (!placeInfo) return handleAlert('장소를 입력해주세요.');
-    if (!scheduleForm.time) return handleAlert('시간을 입력해주세요.');
+    if (!placeInfo || !scheduleForm.time) return handleAlert('시간과 장소를 입력해주세요.');
 
     const memberUids = members ? members.map(member => member.id) : [];
     const participants = Array.from(new Set([...memberUids, user.uid]));
 
     const dataToSubmit = {
-      ...scheduleForm,
-      placeInfo, // place 대신 placeInfo 사용
-      uid: user.uid,
-      participantUids: participants,
-      date: scheduleForm.date ? dayjs(scheduleForm.date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-      club: { id: clubId, name: club.name },
-      createdAt: serverTimestamp(),
+      ...scheduleForm, placeInfo, uid: user.uid, participantUids: participants,
+      date: dayjs(scheduleForm.date).format('YYYY-MM-DD'),
+      club: { id: clubId, name: club.name }, createdAt: serverTimestamp(),
     };
-    // 불필요한 필드 제거
     delete dataToSubmit.place;
     delete dataToSubmit.placeSelection;
 
@@ -151,47 +148,104 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
     refreshSchedules();
   };
 
-  const handleUpdateSchedule = async (scheduleToUpdate) => {
-    if (!scheduleToUpdate?.id) return;
+  const handleUpdateSchedule = async (payload) => {
+    const { form, scope } = payload;
+    const recurringOptions = form.recurringInfo;
+    
+    if (!form?.id) return;
+    const placeInfo = createPlaceInfo(form);
+    if (!placeInfo) return handleAlert('장소 정보가 올바르지 않습니다.');
 
-    const placeInfo = scheduleToUpdate.placeSelection 
-      ? createPlaceInfo(scheduleToUpdate)  : scheduleToUpdate.placeInfo;
-    const updateData = { ...scheduleToUpdate };
-    if (placeInfo) {
-      updateData.placeInfo = placeInfo;
+    // Case 1: 일반 단일 일정 수정 (게임, 대회 등)
+    if (scope === null) {
+      const updateData = { ...form, placeInfo, price: Number(form.price ?? 0) };
+      delete updateData.id;
+      delete updateData.place;
+      delete updateData.placeSelection;
+      delete updateData.recurringInfo;
+      await updateDoc(doc(db, 'events', form.id), updateData);
     }
-    if (updateData.date && typeof updateData.date !== 'string') {
-      updateData.date = dayjs(updateData.date).format('YYYY-MM-DD');
+    // Case 2: 반복 일정 중 '이 일정만' 수정
+    else if (scope === 'single') {
+      const updateData = { ...form, placeInfo };
+      
+      const eventDayOfWeek = dayjs(form.date).day();
+      if (recurringEditInfo.frequency === 1 || eventDayOfWeek === dayMap[recurringOptions.day1]) {
+        updateData.time = recurringOptions.time1;
+      } else if (recurringEditInfo.frequency === 2 && eventDayOfWeek === dayMap[recurringOptions.day2]) {
+        updateData.time = recurringOptions.time2;
+      }
+      updateData.price = Number(recurringOptions.monthlyPrice ?? 0);
+      
+      updateData.isRecurring = deleteField();
+      updateData.recurringId = deleteField();
+      
+      delete updateData.id;
+      delete updateData.place;
+      delete updateData.placeSelection;
+      delete updateData.recurringInfo;
+      
+      await updateDoc(doc(db, 'events', form.id), updateData);
+    }
+    // Case 3: '향후 모든 일정' 수정
+    else if (scope === 'future' && form.recurringId) {
+      const batch = writeBatch(db);
+      const q = query(collection(db, 'events'), where('recurringId', '==', form.recurringId), where('date', '>=', form.date));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(eventDoc => batch.delete(eventDoc.ref));
+
+      const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
+      const newPrice = Number(monthlyPrice || 0);
+      const baseEventData = {
+        uid: form.uid, participantUids: form.participantUids, type: form.type,
+        club: form.club || null, isRecurring: true, recurringId: form.recurringId,
+      };
+      
+      let currentDate = dayjs(form.date);
+      const finalDate = dayjs(endDate);
+      
+      const addEventToBatch = (date, time) => {
+        const newEventRef = doc(collection(db, 'events'));
+        const newEventData = {
+          ...baseEventData,
+          date: date.format('YYYY-MM-DD'), time: time, placeInfo: placeInfo,
+          price: newPrice, createdAt: serverTimestamp(),
+        };
+        batch.set(newEventRef, newEventData);
+      };
+
+      while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
+        const dayOfWeek = currentDate.day();
+        if (dayOfWeek === dayMap[day1]) addEventToBatch(currentDate, time1);
+        if (frequency === 2 && dayOfWeek === dayMap[day2]) addEventToBatch(currentDate, time2);
+        currentDate = currentDate.add(1, 'day');
+      }
+      await batch.commit();
     }
     
-    // 불필요한 필드 제거
-    delete updateData.id;
-    delete updateData.place;
-    delete updateData.placeSelection;
-    
-    await updateDoc(doc(db, 'events', scheduleToUpdate.id), updateData);
     setEditScheduleOpen(false);
     refreshSchedules();
   };
 
   const handleAddRecurringSchedule = async (recurringOptions, scheduleForm) => {
     const { frequency, day1, time1, day2, time2, monthlyPrice, endDate } = recurringOptions;
-    
     const placeInfo = createPlaceInfo(scheduleForm);
-    if (!placeInfo || !endDate) {
-      handleAlert('장소와 종료일을 모두 입력해주세요.');
-      return;
-    }
-
+    if (!placeInfo || !endDate) return handleAlert('장소와 종료일을 모두 입력해주세요.');
+    
+    // 반복 일정 시작일 계산 로직 (기존 ScheduleManager와 동일)
+    const getFirstEventDate = (start, targetDay) => {
+      let firstDate = dayjs(start).day(dayMap[targetDay]);
+      if (firstDate.isBefore(start, 'day')) {
+        firstDate = firstDate.add(1, 'week');
+      }
+      return firstDate;
+    };
+    
     const batch = writeBatch(db);
     const recurringId = doc(collection(db, 'events')).id;
-    const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
-    
-    // 모든 멤버의 uid를 미리 추출합니다.
     const memberUids = members ? members.map(member => member.id) : [];
     const participants = Array.from(new Set([...memberUids, user.uid]));
-    
-    let currentDate = dayjs(); 
+    let currentDate = getFirstEventDate(dayjs(scheduleForm.date), day1);
     const finalDate = dayjs(endDate);
     let eventCount = 0;
 
@@ -199,41 +253,82 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
       const newEventRef = doc(collection(db, 'events'));
       const dataToSave = {
         uid: user.uid,
-        participantUids: participants, // 모든 클럽 멤버 참여자로 추가
+        participantUids: participants,
         type: scheduleForm.type,
         date: date.format('YYYY-MM-DD'),
         time,
         placeInfo,
-        price: Number(monthlyPrice) || 0,
-        club: { id: clubId, name: club.name },
-        isRecurring: true, 
+        price: Number(monthlyPrice),
+        isRecurring: true,
         recurringId: recurringId,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        club: { id: clubId, name: club.name }
       };
       batch.set(newEventRef, dataToSave);
       eventCount++;
     };
 
-    while (currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
-      const dayOfWeek = currentDate.day();
-      
-      if (dayOfWeek === dayMap[day1]) {
+    while(currentDate.isBefore(finalDate) || currentDate.isSame(finalDate, 'day')) {
+      if(currentDate.day() === dayMap[day1]) {
         addEventToBatch(currentDate, time1);
       }
-      if (frequency === 2 && dayOfWeek === dayMap[day2]) {
+      if(frequency === 2 && currentDate.day() === dayMap[day2]) {
         addEventToBatch(currentDate, time2);
       }
-      currentDate = currentDate.add(1, 'day');
+      currentDate = currentDate.add(1, 'day'); // 날짜를 하루씩 증가
     }
 
     if (user?.uid && eventCount > 0) {
       const userRef = doc(db, 'users', user.uid);
       batch.update(userRef, { mileage: increment(eventCount * 5) });
     }
-
     await batch.commit();
     setAddScheduleOpen(false);
     refreshSchedules();
+  };
+
+  const handleEditSchedule = async (schedule) => {
+    setSelectedSchedule(schedule);
+    // 일반 일정 관리자와 동일한 '반복 정보 추론' 로직을 추가합니다.
+    if (schedule.isRecurring && schedule.recurringId) {
+      const q = query(collection(db, 'events'), where('recurringId', '==', schedule.recurringId));
+      const querySnapshot = await getDocs(q);
+      
+      const daysOfWeek = new Set();
+      const times = new Set();
+      let lastDate = '';
+
+      querySnapshot.forEach(doc => {
+        const eventData = doc.data();
+        const eventDate = dayjs(eventData.date);
+        const dayName = ['일', '월', '화', '수', '목', '금', '토'][eventDate.day()];
+        
+        daysOfWeek.add(dayName);
+        times.add(eventData.time);
+
+        if (!lastDate || eventDate.isAfter(dayjs(lastDate))) {
+          lastDate = eventData.date;
+        }
+      });
+      
+      const sortedDays = Array.from(daysOfWeek).sort((a, b) => dayMap[a] - dayMap[b]);
+      const sortedTimes = Array.from(times);
+      
+      // 추론된 모든 정보로 상태를 업데이트합니다.
+      setRecurringEditInfo({
+        price: schedule.price,
+        endDate: lastDate,
+        frequency: sortedDays.length || 1,
+        day1: sortedDays[0] || '월',
+        time1: sortedTimes[0] || '',
+        day2: sortedDays[1] || '수',
+        time2: sortedTimes.length > 1 ? sortedTimes[1] : sortedTimes[0] || '',
+      });
+
+    } else {
+      setRecurringEditInfo(null);
+    }
+    setEditScheduleOpen(true);
   };
 
   const handleDeleteSchedule = async () => {
@@ -318,7 +413,7 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
     // States
     editOpen, deleteOpen, inviteOpen, addPostOpen, leaveOpen, kickTarget,
     anchorEl, selectedMember, isAlertOpen, alertMessage, addScheduleOpen,
-    editScheduleOpen, deleteScheduleOpen, selectedSchedule, 
+    editScheduleOpen, deleteScheduleOpen, selectedSchedule, recurringEditInfo,
     
     // State Setters & Handlers
     setEditOpen, setDeleteOpen, setInviteOpen, setAddPostOpen, setLeaveOpen,
@@ -329,7 +424,7 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
     // Action Handlers
     handleUpdateClub, handleDeleteClub, 
     handleInviteMember, handleLeaveClub, handleKickMember, 
-    handleAddSchedule, handleAddRecurringSchedule, handleUpdateSchedule, handleDeleteSchedule,
+    handleAddSchedule, handleAddRecurringSchedule, handleEditSchedule, handleUpdateSchedule, handleDeleteSchedule,
     handleAlert,
   };
 };

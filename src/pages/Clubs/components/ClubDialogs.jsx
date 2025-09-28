@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 
 const ClubDialogs = ({ 
   manager, club, clubId, scheduleForm, setScheduleForm, isMember, isOwner, 
-  currentUserProfile, onPostAdded, courts, isClubSchedule
+  currentUserProfile, onPostAdded, courts, isClubSchedule 
 }) => {
   return (
     <>
@@ -42,14 +42,13 @@ const ClubDialogs = ({
         "{manager.kickTarget?.username}"님을 정말로 강퇴시키겠습니까?
       </ConfirmDialog>
       
-      {isMember && ( // 멤버만 일정 추가 가능
+      {isMember && (
         <AddScheduleDialog
           courts={courts}
           open={manager.addScheduleOpen}
           form={scheduleForm}
           setOpen={manager.setAddScheduleOpen}
           setForm={setScheduleForm}
-          selectedDate={dayjs()} // 오늘을 기본값으로 전달
           onAddSchedule={(form) => manager.handleAddSchedule(form)}
           onAddRecurringSchedule={(recurringOptions, form) => manager.handleAddRecurringSchedule(recurringOptions, form)}
           isClubSchedule={isClubSchedule}
@@ -61,7 +60,9 @@ const ClubDialogs = ({
         open={manager.editScheduleOpen}
         selectedSchedule={manager.selectedSchedule}
         setOpen={manager.setEditScheduleOpen}
-        onUpdate={(form) => manager.handleUpdateSchedule(form)}
+        recurringEditInfo={manager.recurringEditInfo}
+        // 이제 onUpdate는 payload 객체 하나만 받아서 전달합니다.
+        onUpdate={(payload) => manager.handleUpdateSchedule(payload)}
         isClubSchedule={isClubSchedule}
       />
 
