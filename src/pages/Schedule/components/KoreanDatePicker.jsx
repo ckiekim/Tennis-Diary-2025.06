@@ -33,7 +33,7 @@ const KoreanCalendarHeader = ({ currentMonth, onMonthChange }) => {
 // 🧩 KoreanDatePicker 본체
 const KoreanDatePicker = ({ value, onChange, eventDateMap }) => {
   const [displayMonth, setDisplayMonth] = useState(value);
-  const { holidays } = useHolidays(displayMonth.year(), displayMonth.month());
+  const { holidays } = useHolidays(displayMonth.year());
 
   // ✅ 월 변경 시 날짜도 새 달의 첫날로 바꿔줌
   const handleMonthChange = (newMonth) => {

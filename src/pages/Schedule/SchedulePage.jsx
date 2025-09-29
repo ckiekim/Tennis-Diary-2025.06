@@ -24,7 +24,7 @@ const SchedulePage = () => {
 
   const { user } = useAuthState();
   const courts = useCourtList();
-  const { holidays } = useHolidays(selectedDate.year(), selectedDate.month());
+  const { holidays } = useHolidays(selectedDate.year());
   const holidayName = useMemo(() => {
     const ymd = selectedDate.format('YYYY-MM-DD');
     const holiday = holidays.find(h => h.date === ymd);
