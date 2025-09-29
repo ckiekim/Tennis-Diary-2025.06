@@ -5,8 +5,13 @@ import formatDay from '../../../utils/formatDay';
 export default function GameCard({ item }) {
   const navigate = useNavigate();
   const day = formatDay(item.date);
-  const displayPlace = item.placeInfo.courtType === '실내'
-    ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
+  let displayPlace = '장소 정보 없음';
+  if (item.placeInfo) {
+    displayPlace = item.placeInfo.courtType === '실내'
+      ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
+  } else if (item.place) {
+    displayPlace = item.place;
+  }
   const photoUrl = item.placeInfo?.courtPhotoUrl || '/img/no-image.jpeg';
 
   const renderResult = () => {

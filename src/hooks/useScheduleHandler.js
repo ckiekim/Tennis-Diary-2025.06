@@ -4,10 +4,23 @@ import { db } from '../api/firebaseConfig';
 import { addDoc, collection, deleteField, doc, getDocs, increment, query, serverTimestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { createPlaceInfo } from '../utils/handlePlaceInfo';
 import { deletePhotoFromStorage } from '../api/firebaseStorage';
+import { notifyAdminOfNewCourt } from '../api/adminNotificationService';
 import dayjs from 'dayjs';
 
 const useScheduleHandler = (user, selectedDate) => {
   const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+
+  const checkAndNotifyAdmin = async (placeInfo) => {
+    // placeInfo 객체가 있고, courtId가 비어있으면 새로운 코트로 판단합니다.
+    if (placeInfo && !placeInfo.courtId) {
+      const userInfo = {
+        uid: user.uid,
+        // Firebase auth의 displayName을 사용하거나 없으면 email을 사용합니다.
+        nickname: user.displayName || user.email || '익명',
+      };
+      await notifyAdminOfNewCourt(placeInfo.courtName, userInfo);
+    }
+  };
 
   const handleAddSchedule = async (formData) => {
     const placeInfo = createPlaceInfo(formData);
@@ -27,6 +40,7 @@ const useScheduleHandler = (user, selectedDate) => {
 
     await addDoc(collection(db, 'events'), dataToSubmit);
     await updateDoc(doc(db, 'users', user.uid), { mileage: increment(5) });
+    await checkAndNotifyAdmin(placeInfo);
   };
 
   const handleAddRecurringSchedule = async (recurringOptions, formData) => {
@@ -99,6 +113,7 @@ const useScheduleHandler = (user, selectedDate) => {
       batch.update(userRef, { mileage: increment(eventCount * 5) });
     }
     await batch.commit();
+    await checkAndNotifyAdmin(placeInfo);
   };
 
   const handleUpdateSchedule = async (payload, recurringEditInfo) => {
@@ -178,6 +193,7 @@ const useScheduleHandler = (user, selectedDate) => {
       }
       await batch.commit();
     }
+    await checkAndNotifyAdmin(placeInfo);
   };
 
   const handleDeleteSchedule = async (scheduleToDelete, deleteAll) => {

@@ -12,8 +12,13 @@ export default function TournamentCard({ item }) {
     item.organizer === '던롭' ? '/img/DXO.png' :
     item.organizer === 'WEMIX' ? '/img/WEMIX.png' : '/img/no-image.jpeg';
 
-  const displayPlace = item.placeInfo.courtType === '실내'
-    ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
+  let displayPlace = '장소 정보 없음';
+  if (item.placeInfo) {
+    displayPlace = item.placeInfo.courtType === '실내'
+      ? `${item.placeInfo.courtName} (실내)` : item.placeInfo.courtName;
+  } else if (item.place) {
+    displayPlace = item.place;
+  }
 
   return (
     <Card 

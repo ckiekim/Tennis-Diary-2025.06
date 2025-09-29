@@ -21,12 +21,29 @@ export default function EditScheduleDialog({
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (selectedSchedule) {
-      setForm(selectedSchedule);
+    if (selectedSchedule && courts) {
+      const initialForm = {
+        ...selectedSchedule,
+        place: selectedSchedule.place || selectedSchedule.placeInfo?.courtName || '',
+      };
+      setForm(initialForm);
+
+      const placeSource = selectedSchedule.placeInfo || { courtName: selectedSchedule.place };
+      let initialCourt = null;
+
+      if (placeSource.courtId) {
+        initialCourt = courts.find(c => c.id === placeSource.courtId) || null;
+      } else if (placeSource.courtName) {
+        initialCourt = courts.find(c => c.name === placeSource.courtName) || null;
+      }
+
+      setSelectedCourt(initialCourt);
+      setCourtType(initialCourt ? (placeSource.courtType || initialCourt.details?.[0]?.type || '') : '');
+      
       const isRecurringEvent = selectedSchedule.isRecurring || false;
       setIsRecurring(isRecurringEvent);
 
-     if (isRecurringEvent && recurringEditInfo) {
+      if (isRecurringEvent && recurringEditInfo) {
         setRecurringOptions({
           monthlyPrice: recurringEditInfo.price,
           endDate: recurringEditInfo.endDate,
@@ -36,16 +53,6 @@ export default function EditScheduleDialog({
           day2: recurringEditInfo.day2,
           time2: recurringEditInfo.time2,
         });
-      }
-      const placeSource = selectedSchedule.placeInfo || { courtName: selectedSchedule.place };
-      if (placeSource.courtId) {
-        const court = courts.find(c => c.id === placeSource.courtId);
-        setSelectedCourt(court || null);
-        setCourtType(placeSource.courtType || '');
-      } else if (placeSource.courtName) {
-        const court = courts.find(c => c.name === placeSource.courtName);
-        setSelectedCourt(court || null);
-        setCourtType(court?.details?.[0]?.type || '');
       }
     }
   }, [selectedSchedule, courts, recurringEditInfo]);
@@ -67,7 +74,7 @@ export default function EditScheduleDialog({
     } else {
       setSelectedCourt(null);
       setCourtType('');
-      setForm(prev => ({ ...prev, place: newValue, placeSelection: null }));
+      setForm(prev => ({ ...prev, place: newValue || '', placeSelection: null }));
     }
   };
 
@@ -130,7 +137,7 @@ export default function EditScheduleDialog({
   const isLesson = useMemo(() => form?.type === "레슨", [form?.type]);
   const isTournament = useMemo(() => form?.type === "대회", [form?.type]);
   const isGame = useMemo(() => form?.type === "게임", [form?.type]);
-  
+
   const courtProps = {
     selectedCourt, courtType,
     place: form?.place,

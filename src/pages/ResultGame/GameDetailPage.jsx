@@ -40,8 +40,13 @@ const GameDetailPage = () => {
     return <MainLayout title='게임 상세'><Typography p={2}>해당 일정을 찾을 수 없습니다.</Typography></MainLayout>;
   }
 
-  const displayPlace = eventData.placeInfo.courtType === '실내'
-    ? `${eventData.placeInfo.courtName} (실내)` : eventData.placeInfo.courtName;
+  let displayPlace = '장소 정보 없음';
+  if (eventData.placeInfo) {
+    displayPlace = eventData.placeInfo.courtType === '실내'
+      ? `${eventData.placeInfo.courtName} (실내)` : eventData.placeInfo.courtName;
+  } else if (eventData.place) {
+    displayPlace = eventData.place;
+  }
 
   return (
     <MainLayout title='게임 상세'>

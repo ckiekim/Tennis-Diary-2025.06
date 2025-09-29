@@ -85,8 +85,13 @@ const TournamentDetailPage = () => {
   if (loading) return <Typography>로딩 중...</Typography>;
   if (!combinedData) return <Typography>데이터가 없습니다.</Typography>;
 
-  const displayPlace = combinedData.placeInfo.courtType === '실내'
-    ? `${combinedData.placeInfo.courtName} (실내)` : combinedData.placeInfo.courtName;
+  let displayPlace = '장소 정보 없음';
+  if (combinedData.placeInfo) {
+    displayPlace = combinedData.placeInfo.courtType === '실내'
+      ? `${combinedData.placeInfo.courtName} (실내)` : combinedData.placeInfo.courtName;
+  } else if (combinedData.place) {
+    displayPlace = combinedData.place;
+  }
 
   return (
     <MainLayout title='대회 상세'>
