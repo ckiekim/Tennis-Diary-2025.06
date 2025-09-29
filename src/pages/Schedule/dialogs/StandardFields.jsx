@@ -33,7 +33,7 @@ export default function StandardFields({ form, setForm, isGame, sourceList, cour
       />
       {isGame && (
         <Autocomplete
-          options={sourceList}
+          options={sourceList || []}
           value={form.source || ''}
           onChange={(e, newValue) => setForm({ ...form, source: newValue })}
           onInputChange={(e, newInputValue) => setForm({ ...form, source: newInputValue })}
