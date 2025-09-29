@@ -1,15 +1,17 @@
 // 1. HttpsError를 v2/https에서 직접 임포트합니다.
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
-admin.initializeApp();
-const db = admin.firestore();
-const storage = admin.storage();
+// admin.initializeApp();
+// const db = admin.firestore();
+// const storage = admin.storage();
 
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
+// const HOLIDAY_API_KEY = process.env.HOLIDAY_API_KEY;
 
 const getKakaoAccessToken = async (code) => {
   const response = await axios.post(
@@ -30,6 +32,11 @@ const getKakaoAccessToken = async (code) => {
 };
 
 exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
+  if (admin.apps.length === 0) { // 앱이 초기화되지 않았을 때만 실행
+    admin.initializeApp();
+  }
+  const db = admin.firestore(); // 함수 내에서 필요할 때 선언
+
   try {
     const { code } = request.data;
     if (!code) {
@@ -84,6 +91,12 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
 });
 
 exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
+  if (admin.apps.length === 0) {
+    admin.initializeApp();
+  }
+  const db = admin.firestore();
+  const storage = admin.storage();
+
   // 1. 사용자 인증 확인
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 사용자만 클럽을 삭제할 수 있습니다.");
@@ -186,6 +199,11 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
     document: "clubs/{clubId}",
     region: "asia-northeast3",
   }, async (event) => {
+  if (admin.apps.length === 0) {
+    admin.initializeApp();
+  }
+  const db = admin.firestore();
+
   // 1. 변경 전/후 데이터 가져오기
   const beforeData = event.data.before.data();
   const afterData = event.data.after.data();
@@ -241,4 +259,55 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
     );
     return { success: false, error: error.message };
   }
+});
+
+// 매월 1일 오전 5시에 함수를 실행
+exports.updateHolidays = onSchedule({
+  schedule: "0 5 1 * *", // 매월 1일 오전 5시
+  timeZone: "Asia/Seoul",
+  region: "asia-northeast3", 
+  secrets: ["HOLIDAY_API_KEY"], 
+}, async (event) => {
+  if (admin.apps.length === 0) {
+    admin.initializeApp();
+  }
+  const db = admin.firestore();
+
+  const serviceKey = process.env.HOLIDAY_API_KEY; // secrets에서 키를 가져옵니다.
+  const currentYear = new Date().getFullYear();
+  const yearsToFetch = [currentYear, currentYear + 1];
+
+  for (const year of yearsToFetch) {
+    console.log(`Fetching holidays for ${year}...`);
+    try {
+      const allHolidays = [];
+      for (let month = 1; month <= 12; month++) {
+          const formattedMonth = month.toString().padStart(2, '0');
+          const response = await axios.get("https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo", {
+            params: {
+              solYear: year,
+              solMonth: formattedMonth,
+              ServiceKey: serviceKey,
+              _type: "json",
+            },
+          });
+          const items = response.data?.response?.body?.items?.item || [];
+          const holidaysOfMonth = Array.isArray(items) ? items : [items];
+          holidaysOfMonth.forEach(item => {
+            allHolidays.push({
+              date: `${item.locdate.toString().slice(0, 4)}-${item.locdate.toString().slice(4, 6)}-${item.locdate.toString().slice(6, 8)}`,
+              name: item.dateName,
+            });
+          });
+      }
+
+      const docRef = db.collection("holidays").doc(String(year));
+      await docRef.set({ items: allHolidays });
+      console.log(`Successfully updated holidays for ${year}.`);
+
+    } catch (error) {
+      console.error(`Failed to fetch holidays for ${year}:`, error.message);
+    }
+  }
+  return null;
 });
