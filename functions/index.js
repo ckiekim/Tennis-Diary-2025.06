@@ -261,9 +261,9 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
   }
 });
 
-// 매월 1일 오전 5시에 함수를 실행
+// 매월 3일 오전 5시에 함수를 실행
 exports.updateHolidays = onSchedule({
-  schedule: "0 5 1 * *", // 매월 1일 오전 5시
+  schedule: "0 5 3 * *", // 매월 3일 오전 5시
   timeZone: "Asia/Seoul",
   region: "asia-northeast3", 
   secrets: ["HOLIDAY_API_KEY"], 
@@ -300,13 +300,11 @@ exports.updateHolidays = onSchedule({
             });
           });
       }
-
       const docRef = db.collection("holidays").doc(String(year));
       await docRef.set({ items: allHolidays });
-      console.log(`Successfully updated holidays for ${year}.`);
-
+      console.log(`${year}년도 공휴일 갱신에 성공했습니다.`);
     } catch (error) {
-      console.error(`Failed to fetch holidays for ${year}:`, error.message);
+      console.error(`${year}년도 공휴일 갱신에 실패했습니다:`, error.message);
     }
   }
   return null;
