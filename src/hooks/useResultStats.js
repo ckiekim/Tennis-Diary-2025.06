@@ -79,7 +79,7 @@ const useResultStats = (uid) => {
           const total = win + draw + loss;
           processedMonthData[month] = {
             win, draw, loss,
-            winRate: total > 0 ? (win / total) * 100 : 0,
+            winRate: total > 0 ? ((win + (draw * 0.5)) / total) * 100 : 0,
           };
         }
 
