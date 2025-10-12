@@ -24,6 +24,7 @@ import GoodsDetailPage from './pages/Goods/GoodsDetailPage';
 import ExpensePage from './pages/Expense/ExpensePage';
 
 import CourtAdminPage from './pages/CourtAdmin/CourtAdminPage';
+import CourtApprovalAdminPage from './pages/CourtAdmin/CourtApprovalAdminPage';
 import UserAdminPage from './pages/UserAdmin/UserAdminPage';
 import UserDetailPage from './pages/UserAdmin/UserDetailPage';
 import MileageInfoPage from './pages/More/MileageInfoPage';
@@ -86,6 +87,7 @@ const App = () => {
         {/* 관리자만 접근 가능한 페이지 */}
         <Route element={<AdminGuard />}>
           <Route path="/tools/courts" element={<CourtAdminPage />} />
+          <Route path="/tools/court-approval" element={<CourtApprovalAdminPage />} />
           <Route path="/tools/users" element={<UserAdminPage />} />
           <Route path="/tools/user/:uid" element={<UserDetailPage />} />
         </Route>

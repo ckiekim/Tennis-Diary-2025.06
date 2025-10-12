@@ -15,11 +15,13 @@ export const notifyAdminOfNewCourt = async (courtName, userInfo) => {
     
     await addDoc(adminNotiRef, {
       message: `${userInfo.nickname}님이 새 코트(${courtName})를 입력했습니다.`,
-      link: '/tools/courts', 
-      isRead: false,
+      type: 'admin_new_court_request',  // 알림 타입
+      status: 'pending',                // 'pending', 'approved', 'rejected' 상태 추가
       createdAt: serverTimestamp(),
-      type: 'admin_new_court', // 알림 타입
-      createdBy: {
+      // link: '/tools/courts', 
+      isRead: false,
+      courtName: courtName,
+      submitter: {
         uid: userInfo.uid,
         nickname: userInfo.nickname,
       }

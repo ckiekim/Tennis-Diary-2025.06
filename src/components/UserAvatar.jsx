@@ -115,14 +115,21 @@ export default function UserAvatar() {
     handleMenuClose(); // 메뉴를 즉시 닫음
 
     try {
-      // Firestore에서 해당 알림 문서를 '읽음' 상태로 업데이트
+      // 어떤 종류의 알림이든 먼저 '읽음' 상태로 업데이트
       const notiRef = doc(db, 'users', user.uid, 'notifications', notification.id);
-      await updateDoc(notiRef, { isRead: true });
+      // 아직 읽지 않은 알림일 경우에만 업데이트를 수행하여 불필요한 쓰기를 방지
+      if (!notification.isRead) {
+        await updateDoc(notiRef, { isRead: true });
+      }
 
-      // 알림에 포함된 링크 정보가 있다면 해당 경로로 이동
-      if (notification.link) {
+      // 알림 타입에 따라 적절한 페이지로 이동
+      if (notification.type === 'admin_new_court_request') {
+        navigate('/tools/court-approval');
+      } else if (notification.link) {
+        // 그 외 링크가 있는 알림은 해당 링크로 이동
         navigate(notification.link);
       }
+    
     } catch (error) {
       console.error("알림 처리 중 오류 발생:", error);
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Button, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Stack, TextField, Typography, IconButton, Paper
 } from '@mui/material';
@@ -7,11 +7,26 @@ import AlertDialog from '../../../components/AlertDialog';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const AddCourtDialog = ({ open, onClose, onSave }) => {
-  const initialDetail = { type: '실내', surface: '하드', photo: '', uploading: false };
-  const [form, setForm] = useState({ name: '', location: '', details: [initialDetail] });
+const initialDetail = { type: '실내', surface: '하드', photo: '', uploading: false };
+const initialForm = { name: '', location: '', details: [initialDetail] };
+
+const AddCourtDialog = ({ open, onClose, onSave, initialData }) => {
+  const [form, setForm] = useState(initialForm);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        setForm({
+          ...initialForm, // location, details는 초기화
+          name: initialData.name || '',
+        });
+      } else {
+        setForm(initialForm);
+      }
+    }
+  }, [open, initialData]);
 
   const handleDetailChange = (index, e) => {
     const { name, value } = e.target;
@@ -66,7 +81,6 @@ const AddCourtDialog = ({ open, onClose, onSave }) => {
     };
     onSave(finalForm);
     onClose();
-    setForm({ name: '', location: '', details: [initialDetail] });
   };
 
   return (

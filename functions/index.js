@@ -1,17 +1,15 @@
-// 1. HttpsError를 v2/https에서 직접 임포트합니다.
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
-// admin.initializeApp();
+admin.initializeApp();
 // const db = admin.firestore();
 // const storage = admin.storage();
 
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
-// const HOLIDAY_API_KEY = process.env.HOLIDAY_API_KEY;
 
 const getKakaoAccessToken = async (code) => {
   const response = await axios.post(
@@ -32,10 +30,9 @@ const getKakaoAccessToken = async (code) => {
 };
 
 exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
-  if (admin.apps.length === 0) { // 앱이 초기화되지 않았을 때만 실행
-    admin.initializeApp();
-  }
-  const db = admin.firestore(); // 함수 내에서 필요할 때 선언
+  // if (admin.apps.length === 0) { 
+  //   admin.initializeApp();
+  // }
 
   try {
     const { code } = request.data;
@@ -91,9 +88,9 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
 });
 
 exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
-  if (admin.apps.length === 0) {
-    admin.initializeApp();
-  }
+  // if (admin.apps.length === 0) {
+  //   admin.initializeApp();
+  // }
   const db = admin.firestore();
   const storage = admin.storage();
 
@@ -199,9 +196,9 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
     document: "clubs/{clubId}",
     region: "asia-northeast3",
   }, async (event) => {
-  if (admin.apps.length === 0) {
-    admin.initializeApp();
-  }
+  // if (admin.apps.length === 0) {
+  //   admin.initializeApp();
+  // }
   const db = admin.firestore();
 
   // 1. 변경 전/후 데이터 가져오기
@@ -268,9 +265,9 @@ exports.updateHolidays = onSchedule({
   region: "asia-northeast3", 
   secrets: ["HOLIDAY_API_KEY"], 
 }, async (event) => {
-  if (admin.apps.length === 0) {
-    admin.initializeApp();
-  }
+  // if (admin.apps.length === 0) {
+  //   admin.initializeApp();
+  // }
   const db = admin.firestore();
 
   const serviceKey = process.env.HOLIDAY_API_KEY; // secrets에서 키를 가져옵니다.
@@ -308,4 +305,93 @@ exports.updateHolidays = onSchedule({
     }
   }
   return null;
+});
+
+exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (request) => {
+  // 1. 함수 내에서 Firebase Admin SDK 초기화 (기존 스타일과 동일)
+  // if (admin.apps.length === 0) {
+  //   admin.initializeApp();
+  // }
+  const db = admin.firestore();
+
+  // 2. 사용자 인증 확인
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "인증된 관리자만 이 작업을 수행할 수 있습니다.");
+  }
+  const adminUid = request.auth.uid; // 함수를 호출한 관리자의 UID
+  const { notificationId, action, courtData } = request.data;
+
+  // 3. 필수 인자 확인
+  if (!notificationId || !action) {
+    throw new HttpsError("invalid-argument", "notificationId와 action은 필수입니다.");
+  }
+
+  // 4. 메인 로직을 try...catch로 감싸 에러 처리 (기존 스타일과 동일)
+  try {
+    // 관리자 본인의 알림 문서 경로 설정
+    const adminNotiRef = db.doc(`users/${adminUid}/notifications/${notificationId}`);
+    const adminNotiDoc = await adminNotiRef.get();
+
+    if (!adminNotiDoc.exists) {
+      throw new HttpsError("not-found", "처리할 알림을 찾을 수 없습니다.");
+    }
+
+    const { submitter, courtName } = adminNotiDoc.data();
+
+    // 코트 등록을 요청한 사용자의 알림 컬렉션 경로 설정
+    const userNotiCollectionRef = db.collection(`users/${submitter.uid}/notifications`);
+    const batch = db.batch();
+
+    if (action === "approve") {
+      // 5-1. 승인 처리
+      if (!courtData || !courtData.name) {
+        throw new HttpsError("invalid-argument", "승인 시 코트 데이터(courtData)는 필수입니다.");
+      }
+      // courts 컬렉션에 새로운 코트 문서 추가
+      const newCourtRef = db.collection("courts").doc(); // 자동 ID 생성
+      batch.set(newCourtRef, courtData);
+
+      // 사용자에게 승인 알림 추가
+      const userNotiRef_Approve = userNotiCollectionRef.doc();
+      batch.set(userNotiRef_Approve, {
+        type: "court_request_approved",
+        message: `입력한 코트(${courtName})가 정식으로 등록되었습니다!`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // 관리자의 알림 문서 상태를 'approved'로 업데이트
+      batch.update(adminNotiRef, { status: "approved" });
+
+    } else if (action === "reject") {
+      // 5-2. 거절 처리
+      // 사용자에게 거절 알림 추가
+      const userNotiRef_Reject = userNotiCollectionRef.doc();
+      batch.set(userNotiRef_Reject, {
+        type: "court_request_rejected",
+        message: `입력한 코트(${courtName}) 등록이 거절되었습니다.`,
+        isRead: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // 관리자의 알림 문서 상태를 'rejected'로 업데이트
+      batch.update(adminNotiRef, { status: "rejected" });
+
+    } else {
+      throw new HttpsError("invalid-argument", "action은 'approve' 또는 'reject'여야 합니다.");
+    }
+
+    // 6. Batch 작업 실행
+    await batch.commit();
+
+    return { success: true, message: `요청을 성공적으로 '${action}' 처리했습니다.` };
+
+  } catch (error) {
+    console.error("코트 제출 처리 함수 오류:", error);
+    if (error instanceof HttpsError) {
+      throw error; // 이미 HttpsError인 경우 그대로 다시 던짐
+    }
+    // 그 외의 에러는 'internal' 에러로 변환하여 던짐
+    throw new HttpsError("internal", "코트 제출 처리 중 서버 오류가 발생했습니다.");
+  }
 });
