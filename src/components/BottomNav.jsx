@@ -11,6 +11,7 @@ import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import RestoreIcon from '@mui/icons-material/Restore';
 import SportsTennisIcon from '@mui/icons-material/SportsTennis';
 import PeopleIcon from '@mui/icons-material/People';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StyleIcon from '@mui/icons-material/Style';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
@@ -129,11 +130,11 @@ const BottomNav = () => {
       >
         <MenuItem onClick={() => handleToolsMenuClick('/tools/goods')}>
           <CardGiftcardIcon fontSize="small" sx={{ mr: 1 }} />
-          용품
+          용품관리
         </MenuItem>
         <MenuItem onClick={() => handleToolsMenuClick('/tools/expense')}>
           <ReceiptLongIcon fontSize="small" sx={{ mr: 1 }} />
-          비용
+          비용내역
         </MenuItem>
         {isAdmin && [
           <Divider key="admin-divider" sx={{ my: 0.5 }} />,
@@ -144,6 +145,10 @@ const BottomNav = () => {
           <MenuItem key="users-menu" onClick={() => handleToolsMenuClick('/tools/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
             사용자관리
+          </MenuItem>,
+          <MenuItem key="approval-menu" onClick={() => handleToolsMenuClick('/tools/court-approval')}>
+            <CheckCircleIcon fontSize="small" sx={{ mr: 1 }} />
+            코트승인
           </MenuItem>
         ]}
       </Menu>
