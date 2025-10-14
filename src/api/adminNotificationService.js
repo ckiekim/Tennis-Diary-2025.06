@@ -1,4 +1,5 @@
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from './firebaseConfig'; 
 
 /**
  * 관리자에게 새로운 코트가 등록되었음을 알립니다.
@@ -7,7 +8,6 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
  */
 export const notifyAdminOfNewCourt = async (courtName, userInfo) => {
   try {
-    const functions = getFunctions();
     const notifyAdmins = httpsCallable(functions, 'notifyAdminsOfNewCourt');
     
     await notifyAdmins({

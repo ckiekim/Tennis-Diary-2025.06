@@ -379,6 +379,7 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
 exports.checkAdminStatus = onCall({
   region: "asia-northeast3",
   secrets: ["ADMIN_UIDS"], // 사용할 Secret을 명시합니다.
+  cors: true,
 }, async (request) => {
   // 1. 함수를 호출한 사용자가 인증되었는지 확인합니다.
   if (!request.auth) {
@@ -421,6 +422,7 @@ exports.checkAdminStatus = onCall({
 exports.notifyAdminsOfNewCourt = onCall({
   region: "asia-northeast3",
   secrets: ["ADMIN_UIDS"], 
+  cors: true,
 }, async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 사용자만 알림을 보낼 수 있습니다.");

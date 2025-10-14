@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, updateDoc, setDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig'; 
 import useAuthState from './useAuthState';
 
@@ -8,63 +8,59 @@ const useUserSettings = () => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isNewUser, setIsNewUser] = useState(false);
-
+  
   useEffect(() => {
-    let unsubscribe; // 리스너를 해제하기 위한 변수
-
-    if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
-      unsubscribe = onSnapshot(userDocRef, 
-        (docSnap) => { // 성공 콜백
-          if (docSnap.exists()) {
-            setSettings(docSnap.data());
-            // 문서가 존재하면 신규 유저가 아님
-            setIsNewUser(false);
-          } else {
-            // 문서가 없으면 신규 유저임
-            setIsNewUser(true);
-            const initialSettings = {
-              email: user.email,
-              nickname: user.displayName || '사용자',
-              photo: user.photoURL || '',
-              joinDate: new Date().toISOString().split('T')[0],
-              location: '',
-              createdAt: serverTimestamp(),
-            };
-            setDoc(userDocRef, initialSettings);
-            setSettings(initialSettings);
-          }
-          setLoading(false);
-        }, 
-        (err) => { // 에러 콜백
-          console.error("사용자 설정 정보 실시간 수신 실패:", err);
-          setError(err);
-          setLoading(false);
-        }
-      );
-    } else if (!authLoading) {
-      setLoading(false);    // 사용자가 없거나 로딩이 끝났을 때
+    // 1. 인증 상태 로딩이 진행 중이면, 아무것도 하지 않고 기다립니다.
+    if (authLoading) {
+      setLoading(true);
+      return;
     }
 
-    // 클린업 함수: 컴포넌트가 언마운트될 때 리스너를 해제하여 메모리 누수 방지
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [user, authLoading]);
+    // 2. 인증 로딩이 끝났는데 사용자가 없으면 (로그아웃 상태), 모든 상태를 초기화하고 종료합니다.
+    if (!user) {
+      setSettings(null);
+      setLoading(false);
+      return;
+    }
 
-  // 설정 정보 업데이트 함수
+    // 3. 인증이 완료된 사용자가 있으면, 해당 사용자의 문서를 구독합니다.
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsubscribe = onSnapshot(userDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          // 문서가 있으면 settings 상태를 업데이트합니다.
+          setSettings(docSnap.data());
+        } else {
+          // 문서가 없으면 null로 설정합니다. (신규 유저 처리는 다른 곳에서 담당)
+          setSettings(null);
+        }
+        setLoading(false); // 데이터 수신이 완료되면 로딩 상태를 false로 변경
+      },
+      (err) => {
+        console.error("사용자 설정 정보 수신 실패:", err);
+        setError(err);
+        setLoading(false);
+      }
+    );
+
+    // 클린업 함수: 컴포넌트가 언마운트될 때 구독을 해제합니다.
+    return () => unsubscribe();
+
+  }, [user, authLoading]); // user나 authLoading 상태가 변경될 때마다 이 로직이 다시 실행됩니다.
+
+  // 설정 정보 업데이트 함수 (기존 로직 유지)
   const updateSettings = async (newSettings) => {
     if (!user) {
       throw new Error("사용자가 로그인되어 있지 않습니다.");
     }
     const userDocRef = doc(db, 'users', user.uid);
     await updateDoc(userDocRef, newSettings);
-    // 로컬 상태도 즉시 업데이트
+    // 로컬 상태도 즉시 업데이트하여 UI에 빠르게 반영
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
+
+  // isNewUser 로직은 AuthGuard에서 settings가 null인지 여부로 판단하는 것이 더 안정적입니다.
+  const isNewUser = !loading && user && !settings;
 
   return { settings, loading, error, isNewUser, updateSettings };
 };

@@ -6,10 +6,10 @@ import useAdminCheck from '../hooks/useAdminCheck';
 
 const AdminGuard = () => {
   const { user, loading: authLoading } = useAuthState();
-  const { isAdmin, loading: adminLoading } = useAdminCheck();
+  const { isAdmin, isAdminLoading } = useAdminCheck();
 
   // 사용자 인증 정보나 관리자 권한 정보를 확인 중일 때 로딩 화면 표시
-  if (authLoading || adminLoading) {
+  if (authLoading || isAdminLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <CircularProgress />

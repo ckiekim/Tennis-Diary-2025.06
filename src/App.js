@@ -82,14 +82,14 @@ const App = () => {
           <Route path="/clubs/:clubId" element={<ClubDetailPage />} />
           <Route path="/clubs/:clubId/posts/:postId" element={<PostDetailPage />} />
           <Route path="/setting" element={<UserSettingPage />} />
-        </Route>
 
-        {/* 관리자만 접근 가능한 페이지 */}
-        <Route element={<AdminGuard />}>
-          <Route path="/tools/courts" element={<CourtAdminPage />} />
-          <Route path="/tools/court-approval" element={<CourtApprovalAdminPage />} />
-          <Route path="/tools/users" element={<UserAdminPage />} />
-          <Route path="/tools/user/:uid" element={<UserDetailPage />} />
+          {/* 관리자만 접근 가능한 페이지 */}
+          <Route element={<AdminGuard />}>
+            <Route path="/tools/courts" element={<CourtAdminPage />} />
+            <Route path="/tools/court-approval" element={<CourtApprovalAdminPage />} />
+            <Route path="/tools/users" element={<UserAdminPage />} />
+            <Route path="/tools/user/:uid" element={<UserDetailPage />} />
+          </Route>
         </Route>
         
         {/* 일치하는 라우트가 없을 경우 */}
