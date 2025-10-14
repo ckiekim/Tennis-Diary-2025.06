@@ -2,13 +2,17 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { db, functions } from '../../api/firebaseConfig'; 
 import { httpsCallable } from 'firebase/functions'; 
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { ADMIN_UIDS } from '../../constants/admin';
+import useAuthState from '../../hooks/useAuthState';
+import useAdminCheck from '../../hooks/useAdminCheck';
 import MainLayout from '../../components/MainLayout';
+import NotAuthorized from '../../components/NotAuthorized';
 import { Box, Typography, Button, Stack, CircularProgress, Paper, Snackbar, Alert } from '@mui/material';
 import AddCourtDialog from './dialogs/AddCourtDialog';
 import ConfirmDialog from '../../components/ConfirmDialog';
 
 export default function CourtApprovalAdminPage() {
+  const { user, loading: isAuthLoading } = useAuthState();
+  const { isAdmin, isAdminLoading } = useAdminCheck(); 
 	const [pendingCourts, setPendingCourts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [approvalRequest, setApprovalRequest] = useState(null);
@@ -16,13 +20,13 @@ export default function CourtApprovalAdminPage() {
   const [rejectTarget, setRejectTarget] = useState(null); // 거절할 알림 객체
   const [isRejectConfirmOpen, setIsRejectConfirmOpen] = useState(false); 
 
-	const ADMIN_UID = ADMIN_UIDS[0];
 
   const fetchPendingCourts = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const q = query(
-        collection(db, 'users', ADMIN_UID, 'notifications'),
+        collection(db, 'users', user.uid, 'notifications'),
         where('status', '==', 'pending'),
         where('type', '==', 'admin_new_court_request')
       );
@@ -35,11 +39,13 @@ export default function CourtApprovalAdminPage() {
     } finally {
       setLoading(false);
     }
-  }, [ADMIN_UID]);
+  }, [user]);
 
   useEffect(() => {
-    fetchPendingCourts();
-  }, [fetchPendingCourts]);
+    if (isAdmin) {
+      fetchPendingCourts();
+    }
+  }, [isAdmin, fetchPendingCourts]);
 
   // Cloud Function을 호출하는 함수
   const processCourtSubmission = httpsCallable(functions, 'processCourtSubmission');
@@ -98,6 +104,27 @@ export default function CourtApprovalAdminPage() {
     setSnackbarInfo(prev => ({ ...prev, open: false }));
   };
 
+  // 인증 정보나 관리자 권한을 확인하는 동안 로딩 표시
+  if (isAuthLoading || isAdminLoading) {
+    return (
+      <MainLayout title='새 코트 승인'>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <CircularProgress />
+        </Box>
+      </MainLayout>
+    );
+  }
+
+  // 로딩이 끝났는데 관리자가 아닐 경우 권한 없음 페이지 표시
+  if (!isAdmin) {
+    return (
+      <MainLayout title='접근 권한 없음'>
+        <NotAuthorized />
+      </MainLayout>
+    );
+  }
+
+  // 관리자일 경우 실제 페이지 콘텐츠 렌더링
   return (
     <MainLayout title='새 코트 승인'>
       {loading ? (

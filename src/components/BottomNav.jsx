@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { BottomNavigation, BottomNavigationAction, Divider, Menu, MenuItem, Paper } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getAuth, } from 'firebase/auth';
-import { ADMIN_UIDS } from '../constants/admin';
+import useAdminCheck from '../hooks/useAdminCheck';
 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -23,23 +22,12 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const BottomNav = () => {
+  const { isAdmin } = useAdminCheck();
   const [anchorElResult, setAnchorElResult] = useState(null);
   const [anchorElTools, setAnchorElTools] = useState(null);
   const [anchorElMore, setAnchorElMore] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
-  const checkAdmin = async () => {
-    const user = getAuth().currentUser;
-    if (user && ADMIN_UIDS.includes(user.uid)) {
-      setIsAdmin(true);
-    }
-  };
-
-  useEffect(() => {
-    checkAdmin();
-  }, []);
 
   const getValueFromPath = (pathname) => {
     if (pathname.startsWith('/schedule')) return 'schedule';

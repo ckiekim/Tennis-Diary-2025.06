@@ -1,8 +1,4 @@
-import { db } from './firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ADMIN_UIDS } from '../constants/admin';
-
-const ADMIN_UID = ADMIN_UIDS[0];
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 /**
  * 관리자에게 새로운 코트가 등록되었음을 알립니다.
@@ -11,23 +7,16 @@ const ADMIN_UID = ADMIN_UIDS[0];
  */
 export const notifyAdminOfNewCourt = async (courtName, userInfo) => {
   try {
-    const adminNotiRef = collection(db, 'users', ADMIN_UID, 'notifications');
+    const functions = getFunctions();
+    const notifyAdmins = httpsCallable(functions, 'notifyAdminsOfNewCourt');
     
-    await addDoc(adminNotiRef, {
-      message: `${userInfo.nickname}님이 새 코트(${courtName})를 입력했습니다.`,
-      type: 'admin_new_court_request',  // 알림 타입
-      status: 'pending',                // 'pending', 'approved', 'rejected' 상태 추가
-      createdAt: serverTimestamp(),
-      // link: '/tools/courts', 
-      isRead: false,
+    await notifyAdmins({
       courtName: courtName,
-      submitter: {
-        uid: userInfo.uid,
-        nickname: userInfo.nickname,
-      }
+      submitter: userInfo,
     });
-    console.log('관리자에게 새 코트 알림을 성공적으로 보냈습니다.');
+    
+    console.log('모든 관리자에게 새 코트 알림을 성공적으로 요청했습니다.');
   } catch (error) {
-    console.error("관리자에게 알림을 보내는 데 실패했습니다:", error);
+    console.error("관리자에게 알림을 요청하는 데 실패했습니다:", error);
   }
 };

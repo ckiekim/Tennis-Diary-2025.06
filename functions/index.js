@@ -5,8 +5,6 @@ const admin = require("firebase-admin");
 const axios = require("axios");
 
 admin.initializeApp();
-// const db = admin.firestore();
-// const storage = admin.storage();
 
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY;
 const KAKAO_REDIRECT_URI = process.env.KAKAO_REDIRECT_URI;
@@ -30,10 +28,6 @@ const getKakaoAccessToken = async (code) => {
 };
 
 exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_API_KEY"] }, async (request) => {
-  // if (admin.apps.length === 0) { 
-  //   admin.initializeApp();
-  // }
-
   try {
     const { code } = request.data;
     if (!code) {
@@ -88,9 +82,6 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
 });
 
 exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
-  // if (admin.apps.length === 0) {
-  //   admin.initializeApp();
-  // }
   const db = admin.firestore();
   const storage = admin.storage();
 
@@ -196,9 +187,6 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
     document: "clubs/{clubId}",
     region: "asia-northeast3",
   }, async (event) => {
-  // if (admin.apps.length === 0) {
-  //   admin.initializeApp();
-  // }
   const db = admin.firestore();
 
   // 1. 변경 전/후 데이터 가져오기
@@ -265,9 +253,6 @@ exports.updateHolidays = onSchedule({
   region: "asia-northeast3", 
   secrets: ["HOLIDAY_API_KEY"], 
 }, async (event) => {
-  // if (admin.apps.length === 0) {
-  //   admin.initializeApp();
-  // }
   const db = admin.firestore();
 
   const serviceKey = process.env.HOLIDAY_API_KEY; // secrets에서 키를 가져옵니다.
@@ -308,13 +293,8 @@ exports.updateHolidays = onSchedule({
 });
 
 exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (request) => {
-  // 1. 함수 내에서 Firebase Admin SDK 초기화 (기존 스타일과 동일)
-  // if (admin.apps.length === 0) {
-  //   admin.initializeApp();
-  // }
   const db = admin.firestore();
 
-  // 2. 사용자 인증 확인
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 관리자만 이 작업을 수행할 수 있습니다.");
   }
@@ -393,5 +373,86 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
     }
     // 그 외의 에러는 'internal' 에러로 변환하여 던짐
     throw new HttpsError("internal", "코트 제출 처리 중 서버 오류가 발생했습니다.");
+  }
+});
+
+exports.checkAdminStatus = onCall({
+  region: "asia-northeast3",
+  secrets: ["ADMIN_UIDS"], // 사용할 Secret을 명시합니다.
+}, async (request) => {
+  // 1. 함수를 호출한 사용자가 인증되었는지 확인합니다.
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "인증된 사용자만 이 기능을 사용할 수 있습니다.");
+  }
+
+  const uid = request.auth.uid;
+
+  // 2. 메인 로직을 try...catch로 감싸 에러를 처리합니다.
+  try {
+    // 3. Secret Manager에서 ADMIN_UIDS 값을 가져옵니다. (JSON 문자열 형태)
+    const adminUidsString = process.env.ADMIN_UIDS;
+
+    // Secret이 설정되지 않은 경우에 대한 방어 코드
+    if (!adminUidsString) {
+      console.error("ADMIN_UIDS secret이 설정되지 않았습니다.");
+      throw new HttpsError("internal", "서버 설정에 오류가 발생했습니다.");
+    }
+
+    // 4. JSON 문자열을 실제 자바스크립트 배열로 변환합니다.
+    const adminUids = JSON.parse(adminUidsString);
+
+    // 5. 현재 사용자의 UID가 관리자 UID 배열에 포함되어 있는지 확인합니다.
+    const isAdmin = adminUids.includes(uid);
+
+    // 6. 결과를 클라이언트에 반환합니다.
+    return { isAdmin: isAdmin };
+
+  } catch (error) {
+    console.error("checkAdminStatus 함수 오류:", error);
+    // 이미 HttpsError인 경우 그대로 다시 던집니다.
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    // 그 외의 에러는 'internal' 에러로 변환하여 던집니다.
+    throw new HttpsError("internal", "관리자 상태 확인 중 오류가 발생했습니다.");
+  }
+});
+
+exports.notifyAdminsOfNewCourt = onCall({
+  region: "asia-northeast3",
+  secrets: ["ADMIN_UIDS"], 
+}, async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "인증된 사용자만 알림을 보낼 수 있습니다.");
+  }
+
+  const { courtName, submitter } = request.data;
+  if (!courtName || !submitter) {
+    throw new HttpsError("invalid-argument", "courtName과 submitter 정보는 필수입니다.");
+  }
+
+  try {
+    const db = admin.firestore();
+    const batch = db.batch();
+    const adminUids = JSON.parse(process.env.ADMIN_UIDS);
+
+    adminUids.forEach(adminUid => {
+      const adminNotiRef = db.collection('users').doc(adminUid).collection('notifications').doc();
+      batch.set(adminNotiRef, {
+        message: `${submitter.nickname}님이 새 코트(${courtName})를 입력했습니다.`,
+        type: 'admin_new_court_request',
+        status: 'pending',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        isRead: false,
+        courtName: courtName,
+        submitter: submitter
+      });
+    });
+
+    await batch.commit();
+    return { success: true };
+  } catch (error) {
+    console.error("관리자 알림 전송 함수 오류:", error);
+    throw new HttpsError("internal", "알림 전송 중 오류가 발생했습니다.");
   }
 });
