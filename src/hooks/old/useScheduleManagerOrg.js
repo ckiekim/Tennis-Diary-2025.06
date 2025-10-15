@@ -7,6 +7,7 @@ import {
 import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import dayjs from 'dayjs';
 import { createPlaceInfo } from '../utils/handlePlaceInfo';
+import { dayMap } from '../constants/global';
 
 export const useScheduleManager = (selectedDate, user, courts) => {
   const navigate = useNavigate();
@@ -24,8 +25,6 @@ export const useScheduleManager = (selectedDate, user, courts) => {
   const [resultTarget, setResultTarget] = useState(null);
   const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  
-  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
   
   useEffect(() => {
     setForm(prev => ({ ...prev, date: selectedDate.format('YYYY-MM-DD') }));

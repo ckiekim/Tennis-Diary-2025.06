@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../api/firebaseConfig';
 import { collection, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
 import useAuthState from './useAuthState';
-import { PAGE_SIZE } from '../constants/admin';
+import { PAGE_SIZE } from '../constants/global';
 
 export default function usePaginatedEventsWithResults(uid, refreshKey = 0) {
   const [list, setList] = useState([]);

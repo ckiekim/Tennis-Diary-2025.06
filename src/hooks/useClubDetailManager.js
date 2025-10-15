@@ -8,6 +8,7 @@ import { db, functions } from '../api/firebaseConfig';
 import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
 import useScheduleHandler from './useScheduleHandler';
+import { dayMap } from '../constants/global';
 
 export const useClubDetailManager = (clubId, user, members, refreshSchedules) => {
   const navigate = useNavigate();
@@ -32,7 +33,6 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   const [recurringEditInfo, setRecurringEditInfo] = useState(null);
 
   const scheduleHandler = useScheduleHandler(user);
-  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
 
   // 2. 모든 핸들러 함수
   const handleAlert = (message) => {

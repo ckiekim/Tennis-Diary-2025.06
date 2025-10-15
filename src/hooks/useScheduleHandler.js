@@ -1,15 +1,15 @@
-// useScheduleManager와 useClubDetailManager에서 공통으로 사용하는 일정 관련 코드
-
+/*
+ *  useScheduleManager와 useClubDetailManager에서 공통으로 사용하는 일정 관련 코드
+ */
 import { db } from '../api/firebaseConfig';
 import { addDoc, collection, deleteField, doc, getDocs, increment, query, serverTimestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { createPlaceInfo } from '../utils/handlePlaceInfo';
 import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import { notifyAdminOfNewCourt } from '../api/adminNotificationService';
 import dayjs from 'dayjs';
+import { dayMap } from '../constants/global';
 
 const useScheduleHandler = (user, selectedDate) => {
-  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
-
   const checkAndNotifyAdmin = async (placeInfo) => {
     // placeInfo 객체가 있고, courtId가 비어있으면 새로운 코트로 판단합니다.
     if (placeInfo && !placeInfo.courtId) {
@@ -53,12 +53,12 @@ const useScheduleHandler = (user, selectedDate) => {
     const today = dayjs().startOf('day');
     const selected = dayjs(selectedDate);
 
-    // 1. 오늘 이전 날짜를 선택했는지 확인합니다.
+    // 오늘 이전 날짜를 선택했는지 확인
     if (selected.isBefore(today)) {
       throw new Error('오늘 이전 날짜에는 반복 일정을 생성할 수 없습니다.');
     }
 
-    // 2. 반복을 시작할 첫 번째 날짜를 계산합니다.
+    // 반복을 시작할 첫 번째 날짜를 계산
     const getFirstEventDate = (start, targetDay) => {
       let firstDate = dayjs(start).day(dayMap[targetDay]);
       // 계산된 날짜가 시작 기준일보다 이전이면, 다음 주로 넘깁니다.
@@ -68,7 +68,7 @@ const useScheduleHandler = (user, selectedDate) => {
       return firstDate;
     };
     
-    // 3. 계산된 첫 날짜부터 반복 생성을 시작합니다.
+    // 계산된 첫 날짜부터 반복 생성을 시작
     let currentDate = getFirstEventDate(selected, day1);
 
     const batch = writeBatch(db);

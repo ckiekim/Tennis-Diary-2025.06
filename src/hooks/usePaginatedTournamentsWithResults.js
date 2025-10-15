@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../api/firebaseConfig';
 import { collection, getDocs, query, where, orderBy, limit, startAfter } from 'firebase/firestore';
-import { PAGE_SIZE } from '../constants/admin';
+import { PAGE_SIZE } from '../constants/global';
 
 export default function usePaginatedTournamentsWithResults(uid, refreshKey = 0) {
   const [list, setList] = useState([]);
@@ -16,8 +16,8 @@ export default function usePaginatedTournamentsWithResults(uid, refreshKey = 0) 
     return () => { isMounted.current = false; };
   }, []);
 
-  // --- 1. 초기 데이터 로딩을 위한 useEffect ---
-  // uid나 refreshKey가 변경될 때만 실행됩니다.
+  // 초기 데이터 로딩
+  // uid나 refreshKey가 변경될 때만 실행
   useEffect(() => {
     if (!uid) {
       setList([]);
@@ -83,8 +83,8 @@ export default function usePaginatedTournamentsWithResults(uid, refreshKey = 0) 
     fetchInitialEvents();
   }, [uid, refreshKey]);
 
-  // --- 2. '더보기'를 위한 fetchMore 함수 ---
-  // 이 함수는 lastVisible 상태를 사용합니다.
+  // '더보기'를 위한 fetchMore 함수
+  // 이 함수는 lastVisible 상태를 사용
   const fetchMore = useCallback(async () => {
     if (loading || !hasMore || !uid || !lastVisible) return;
 

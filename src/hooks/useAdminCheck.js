@@ -9,20 +9,20 @@ export default function useAdminCheck() {
   const [isAdminLoading, setIsAdminLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ 2. Firebase 인증 자체가 로딩 중일 때는, 관리자 확인도 당연히 로딩 중입니다.
+    // Firebase 인증 자체가 로딩 중일 때는, 관리자 확인도 당연히 로딩 중
     if (authLoading) {
       setIsAdminLoading(true);
       return;
     }
     
-    // ✅ 3. 인증 로딩이 끝났는데 사용자가 없으면, 관리자가 아니라고 확정합니다.
+    // 인증 로딩이 끝났는데 사용자가 없으면, 관리자가 아니라고 확정
     if (!user) {
       setIsAdmin(false);
       setIsAdminLoading(false);
       return;
     }
 
-    // ✅ 4. 인증이 완료된 사용자가 있을 때만 Cloud Function을 호출합니다.
+    // 인증이 완료된 사용자가 있을 때만 Cloud Function을 호출
     const checkAdminStatus = httpsCallable(functions, 'checkAdminStatus');
 
     checkAdminStatus()

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
-import { PAGE_SIZE } from '../constants/admin';
+import { PAGE_SIZE } from '../constants/global';
 
 const usePaginatedCourts = (filters) => {
   const [courts, setCourts] = useState([]);

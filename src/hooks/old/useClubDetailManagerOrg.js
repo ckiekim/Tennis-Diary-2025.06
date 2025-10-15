@@ -9,12 +9,12 @@ import { deletePhotoFromStorage } from '../api/firebaseStorage';
 import useSnapshotDocument from './useSnapshotDocument';
 import dayjs from 'dayjs';
 import { createPlaceInfo } from '../utils/handlePlaceInfo';
+import { dayMap } from '../constants/global';
 
 export const useClubDetailManager = (clubId, user, members, refreshSchedules) => {
   const navigate = useNavigate();
   const { docData: club } = useSnapshotDocument('clubs', clubId);
 
-  // 1. 모든 상태(State) 관리
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -32,9 +32,7 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   const [deleteAllRecurring, setDeleteAllRecurring] = useState(false);
   const [recurringEditInfo, setRecurringEditInfo] = useState(null);
 
-  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
-
-  // 2. 모든 핸들러 함수
+  // 모든 핸들러 함수
   const handleAlert = (message) => {
     setAlertMessage(message);
     setIsAlertOpen(true);
@@ -81,7 +79,6 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   };
 
   const handleLeaveClub = async () => {
-    // ... (기존 handleLeaveClub 로직과 동일, handleAlert 사용)
     try {
       const batch = writeBatch(db);
       const memberRef = doc(db, 'clubs', clubId, 'members', user.uid);
@@ -102,7 +99,6 @@ export const useClubDetailManager = (clubId, user, members, refreshSchedules) =>
   };
 
   const handleKickMember = async () => {
-    // ... (기존 handleKickMember 로직과 동일, handleAlert 사용)
     if (!kickTarget) return;
     try {
         const batch = writeBatch(db);

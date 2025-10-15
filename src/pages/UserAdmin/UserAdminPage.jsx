@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Card, CircularProgress, FormControl, InputLabel, MenuItem, Select, Stack, Typography, TextField } from '@mui/material';
 import MainLayout from '../../components/MainLayout';
 import usePaginatedUsers from '../../hooks/usePaginatedUsers';
-import { PLACEHOLDER_URL } from '../../constants/admin';
+import { PLACEHOLDER_URL } from '../../constants/global';
 import EmailIcon from '@mui/icons-material/Email';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';

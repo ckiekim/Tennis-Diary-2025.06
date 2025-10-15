@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { db } from '../api/firebaseConfig';
 import { collection, query, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
-import { PAGE_SIZE } from '../constants/admin';
+import { PAGE_SIZE } from '../constants/global';
 
 const usePaginatedSubcollection = (collectionPath, options = {}) => {
   const { orderByField = 'createdAt', direction = 'desc', limitCount = PAGE_SIZE } = options;

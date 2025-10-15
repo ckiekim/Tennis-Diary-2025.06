@@ -7,6 +7,7 @@ import RecurringFields from './RecurringFields';
 import StandardFields from './StandardFields';
 import UpdateScopeDialog from './UpdateScopeDialog';
 import dayjs from 'dayjs';
+import { dayMap } from '../../../constants/global';
 
 export default function EditScheduleDialog({
   courts, open, selectedSchedule, setOpen, onUpdate, isClubSchedule = false, recurringEditInfo
@@ -102,7 +103,6 @@ export default function EditScheduleDialog({
 
       // '이 일정만 수정'을 선택한 경우, 변경된 요일에 맞춰 날짜를 재계산합니다.
       if (scope === 'single') {
-        const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
         const originalDay = dayjs(form.date).day();
         const newDay = dayMap[recurringOptions.day1]; // 주1회 기준
 

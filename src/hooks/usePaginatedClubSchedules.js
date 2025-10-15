@@ -4,7 +4,7 @@ import { collection, query, where, orderBy, limit, startAfter, getDocs } from 'f
 import useAuthState from './useAuthState';
 import dayjs from 'dayjs';
 
-const PAGE_SIZE = 3;
+const SCHEDULE_PAGE_SIZE = 3;
 
 export default function usePaginatedClubSchedules(clubId, refreshKey = 0) {
   const [schedules, setSchedules] = useState([]);
@@ -50,7 +50,7 @@ export default function usePaginatedClubSchedules(clubId, refreshKey = 0) {
           where('date', '>=', today),
           orderBy('date', 'asc'),
           orderBy('time', 'asc'),
-          limit(PAGE_SIZE)
+          limit(SCHEDULE_PAGE_SIZE)
         );
 
         const snapshot = await getDocs(q);
@@ -59,7 +59,7 @@ export default function usePaginatedClubSchedules(clubId, refreshKey = 0) {
 
         setSchedules(detailedSchedules);
         setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-        setHasMore(snapshot.docs.length === PAGE_SIZE);
+        setHasMore(snapshot.docs.length === SCHEDULE_PAGE_SIZE);
 
       } catch (error) {
         console.error("Error fetching initial club schedules: ", error);
@@ -85,7 +85,7 @@ export default function usePaginatedClubSchedules(clubId, refreshKey = 0) {
         orderBy('date', 'asc'),
         orderBy('time', 'asc'),
         startAfter(lastVisible), // 마지막 문서부터 이어서
-        limit(PAGE_SIZE)
+        limit(SCHEDULE_PAGE_SIZE)
       );
 
       const snapshot = await getDocs(q);
@@ -94,7 +94,7 @@ export default function usePaginatedClubSchedules(clubId, refreshKey = 0) {
       
       setSchedules(prev => [...prev, ...detailedSchedules]);
       setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(snapshot.docs.length === PAGE_SIZE);
+      setHasMore(snapshot.docs.length === SCHEDULE_PAGE_SIZE);
 
     } catch (error) {
       console.error("Error fetching more club schedules: ", error);

@@ -35,7 +35,7 @@ const AuthGuard = () => {
     );
   }
 
-  // 2. 로딩이 끝난 후, 로그인 여부를 확인합니다.
+  // 로딩이 끝난 후, 로그인 여부를 확인
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -47,7 +47,7 @@ const AuthGuard = () => {
     return <Navigate to="/setting" replace />;
   }
 
-  // 5. 프로필까지 완성된 일반 사용자는 통과시킵니다.
+  // 프로필까지 완성된 일반 사용자는 통과
   return <Outlet />;
 };
 

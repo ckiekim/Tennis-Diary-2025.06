@@ -6,10 +6,10 @@ import {
 } from 'firebase/firestore';
 import dayjs from 'dayjs';
 import useScheduleHandler from './useScheduleHandler';
+import { dayMap } from '../constants/global';
 
 export const useScheduleManager = (selectedDate, user, courts) => {
   const navigate = useNavigate();
-  const dayMap = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
 
   // 상태 관리
   const [form, setForm] = useState({ type: '게임', place: '', club: '', date: selectedDate.format('YYYY-MM-DD') });

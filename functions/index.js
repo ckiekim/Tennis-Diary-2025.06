@@ -31,7 +31,6 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
   try {
     const { code } = request.data;
     if (!code) {
-      // 2. new HttpsError(...) 로 직접 사용합니다.
       throw new HttpsError('invalid-argument', 'Authorization code is required.');
     }
 
@@ -52,7 +51,7 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
     const kakaoData = kakaoRes.data;
     const kakaoUid = `kakao:${kakaoData.id}`;
     console.log(kakaoData);
-    // ✅ 아래와 같이 ?. 와 || 를 사용해 안전하게 값을 가져오도록 수정합니다.
+    // 안전하게 값을 가져오도록 수정
     const displayName = kakaoData.properties?.nickname || '카카오사용자';
     const photoURL = kakaoData.properties?.profile_image;
     const email = kakaoData.kakao_account?.email;
@@ -73,9 +72,8 @@ exports.kakaoLogin = onCall({ region: "asia-northeast3", secrets: ["KAKAO_REST_A
   } catch (err) {
     console.error("Authentication Error:", err.response ? err.response.data : err.message);
     
-    // 3. catch 블록에서도 HttpsError를 직접 사용합니다.
     if (err instanceof HttpsError) {
-      throw err; // 이미 HttpsError인 경우 그대로 던집니다.
+      throw err;
     }
     throw new HttpsError('internal', 'Kakao authentication failed.');
   }
@@ -85,7 +83,7 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
   const db = admin.firestore();
   const storage = admin.storage();
 
-  // 1. 사용자 인증 확인
+  // 사용자 인증 확인
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 사용자만 클럽을 삭제할 수 있습니다.");
   }
@@ -106,14 +104,14 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
 
     const clubData = clubDoc.data();
 
-    // 2. 클럽 소유자(owner)만 삭제 가능하도록 권한 확인
+    // 클럽 소유자(owner)만 삭제 가능하도록 권한 확인
     if (clubData.owner !== callerUid) {
       throw new HttpsError("permission-denied", "클럽장만 클럽을 삭제할 수 있습니다.");
     }
 
     const batch = db.batch();
 
-    // 3. 모든 멤버의 'myClubs'에서 해당 클럽 정보 삭제
+    // 모든 멤버의 'myClubs'에서 해당 클럽 정보 삭제
     const membersSnapshot = await clubRef.collection("members").get();
     membersSnapshot.forEach((memberDoc) => {
       const memberUid = memberDoc.id;
@@ -122,7 +120,7 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
       batch.delete(memberDoc.ref);  // members 문서 자체도 삭제
     });
     
-    // 4. 클럽의 모든 게시글(posts) 및 그 하위의 댓글(comments), 관련 스토리지 이미지 삭제
+    // 클럽의 모든 게시글(posts) 및 그 하위의 댓글(comments), 관련 스토리지 이미지 삭제
     const postsSnapshot = await clubRef.collection("posts").get();
     if (!postsSnapshot.empty) {
       for (const postDoc of postsSnapshot.docs) {
@@ -151,13 +149,13 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
       }
     }
 
-    // 5. 메인 'clubs' 컬렉션에서 클럽 문서 삭제
+    // 메인 'clubs' 컬렉션에서 클럽 문서 삭제
     batch.delete(clubRef);
 
-    // 6. Batch 작업 실행
+    // Batch 작업 실행
     await batch.commit();
 
-    // 7. 스토리지에서 클럽 대표 이미지 삭제
+    // 스토리지에서 클럽 대표 이미지 삭제
     if (clubData.profileUrl) {
       try {
         const decodedUrl = decodeURIComponent(clubData.profileUrl);
@@ -168,7 +166,7 @@ exports.deleteClub = onCall({ region: "asia-northeast3" }, async (request) => {
         await storage.bucket().file(filePath).delete();
       } catch (storageError) {
         console.error("스토리지 이미지 삭제 실패:", storageError);
-        // 이미지가 없어도 나머지 로직은 성공했으므로 에러를 던지지는 않습니다.
+        // 이미지가 없어도 나머지 로직은 성공했으므로 에러를 던지지는 않음
       }
     }
 
@@ -189,12 +187,12 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
   }, async (event) => {
   const db = admin.firestore();
 
-  // 1. 변경 전/후 데이터 가져오기
+  // 변경 전/후 데이터 가져오기
   const beforeData = event.data.before.data();
   const afterData = event.data.after.data();
   const { clubId } = event.params;
 
-  // 2. 클럽 이름, 지역, 프로필 URL 중 하나라도 변경되었는지 확인
+  // 클럽 이름, 지역, 프로필 URL 중 하나라도 변경되었는지 확인
   if (
     beforeData.name === afterData.name &&
     beforeData.region === afterData.region &&
@@ -206,14 +204,14 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
 
   console.log(`클럽 [${clubId}] 정보 변경 감지. 멤버들의 myClubs 업데이트 시작.`);
 
-  // 3. 업데이트할 필드만 담은 객체 생성
+  // 업데이트할 필드만 담은 객체 생성
   const updatedFields = {
     clubName: afterData.name,
     region: afterData.region,
     clubProfileUrl: afterData.profileUrl,
   };
 
-  // 4. 이 클럽에 속한 모든 멤버의 정보를 가져옵니다.
+  // 이 클럽에 속한 모든 멤버의 정보를 가져옵니다.
   const membersSnapshot = await db
     .collection(`clubs/${clubId}/members`)
     .get();
@@ -223,7 +221,7 @@ exports.updateMyClubsOnClubChange = onDocumentUpdated({
     return null;
   }
 
-  // 5. Batch Write를 사용해 모든 멤버의 myClubs 문서를 원자적으로 업데이트
+  // Batch Write를 사용해 모든 멤버의 myClubs 문서를 원자적으로 업데이트
   const batch = db.batch();
   membersSnapshot.forEach((memberDoc) => {
     const memberUid = memberDoc.id;
@@ -301,12 +299,12 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
   const adminUid = request.auth.uid; // 함수를 호출한 관리자의 UID
   const { notificationId, action, courtData } = request.data;
 
-  // 3. 필수 인자 확인
+  // 필수 인자 확인
   if (!notificationId || !action) {
     throw new HttpsError("invalid-argument", "notificationId와 action은 필수입니다.");
   }
 
-  // 4. 메인 로직을 try...catch로 감싸 에러 처리 (기존 스타일과 동일)
+  // 메인 로직
   try {
     // 관리자 본인의 알림 문서 경로 설정
     const adminNotiRef = db.doc(`users/${adminUid}/notifications/${notificationId}`);
@@ -323,7 +321,7 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
     const batch = db.batch();
 
     if (action === "approve") {
-      // 5-1. 승인 처리
+      // 승인 처리
       if (!courtData || !courtData.name) {
         throw new HttpsError("invalid-argument", "승인 시 코트 데이터(courtData)는 필수입니다.");
       }
@@ -344,7 +342,7 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
       batch.update(adminNotiRef, { status: "approved" });
 
     } else if (action === "reject") {
-      // 5-2. 거절 처리
+      // 거절 처리
       // 사용자에게 거절 알림 추가
       const userNotiRef_Reject = userNotiCollectionRef.doc();
       batch.set(userNotiRef_Reject, {
@@ -361,7 +359,7 @@ exports.processCourtSubmission = onCall({ region: "asia-northeast3" }, async (re
       throw new HttpsError("invalid-argument", "action은 'approve' 또는 'reject'여야 합니다.");
     }
 
-    // 6. Batch 작업 실행
+    // Batch 작업 실행
     await batch.commit();
 
     return { success: true, message: `요청을 성공적으로 '${action}' 처리했습니다.` };
@@ -381,16 +379,16 @@ exports.checkAdminStatus = onCall({
   secrets: ["ADMIN_UIDS"], // 사용할 Secret을 명시합니다.
   cors: true,
 }, async (request) => {
-  // 1. 함수를 호출한 사용자가 인증되었는지 확인합니다.
+  // 함수를 호출한 사용자가 인증되었는지 확인합니다.
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "인증된 사용자만 이 기능을 사용할 수 있습니다.");
   }
 
   const uid = request.auth.uid;
 
-  // 2. 메인 로직을 try...catch로 감싸 에러를 처리합니다.
+  // 메인 로직
   try {
-    // 3. Secret Manager에서 ADMIN_UIDS 값을 가져옵니다. (JSON 문자열 형태)
+    // Secret Manager에서 ADMIN_UIDS 값을 가져옴 (JSON 문자열 형태)
     const adminUidsString = process.env.ADMIN_UIDS;
 
     // Secret이 설정되지 않은 경우에 대한 방어 코드
@@ -399,13 +397,13 @@ exports.checkAdminStatus = onCall({
       throw new HttpsError("internal", "서버 설정에 오류가 발생했습니다.");
     }
 
-    // 4. JSON 문자열을 실제 자바스크립트 배열로 변환합니다.
+    // JSON 문자열을 실제 자바스크립트 배열로 변환
     const adminUids = JSON.parse(adminUidsString);
 
-    // 5. 현재 사용자의 UID가 관리자 UID 배열에 포함되어 있는지 확인합니다.
+    // 현재 사용자의 UID가 관리자 UID 배열에 포함되어 있는지 확인
     const isAdmin = adminUids.includes(uid);
 
-    // 6. 결과를 클라이언트에 반환합니다.
+    // 결과를 클라이언트에 반환
     return { isAdmin: isAdmin };
 
   } catch (error) {

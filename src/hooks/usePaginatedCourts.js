@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 import { db } from '../api/firebaseConfig';
-import { PAGE_SIZE } from '../constants/admin';
+import { PAGE_SIZE } from '../constants/global';
 
 // buildQuery 함수를 훅 외부의 순수 함수로 분리
 // 이 함수는 props나 state에 의존하지 않고, 오직 인자로만 동작

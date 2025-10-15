@@ -38,7 +38,7 @@ export default function useMonthlyExpenses(uid) {
       const processedRecurringIds = new Set(); // 처리된 recurringId 기록 (중복 방지)
       const recurringIdFirstDate = {}; // 각 recurringId의 첫 등장 날짜 기록
 
-      // 1. (사전 처리) 모든 반복 일정의 첫 등장 날짜를 찾습니다.
+      // (사전 처리) 모든 반복 일정의 첫 등장 날짜를 검색
       allExpenses.forEach(expense => {
         if (expense.recurringId) {
           const currentFirstDate = recurringIdFirstDate[expense.recurringId];
@@ -48,7 +48,7 @@ export default function useMonthlyExpenses(uid) {
         }
       });
 
-      // 2. 비용을 월별로 집계합니다.
+      // 비용을 월별로 집계
       allExpenses.forEach(expense => {
         const price = parseInt(expense.price, 10) || 0;
         if (!price || !expense.date) return;
