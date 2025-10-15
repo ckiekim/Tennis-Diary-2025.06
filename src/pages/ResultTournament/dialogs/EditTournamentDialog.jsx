@@ -10,7 +10,7 @@ import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/fire
 import { handleNumericInputChange } from '../../../utils/handleInput';
 import { 
   tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions 
-} from '../../../data/tournamentConstants';
+} from '../../../constants/global';
 import AlertDialog from '../../../components/AlertDialog';
 
 export default function EditTournamentDialog({ open, onClose, result, uid, resultData, courts }) {

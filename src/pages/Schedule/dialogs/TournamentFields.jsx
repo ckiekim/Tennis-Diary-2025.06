@@ -4,7 +4,7 @@ import CourtSelection from './CourtSelection';
 import { handleNumericInputChange } from '../../../utils/handleInput';
 import { 
   tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions
-} from '../../../data/tournamentConstants';
+} from '../../../constants/global';
 
 export default function TournamentFields({ form, setForm, courts, courtProps }) {
   const handleOrganizerChange = (e) => {
