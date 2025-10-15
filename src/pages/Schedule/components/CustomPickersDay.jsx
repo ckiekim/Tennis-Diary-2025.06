@@ -1,6 +1,6 @@
 import { PickersDay } from '@mui/x-date-pickers';
 import { Box } from '@mui/material';
-import typeColors from '../../../constants/typeColors';
+import { typeColors } from '../../../constants/global';
 
 export default function CustomPickersDay(props) {
   const { day, outsideCurrentMonth, selected, eventDateMap, holidays, eventTypes, ...other } = props;

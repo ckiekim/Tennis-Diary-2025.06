@@ -8,7 +8,7 @@ import useAuthState from '../../hooks/useAuthState';
 import useMonthlyExpenses from '../../hooks/useMonthlyExpenses';
 import MainLayout from '../../components/MainLayout';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import typeColors from '../../constants/typeColors';
+import { typeColors } from '../../constants/global';
 import dayjs from 'dayjs';
 
 const ExpensePage = () => {

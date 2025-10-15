@@ -1,6 +1,5 @@
 import { Box, Typography } from '@mui/material';
-
-import typeColors from '../../../constants/typeColors';
+import { typeColors } from '../../../constants/global';
 
 export default function Legend() {
   return (

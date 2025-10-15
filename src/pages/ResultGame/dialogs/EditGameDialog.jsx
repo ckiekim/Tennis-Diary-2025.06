@@ -13,7 +13,7 @@ import { uploadImageToFirebase, deletePhotoFromStorage } from '../../../api/fire
 import formatDay from '../../../utils/formatDay';
 import { handleNumericInputChange } from '../../../utils/handleInput';
 import { stringToResults, resultsToString } from '../../../utils/resultConverter';
-import { gameTypes } from '../../../constants/typeGames';
+import { gameTypes } from '../../../constants/global';
 import { v4 as uuidv4 } from 'uuid';
 import AlertDialog from '../../../components/AlertDialog';
 

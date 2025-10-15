@@ -9,7 +9,7 @@ import { uploadBytes, ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../api/firebaseConfig'; 
 import { v4 as uuidv4 } from 'uuid';
 import { resultsToString } from '../../../utils/resultConverter';
-import { gameTypes } from '../../../constants/typeGames';
+import { gameTypes } from '../../../constants/global';
 import AlertDialog from '../../../components/AlertDialog';
 
 export default function ResultDialog({open, target, setOpen, onResult, uid}) {
