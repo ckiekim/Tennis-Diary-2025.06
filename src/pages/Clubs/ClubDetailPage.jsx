@@ -127,13 +127,14 @@ const ClubDetailPage = () => {
   
   const isOwner = user?.uid === club.owner;
   const isMember = user ? members.some(member => member.id === user.uid) : false;
+  const acceptedMembers = members.filter(member => member.status !== 'invited');
 
   return (
     <MainLayout title="클럽 상세">
       <Box p={2}>
         <ClubHeader club={club} />
         <ClubMemberList
-          members={members} isOwner={isOwner} user={user}
+          members={acceptedMembers} isOwner={isOwner} user={user}
           anchorEl={manager.anchorEl} selectedMember={manager.selectedMember}
           onMemberClick={(e, member) => { manager.setAnchorEl(e.currentTarget); manager.setSelectedMember(member); }}
           onPopoverClose={() => manager.setAnchorEl(null)}
@@ -144,10 +145,6 @@ const ClubDetailPage = () => {
         <ClubScheduleSection
           schedules={clubSchedules} isOwner={isOwner} isMember={isMember} user={user}
           onAddScheduleClick={handleOpenAddSchedule}
-          // onEditSchedule={(schedule) => {
-          //   manager.setSelectedSchedule({ ...schedule, date: dayjs(schedule.date) });
-          //   manager.setEditScheduleOpen(true);
-          // }}
           onEditSchedule={manager.handleEditSchedule}
           onDeleteSchedule={(schedule) => {
             manager.setSelectedSchedule(schedule);
