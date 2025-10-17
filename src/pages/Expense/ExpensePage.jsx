@@ -32,7 +32,7 @@ const ExpensePage = () => {
   let grandTotal = 0;
 
   const processedData = Object.entries(monthlyData).map(([month, data]) => ({
-    monthForDisplay: month.replace('년 ', '.'), // 표시용: "2025.9월"
+    monthForDisplay: dayjs(month, 'YYYY년 M월').format('YYYY.MM'), // 표시용: "2025.09"
     monthForSort: dayjs(month, 'YYYY년 M월'),  // 정렬용: dayjs 객체
     ...data,
     total: categoryKeys.reduce((sum, key) => sum + (data[key] || 0), 0),
@@ -94,38 +94,40 @@ const ExpensePage = () => {
 
             {/* --- 표 영역 (정렬된 순서로 컬럼 및 데이터 렌더링) --- */}
             <Box mt={4}>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>상세 내역</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1 }}>
+                <Typography variant="subtitle1" fontWeight="bold">상세 내역</Typography>
+                <Typography variant="body2" color="text.secondary">(단위: 원)</Typography>
+              </Box>
               <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} size="small">
+                <Table sx={{ minWidth: 600 }} size="small">
                   <TableHead>
                     <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                      <TableCell sx={{ fontWeight: 'bold' }}>월</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '13px' }}>월</TableCell>
                       {sortedCategories.map(key => (
-                        <TableCell key={key} align="right" sx={{ fontWeight: 'bold' }}>{key}</TableCell>
+                        <TableCell key={key} align="right" sx={{ fontWeight: 'bold', fontSize: '13px' }}>{key}</TableCell>
                       ))}
-                      <TableCell align="right" sx={{ fontWeight: 'bold' }}>월간 합계</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold', fontSize: '13px' }}>월간 합계</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {tableData.map((row) => (
                       <TableRow key={row.monthForDisplay} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell component="th" scope="row">{row.monthForDisplay}</TableCell>
+                        <TableCell component="th" scope="row" sx={{ fontSize: '13px' }}>{row.monthForDisplay}</TableCell>
                         {sortedCategories.map(key => (
-                          <TableCell key={key} align="right">{(row[key] || 0).toLocaleString()}원</TableCell>
+                          <TableCell key={key} align="right" sx={{ fontSize: '13px' }}>{(row[key] || 0).toLocaleString()}</TableCell>
                         ))}
-                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>{row.total.toLocaleString()}원</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '13px' }}>{row.total.toLocaleString()}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
-                  {/* --- 누계 표시를 위한 TableFooter 추가 --- */}
                   <TableFooter>
-                    <TableRow sx={{ backgroundColor: '#f0f0f0', '& > *': { fontWeight: 'bold' } }}>
-                      <TableCell>누계</TableCell>
-                      {/* 🚀 정렬된 카테고리 순서대로 누계 표시 */}
+                    <TableRow sx={{ backgroundColor: '#f0f0f0', '& > *': { fontWeight: 'bold', fontSize: '13px' } }}>
+                      <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '13px' }}>누계</TableCell>
+                      {/* 정렬된 카테고리 순서대로 누계 표시 */}
                       {sortedCategories.map(key => (
-                        <TableCell key={key} align="right">{(totals[key] || 0).toLocaleString()}원</TableCell>
+                        <TableCell key={key} align="right" sx={{ fontWeight: 'bold', fontSize: '13px' }}>{(totals[key] || 0).toLocaleString()}</TableCell>
                       ))}
-                      <TableCell align="right">{grandTotal.toLocaleString()}원</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 'bold', fontSize: '13px' }}>{grandTotal.toLocaleString()}</TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>
