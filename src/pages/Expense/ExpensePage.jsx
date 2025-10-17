@@ -85,7 +85,7 @@ const ExpensePage = () => {
                 <XAxis dataKey="monthForDisplay" fontSize={12} />
                 <YAxis tickFormatter={formatYAxis} fontSize={12} />
                 <Tooltip formatter={formatTooltip} />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '10px' }} />
                 {sortedCategories.map(key => (
                   <Bar key={key} dataKey={key} stackId="a" fill={typeColors[key]} name={key} />
                 ))}
