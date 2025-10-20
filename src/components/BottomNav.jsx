@@ -118,11 +118,11 @@ const BottomNav = () => {
       >
         <MenuItem onClick={() => handleToolsMenuClick('/tools/goods')}>
           <CardGiftcardIcon fontSize="small" sx={{ mr: 1 }} />
-          용품관리
+          용품관리 &nbsp;&nbsp;
         </MenuItem>
         <MenuItem onClick={() => handleToolsMenuClick('/tools/expense')}>
           <ReceiptLongIcon fontSize="small" sx={{ mr: 1 }} />
-          비용내역
+          비용관리
         </MenuItem>
         {isAdmin && [
           <Divider key="admin-divider" sx={{ my: 0.5 }} />,
@@ -153,7 +153,7 @@ const BottomNav = () => {
         </MenuItem>
         <MenuItem onClick={() => handleMoreMenuClick('/more/mileageInfo')}>
           <MonetizationOnIcon fontSize="small" sx={{ mr: 1 }} />
-          마일리지 안내
+          마일리지 안내 &nbsp;&nbsp;
         </MenuItem>
         <MenuItem onClick={() => handleMoreMenuClick('/more/appInfo')}>
           <InfoOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
