@@ -132,7 +132,7 @@ const BottomNav = () => {
           </MenuItem>,
           <MenuItem key="users-menu" onClick={() => handleToolsMenuClick('/tools/users')}>
             <PeopleIcon fontSize="small" sx={{ mr: 1 }} />
-            사용자관리
+            사용자관리 &nbsp;&nbsp;
           </MenuItem>,
           <MenuItem key="approval-menu" onClick={() => handleToolsMenuClick('/tools/court-approval')}>
             <CheckCircleIcon fontSize="small" sx={{ mr: 1 }} />
