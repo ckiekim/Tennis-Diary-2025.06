@@ -41,7 +41,8 @@ export default function AddScheduleDialog({
       ...commonData, // 공통 값 유지
       type: newType,
       name: '', time: '', place: '', placeSelection: null, price: '',
-      source: '', category: '', partner: '', organizer: '', division: '',
+      source: '', 
+      // category: '', partner: '', organizer: '', division: '',
     };
 
     setForm(newForm);
