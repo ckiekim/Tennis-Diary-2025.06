@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import useAuthState from '../../../hooks/useAuthState';
 import { Box, Card, Typography } from '@mui/material';
 import formatDay from '../../../utils/formatDay';
 
 export default function GameCard({ item }) {
   const navigate = useNavigate();
+  const { user } = useAuthState();
   const day = formatDay(item.date);
   let displayPlace = '장소 정보 없음';
   if (item.placeInfo) {
@@ -23,9 +25,26 @@ export default function GameCard({ item }) {
         </Typography>
       );
     }
+
+    // '정모'이고 결과가 여러 개이고 내 결과인 경우, 실제 결과와 입력 인원 수를 표시
+    if (item.type === '정모' && item.resultCount >= 1 && item.uid === user?.uid) {
+      if (item.resultCount === 1) {
+        return (
+          <Typography fontSize="12px" color="primary" fontWeight="bold">
+            결과: {item.result}
+          </Typography>
+        );
+      } else {
+        return (
+          <Typography fontSize="12px" color="primary" fontWeight="bold">
+            결과: {item.result}, 타인 입력: {item.resultCount - 1}명
+          </Typography>
+        );
+      }
+    }
     
-    // '정모'이거나 결과가 여러 개/0개인 경우, 입력 인원 수를 표시
-    if (item.resultCount > 0) {
+    // '정모'이고 결과가 여러 개인 경우, 입력 인원 수를 표시
+    else if (item.resultCount >= 1) {
       return (
         <Typography fontSize="12px" color="primary" fontWeight="bold">
           결과 입력: {item.resultCount}명
