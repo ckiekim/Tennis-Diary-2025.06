@@ -3,7 +3,7 @@ import { Grid, MenuItem, Stack, TextField } from '@mui/material';
 import CourtSelection from './CourtSelection';
 import { handleNumericInputChange } from '../../../utils/handleInput';
 import { 
-  tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, dxoDivisions, wemixDivisions
+  tournamentCategories, tournamentOrganizers, kataDivisions, katoDivisions, ktaDivisions, yonginDivisions, dxoDivisions, wemixDivisions
 } from '../../../constants/global';
 
 export default function TournamentFields({ form, setForm, courts, courtProps }) {
@@ -43,6 +43,7 @@ export default function TournamentFields({ form, setForm, courts, courtProps }) 
                 form.organizer === 'KATA' ? kataDivisions :
                 form.organizer === 'KATO' ? katoDivisions :
                 form.organizer === 'KTA' ? ktaDivisions :
+                form.organizer === '용테협' ? yonginDivisions :
                 form.organizer === '던롭' ? dxoDivisions :
                 form.organizer === 'WEMIX' ? wemixDivisions :
                 [] // 해당하는 주관사가 없을 경우 빈 배열 반환

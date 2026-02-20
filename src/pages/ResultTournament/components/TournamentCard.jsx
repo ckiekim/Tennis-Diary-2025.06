@@ -9,6 +9,7 @@ export default function TournamentCard({ item }) {
     item.organizer === 'KATO' ? '/img/KATO.png' :
     item.organizer === 'KATA' ? '/img/KATA.png' :
     item.organizer === 'KTA' ? '/img/KTA.png' :
+    item.organizer === '용테협' ? '/img/Yongin.png' :
     item.organizer === '던롭' ? '/img/DXO.png' :
     item.organizer === 'WEMIX' ? '/img/WEMIX.png' : '/img/no-image.jpeg';
 
