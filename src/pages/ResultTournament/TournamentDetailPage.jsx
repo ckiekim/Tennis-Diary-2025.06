@@ -128,7 +128,7 @@ const TournamentDetailPage = () => {
         </Typography>
         <Divider sx={{ my: 1 }} />
 
-        {combinedData.price && (
+        {!!combinedData.price && (
           <>
             <Typography variant="body2" fontWeight="bold">참가비</Typography>
             <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1, ml: 4 }}>
